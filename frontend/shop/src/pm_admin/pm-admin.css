@@ -1,0 +1,438 @@
+/* ── Scoped to pm-admin, won't leak to rest of the project ── */
+
+.pm-shell {
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    min-height: 100vh;
+    --navy: #0F172A;
+    --space: #1E293B;
+    --blue: #3B82F6;
+    --green: #22C55E;
+    --snow: #F8FAFC;
+    --blue-dim: rgba(59, 130, 246, 0.15);
+    --green-dim: rgba(34, 197, 94, 0.15);
+    --red-dim: rgba(248, 113, 113, 0.15);
+    --amber-dim: rgba(251, 191, 36, 0.15);
+    --text-main: #F8FAFC;
+    --text-muted: rgba(248, 250, 252, 0.55);
+    --text-dim: rgba(248, 250, 252, 0.35);
+    --border: rgba(248, 250, 252, 0.08);
+    --border-md: rgba(248, 250, 252, 0.13);
+    background: var(--navy);
+    color: var(--text-main);
+    font-family: "Inter", "Segoe UI", system-ui, sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.pm-main {
+    display: flex;
+    flex-direction: column;
+    background: var(--navy);
+    overflow-y: auto;
+}
+
+/* ── Topbar ── */
+.pm-shell .pm-topbar {
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--space);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.pm-shell .pm-topbar-title {
+    font-size: 16px;
+    font-weight: 500;
+}
+
+.pm-shell .pm-topbar-sub {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 2px;
+}
+
+.pm-shell .pm-topbar-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+/* ── Buttons ── */
+.pm-shell .pm-btn {
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+    transition: opacity 0.15s;
+}
+
+.pm-shell .pm-btn:hover {
+    opacity: 0.85;
+}
+
+.pm-shell .pm-btn-primary {
+    background: var(--blue);
+    color: #fff;
+}
+
+.pm-shell .pm-btn-green {
+    background: var(--green);
+    color: #fff;
+}
+
+.pm-shell .pm-btn-outline {
+    background: transparent;
+    color: var(--text-muted);
+    border: 1px solid var(--border-md);
+}
+
+.pm-shell .pm-btn-danger {
+    background: var(--red-dim);
+    color: #F87171;
+    border: none;
+}
+
+.pm-shell .pm-btn-sm {
+    padding: 5px 10px;
+    font-size: 12px;
+}
+
+.pm-shell .pm-btn-approve {
+    background: var(--green-dim);
+    color: var(--green);
+}
+
+.pm-shell .pm-btn-reject {
+    background: var(--red-dim);
+    color: #F87171;
+}
+
+/* ── Content ── */
+.pm-shell .pm-content {
+    padding: 20px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* ── Stat grid ── */
+.pm-shell .pm-stat-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.pm-shell .pm-stat {
+    background: var(--space);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+}
+
+.pm-shell .pm-stat-label {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.pm-shell .pm-stat-val {
+    font-size: 24px;
+    font-weight: 500;
+}
+
+.pm-shell .pm-stat-change {
+    font-size: 12px;
+    margin-top: 4px;
+}
+
+.pm-shell .pm-up {
+    color: var(--green);
+}
+
+.pm-shell .pm-down {
+    color: #F87171;
+}
+
+.pm-shell .pm-neutral {
+    color: var(--text-dim);
+}
+
+/* ── Panel ── */
+.pm-shell .pm-panel {
+    background: var(--space);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+}
+
+.pm-shell .pm-panel-title {
+    font-size: 13px;
+    font-weight: 500;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.pm-shell .pm-panel-link {
+    font-size: 12px;
+    color: var(--blue);
+    cursor: pointer;
+    font-weight: 400;
+    background: none;
+    border: none;
+}
+
+/* ── Grid ── */
+.pm-shell .pm-grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+/* ── Table ── */
+.pm-shell .pm-table-wrap {
+    overflow-x: auto;
+}
+
+.pm-shell table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.pm-shell th {
+    font-size: 11px;
+    color: var(--text-dim);
+    text-align: left;
+    padding: 0 10px 10px;
+    border-bottom: 1px solid var(--border);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.pm-shell td {
+    padding: 10px;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+    color: var(--text-muted);
+    vertical-align: middle;
+}
+
+.pm-shell tr:last-child td {
+    border-bottom: none;
+}
+
+.pm-shell td.pm-col-main {
+    color: var(--text-main);
+}
+
+/* ── Pills ── */
+.pm-shell .pm-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 9px;
+    border-radius: 99px;
+    font-size: 11px;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.pm-shell .pm-pill-green {
+    background: var(--green-dim);
+    color: var(--green);
+}
+
+.pm-shell .pm-pill-blue {
+    background: var(--blue-dim);
+    color: var(--blue);
+}
+
+.pm-shell .pm-pill-amber {
+    background: var(--amber-dim);
+    color: #FBBF24;
+}
+
+.pm-shell .pm-pill-red {
+    background: var(--red-dim);
+    color: #F87171;
+}
+
+.pm-shell .pm-pill-gray {
+    background: rgba(248, 250, 252, 0.08);
+    color: var(--text-muted);
+}
+
+/* ── Stock bar ── */
+.pm-shell .pm-stock-bar-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.pm-shell .pm-stock-bar {
+    height: 4px;
+    border-radius: 2px;
+    background: rgba(248, 250, 252, 0.1);
+    flex: 1;
+    overflow: hidden;
+    min-width: 60px;
+}
+
+.pm-shell .pm-stock-fill {
+    height: 100%;
+    border-radius: 2px;
+}
+
+/* ── Form ── */
+.pm-shell .pm-input {
+    background: var(--navy);
+    border: 1px solid var(--border-md);
+    border-radius: 8px;
+    padding: 8px 12px;
+    color: var(--text-main);
+    font-size: 13px;
+    outline: none;
+    width: 100%;
+}
+
+.pm-shell .pm-input:focus {
+    border-color: var(--blue);
+}
+
+.pm-shell .pm-input::placeholder {
+    color: var(--text-dim);
+}
+
+.pm-shell .pm-form-row {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.pm-shell .pm-form-label {
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.pm-shell .pm-form-grid {
+    display: grid;
+    gap: 14px;
+}
+
+/* ── Modal ── */
+.pm-shell .pm-modal-overlay {
+    min-height: 500px;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    padding: 20px;
+}
+
+.pm-shell .pm-modal {
+    background: var(--space);
+    border: 1px solid var(--border-md);
+    border-radius: 12px;
+    padding: 24px;
+    width: 100%;
+    max-width: 440px;
+}
+
+.pm-shell .pm-modal-title {
+    font-size: 15px;
+    font-weight: 500;
+    margin-bottom: 20px;
+}
+
+.pm-shell .pm-modal-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+    margin-top: 20px;
+}
+
+/* ── Search ── */
+.pm-shell .pm-search {
+    background: var(--navy);
+    border: 1px solid var(--border-md);
+    border-radius: 8px;
+    padding: 8px 12px;
+    color: var(--text-main);
+    font-size: 13px;
+    outline: none;
+    width: 200px;
+}
+
+.pm-shell .pm-search::placeholder {
+    color: var(--text-dim);
+}
+
+.pm-shell .pm-search:focus {
+    border-color: var(--blue);
+}
+
+/* ── Misc ── */
+.pm-shell .pm-addr-sub {
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-top: 2px;
+}
+
+.pm-shell .pm-invoice-total {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-main);
+}
+
+.pm-shell .pm-comment-card {
+    padding: 14px 0;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.pm-shell .pm-comment-card:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.pm-shell .pm-comment-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.pm-shell .pm-comment-author {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-main);
+}
+
+.pm-shell .pm-comment-product {
+    font-size: 11px;
+    color: var(--text-dim);
+}
+
+.pm-shell .pm-comment-body {
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.5;
+}
+
+.pm-shell .pm-comment-footer {
+    display: flex;
+    gap: 6px;
+}
