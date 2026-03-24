@@ -1,8 +1,12 @@
-import './App.css'
-import AppContent from './AppContent.tsx'
+import { Routes, Route } from "react-router-dom";
+import Login from "./login/login";
+import PMDashboard from "./pm_admin/PMDashboard";
 
-function App() {
-  return <AppContent />
+export default function App() {
+  return (
+    <Routes>
+      <Route path="/" element={<Login />} />
+      <Route path="/pm-admin/*" element={<PMDashboard />} />
+    </Routes>
+  );
 }
-
-export default App
