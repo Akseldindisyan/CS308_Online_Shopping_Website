@@ -1,15 +1,21 @@
-.Login {
-  font-family: sans-serif;
-  text-align: center;
-}
-
 @import url("https://fonts.googleapis.com/css?family=Montserrat:400,800");
 
-* {
+.Login {
+  font-family: "Montserrat", sans-serif;
+  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  min-height: 100vh;
+  background: #f6f5f7;
+}
+
+.Login * {
   box-sizing: border-box;
 }
 
-body {
+.Login {
   background: #f6f5f7;
   display: flex;
   justify-content: center;
@@ -20,16 +26,16 @@ body {
   margin: -20px 0 50px;
 }
 
-h1 {
+.Login h1 {
   font-weight: bold;
   margin: 0;
 }
 
-h2 {
+.Login h2 {
   text-align: center;
 }
 
-p {
+.Login p {
   font-size: 14px;
   font-weight: 100;
   line-height: 20px;
@@ -37,18 +43,18 @@ p {
   margin: 20px 0 30px;
 }
 
-span {
+.Login span {
   font-size: 12px;
 }
 
-a {
+.Login a {
   color: #333;
   font-size: 14px;
   text-decoration: none;
   margin: 15px 0;
 }
 
-button {
+.Login button {
   border-radius: 20px;
   border: 1px solid #ff4b2b;
   background-color: #ff4b2b;
@@ -61,20 +67,20 @@ button {
   transition: transform 80ms ease-in;
 }
 
-button:active {
+.Login button:active {
   transform: scale(0.95);
 }
 
-button:focus {
+.Login button:focus {
   outline: none;
 }
 
-button.ghost {
+.Login button.ghost {
   background-color: transparent;
   border-color: #ffffff;
 }
 
-form {
+.Login form {
   background-color: #ffffff;
   display: flex;
   align-items: center;
@@ -85,12 +91,37 @@ form {
   text-align: center;
 }
 
-input {
+.Login input {
   background-color: #eee;
   border: none;
   padding: 12px 15px;
   margin: 8px 0;
   width: 100%;
+}
+
+.Login footer {
+  background-color: #222;
+  color: #fff;
+  font-size: 14px;
+  bottom: 0;
+  position: fixed;
+  left: 0;
+  right: 0;
+  text-align: center;
+  z-index: 999;
+}
+
+.Login footer p {
+  margin: 10px 0;
+}
+
+.Login footer i {
+  color: red;
+}
+
+.Login footer a {
+  color: #3c97bf;
+  text-decoration: none;
 }
 
 .container {
@@ -231,21 +262,6 @@ input {
   width: 40px;
 }
 
-footer {
-  background-color: #222;
-  color: #fff;
-  font-size: 14px;
-  bottom: 0;
-  position: fixed;
-  left: 0;
-  right: 0;
-  text-align: center;
-  z-index: 999;
-}
-
-footer p {
-  margin: 10px 0;
-}
 
 footer i {
   color: red;
