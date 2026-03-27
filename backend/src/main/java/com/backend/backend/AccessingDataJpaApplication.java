@@ -1,5 +1,7 @@
 package com.backend.backend;
 
+import com.backend.backend.persistence.entity.ProductEntity;
+import com.backend.backend.persistence.repository.ProductRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
