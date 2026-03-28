@@ -85,10 +85,6 @@ public class ProductRepositoryTest {
         List<ProductEntity> result =
                 productRepository.findTop10ByProductNameContainingIgnoreCaseOrderByProductNameAsc("Apple");
 
-        // Print for debug
-        //System.out.println("Number of items found: " + result.size());
-        //result.forEach(System.out::println);
-
         //Check whether it is present
         assertTrue(result.isEmpty());
     }
@@ -112,10 +108,12 @@ public class ProductRepositoryTest {
         List<ProductEntity> result = productRepository.findTop5ByOrderByIdAsc();
 
         assertEquals(5, result.size());
-
+        // Print for debug
+        System.out.println("Number of items found: " + result.size());
+        result.forEach(System.out::println);
         for (int i = 0; i < result.size() - 1; i++) {
-            UUID currentId = result.get(i).getID();
-            UUID nextId = result.get(i + 1).getID();
+            String currentId = result.get(i).getID().toString();
+            String nextId = result.get(i + 1).getID().toString();
 
             assertTrue(currentId.compareTo(nextId) < 0);
         }
