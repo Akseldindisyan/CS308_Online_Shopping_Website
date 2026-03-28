@@ -1,4 +1,4 @@
-package com.backend.backend;
+package com.backend.backend.persistence.entity;
 
 import java.util.UUID;
 
