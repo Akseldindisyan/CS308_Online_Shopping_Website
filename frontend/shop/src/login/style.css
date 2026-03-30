@@ -6,31 +6,32 @@
 }
 
 
-* {
+.Login * {
   box-sizing: border-box;
 }
 
-body {
+.Login {
+  font-family: "Montserrat", sans-serif;
+  text-align: center;
   background: #f6f5f7;
   display: flex;
   justify-content: center;
   align-items: center;
   flex-direction: column;
-  font-family: "Montserrat", sans-serif;
-  height: 100vh;
-  margin: -20px 0 50px;
+  min-height: 100vh;
+  width: 100%;
 }
 
-h1 {
+.Login h1 {
   font-weight: bold;
   margin: 0;
 }
 
-h2 {
+.Login h2 {
   text-align: center;
 }
 
-p {
+.Login p {
   font-size: 14px;
   font-weight: 100;
   line-height: 20px;
@@ -38,18 +39,18 @@ p {
   margin: 20px 0 30px;
 }
 
-span {
+.Login span {
   font-size: 12px;
 }
 
-a {
+.Login a {
   color: #333;
   font-size: 14px;
   text-decoration: none;
   margin: 15px 0;
 }
 
-button {
+.Login button {
   border-radius: 20px;
   border: 1px solid #ff4b2b;
   background-color: #ff4b2b;
@@ -62,20 +63,20 @@ button {
   transition: transform 80ms ease-in;
 }
 
-button:active {
+.Login button:active {
   transform: scale(0.95);
 }
 
-button:focus {
+.Login button:focus {
   outline: none;
 }
 
-button.ghost {
+.Login button.ghost {
   background-color: transparent;
   border-color: #ffffff;
 }
 
-form {
+.Login form {
   background-color: #ffffff;
   display: flex;
   align-items: center;
@@ -86,7 +87,7 @@ form {
   text-align: center;
 }
 
-input {
+.Login input {
   background-color: #eee;
   border: none;
   padding: 12px 15px;
@@ -94,7 +95,7 @@ input {
   width: 100%;
 }
 
-.container {
+.Login .container {
   background-color: #fff;
   border-radius: 10px;
   box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
@@ -105,38 +106,39 @@ input {
   min-height: 480px;
 }
 
-.form-container {
+.Login .form-container {
   position: absolute;
   top: 0;
   height: 100%;
   transition: all 0.6s ease-in-out;
 }
 
-.sign-in-container {
+.Login .sign-in-container {
   left: 0;
   width: 50%;
   z-index: 2;
 }
 
-.container.right-panel-active .sign-in-container {
+.Login .container.right-panel-active .sign-in-container {
   transform: translateX(100%);
 }
 
-.sign-up-container {
+.Login .sign-up-container {
   left: 0;
   width: 50%;
   opacity: 0;
   z-index: 1;
 }
 
-.container.right-panel-active .sign-up-container {
+.Login .container.right-panel-active .sign-up-container {
   transform: translateX(100%);
   opacity: 1;
   z-index: 5;
-  animation: show 0.6s;
+  animation: loginShow 0.6s;
 }
 
-@keyframes show {
+@keyframes loginShow {
+
   0%,
   49.99% {
     opacity: 0;
@@ -150,7 +152,7 @@ input {
   }
 }
 
-.overlay-container {
+.Login .overlay-container {
   position: absolute;
   top: 0;
   left: 50%;
@@ -161,13 +163,11 @@ input {
   z-index: 100;
 }
 
-.container.right-panel-active .overlay-container {
+.Login .container.right-panel-active .overlay-container {
   transform: translateX(-100%);
 }
 
-.overlay {
-  background: #ff416c;
-  background: -webkit-linear-gradient(to right, #ff4b2b, #ff416c);
+.Login .overlay {
   background: linear-gradient(to right, #ff4b2b, #ff416c);
   background-repeat: no-repeat;
   background-size: cover;
@@ -181,11 +181,11 @@ input {
   transition: transform 0.6s ease-in-out;
 }
 
-.container.right-panel-active .overlay {
+.Login .container.right-panel-active .overlay {
   transform: translateX(50%);
 }
 
-.overlay-panel {
+.Login .overlay-panel {
   position: absolute;
   display: flex;
   align-items: center;
@@ -200,28 +200,28 @@ input {
   transition: transform 0.6s ease-in-out;
 }
 
-.overlay-left {
+.Login .overlay-left {
   transform: translateX(-20%);
 }
 
-.container.right-panel-active .overlay-left {
+.Login .container.right-panel-active .overlay-left {
   transform: translateX(0);
 }
 
-.overlay-right {
+.Login .overlay-right {
   right: 0;
   transform: translateX(0);
 }
 
-.container.right-panel-active .overlay-right {
+.Login .container.right-panel-active .overlay-right {
   transform: translateX(20%);
 }
 
-.social-container {
+.Login .social-container {
   margin: 20px 0;
 }
 
-.social-container a {
+.Login .social-container a {
   border: 1px solid #dddddd;
   border-radius: 50%;
   display: inline-flex;
@@ -232,7 +232,7 @@ input {
   width: 40px;
 }
 
-footer {
+.Login footer {
   background-color: #222;
   color: #fff;
   font-size: 14px;
@@ -244,15 +244,15 @@ footer {
   z-index: 999;
 }
 
-footer p {
+.Login footer p {
   margin: 10px 0;
 }
 
-footer i {
+.Login footer i {
   color: red;
 }
 
-footer a {
+.Login footer a {
   color: #3c97bf;
   text-decoration: none;
 }
