@@ -1,13 +1,5 @@
 import { Link } from 'react-router-dom'
-
-type Product = {
-  id: number
-  name: string
-  category: string
-  price: number
-  rating: number
-  image: string
-}
+import { products } from './product_page/productData'
 
 const categories = [
   'Laptops',
@@ -18,72 +10,6 @@ const categories = [
   'Accessories',
 ]
 
-const products: Product[] = [
-  {
-    id: 1,
-    name: 'NovaBook Pro 14',
-    category: 'Laptops',
-    price: 1299,
-    rating: 4.8,
-    image: 'https://picsum.photos/seed/laptop-novabook/800/500',
-  },
-  {
-    id: 2,
-    name: 'Pulse X Smartphone',
-    category: 'Phones',
-    price: 899,
-    rating: 4.7,
-    image: 'https://picsum.photos/seed/phone-pulsex/800/500',
-  },
-  {
-    id: 3,
-    name: 'CloudTab Air',
-    category: 'Tablets',
-    price: 549,
-    rating: 4.5,
-    image: 'https://picsum.photos/seed/tablet-cloudtab/800/500',
-  },
-  {
-    id: 4,
-    name: 'EchoPods Max',
-    category: 'Headphones',
-    price: 299,
-    rating: 4.6,
-    image: 'https://picsum.photos/seed/headphones-echopods/800/500',
-  },
-  {
-    id: 5,
-    name: 'Falcon RGB Keyboard',
-    category: 'Gaming',
-    price: 149,
-    rating: 4.4,
-    image: 'https://picsum.photos/seed/gaming-falcon/800/500',
-  },
-  {
-    id: 6,
-    name: 'Orbit Docking Hub',
-    category: 'Accessories',
-    price: 99,
-    rating: 4.3,
-    image: 'https://picsum.photos/seed/accessories-orbit/800/500',
-  },
-  {
-    id: 7,
-    name: 'Vertex Ultra Monitor',
-    category: 'Gaming',
-    price: 479,
-    rating: 4.7,
-    image: 'https://picsum.photos/seed/monitor-vertex/800/500',
-  },
-  {
-    id: 8,
-    name: 'SnapCharge 3-in-1',
-    category: 'Accessories',
-    price: 79,
-    rating: 4.5,
-    image: 'https://picsum.photos/seed/charger-snapcharge/800/500',
-  },
-]
 
 function AppContent() {
   return (
@@ -145,9 +71,9 @@ function AppContent() {
               <p className="rating">Rating: {product.rating} / 5</p>
               <p className="price">${product.price}</p>
               <div className="product-actions">
-                <button type="button" className="btn-secondary">
+                <Link to={`/product/${product.id}`} className="btn-secondary">
                   Details
-                </button>
+                </Link>
                 <button type="button" className="btn-action">
                   Add to Cart
                 </button>

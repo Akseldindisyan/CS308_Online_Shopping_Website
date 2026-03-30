@@ -254,6 +254,15 @@ body {
   gap: 8px;
 }
 
+.product-actions .btn-secondary,
+.product-actions .btn-action {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
+
 .footer {
   background: #0b1222;
   border-top: 1px solid var(--border);
