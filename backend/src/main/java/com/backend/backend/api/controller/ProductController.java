@@ -1,24 +1,21 @@
 package com.backend.backend.api.controller;
 
+import com.backend.backend.api.dto.ProductCardDTO;
 import com.backend.backend.persistence.entity.ProductEntity;
-import com.backend.backend.persistence.repository.ProductRepository;
-
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import com.backend.backend.service.ProductService;
+import org.springframework.data.domain.Page;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import java.util.List;
 
 @RestController
 @RequestMapping("/api")
-
 public class ProductController {
 
     @Autowired
-    private ProductRepository productRepository;
+    private ProductService productService;
 
     @GetMapping("/products")
-    public List<ProductEntity> getAllProducts() {
-        return (List<ProductEntity>) productRepository.findAll();
+    public Page<ProductEntity> getAllProducts(@RequestParam(defaultValue = "0") int page) {
+        return productService.getAllOrderByID(page);
     }
 }
