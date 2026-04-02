@@ -72,14 +72,14 @@ public class ProductRepositoryTest {
         productRepository.save(productEntity);
 
         //Extract its id for search in the database
-        UUID id = productEntity.getID();
+        UUID id = productEntity.getId();
         Optional<ProductEntity> result = productRepository.findById(id);
 
         //Check whether it is present
         assertTrue(result.isPresent());
 
         //Compare Expected and Result
-        assertEquals(productEntity.getID(), result.get().getID());
+        assertEquals(productEntity.getId(), result.get().getId());
         assertEquals(productEntity.getProductName(), result.get().getProductName());
     }
 
@@ -121,8 +121,8 @@ public class ProductRepositoryTest {
         System.out.println("Number of items found: " + size);
         result.forEach(System.out::println);
         for (int i = 0; i < size - 1; i++) {
-            String currentId = result.get(i).getID().toString();
-            String nextId = result.get(i + 1).getID().toString();
+            String currentId = result.get(i).getId().toString();
+            String nextId = result.get(i + 1).getId().toString();
 
             assertTrue(currentId.compareTo(nextId) < 0);
         }
