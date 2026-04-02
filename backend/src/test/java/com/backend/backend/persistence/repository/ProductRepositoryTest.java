@@ -10,13 +10,18 @@ import java.util.UUID;
 
 //Import Test libraries
 import org.junit.jupiter.api.*;
-import org.junit.jupiter.api.Test;
+
 import static org.junit.jupiter.api.Assertions.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 @DataJpaTest
 public class ProductRepositoryTest {
+
+    Pageable p = PageRequest.of(0, 5);
 
     @Autowired
     ProductRepository productRepository;
@@ -82,8 +87,10 @@ public class ProductRepositoryTest {
     void findTop10ProductNameNotAvailableTest() {
         System.out.println("Try to find Top 10 products by Id");
 
-        List<ProductEntity> result =
-                productRepository.findTop10ByProductNameContainingIgnoreCaseOrderByProductNameAsc("Apple");
+        Page<ProductEntity> page_result =
+                productRepository.findAllByProductNameContainingIgnoreCaseOrderByProductNameAsc("Apple", p);
+        
+        List<ProductEntity> result = page_result.getContent();        
 
         //Check whether it is present
         assertTrue(result.isEmpty());
@@ -93,7 +100,8 @@ public class ProductRepositoryTest {
     void findTop10ProductNameRegularTest() {
         System.out.println("Try to find Top 10 products by Name");
 
-        List<ProductEntity> result = productRepository.findTop10ByProductNameContainingIgnoreCaseOrderByProductNameAsc("Laptop");
+        Page<ProductEntity> page_result = productRepository.findAllByProductNameContainingIgnoreCaseOrderByProductNameAsc("Laptop", p);
+        List<ProductEntity> result = page_result.getContent();
 
         assertEquals(2, result.size());
         assertEquals("Laptop A", result.get(0).getProductName());
@@ -105,13 +113,14 @@ public class ProductRepositoryTest {
     void findTop5ByOrderByIdAscRegularTest() {
         System.out.println("Try to find Top 5 products by Id");
 
-        List<ProductEntity> result = productRepository.findTop5ByOrderByIdAsc();
-
-        assertEquals(5, result.size());
+        Page<ProductEntity> page_result = productRepository.findAllByOrderByIdAsc(p);
+        int size = page_result.getSize();
+        assertEquals(5, size);
         // Print for debug
-        System.out.println("Number of items found: " + result.size());
+        List<ProductEntity> result = page_result.getContent();
+        System.out.println("Number of items found: " + size);
         result.forEach(System.out::println);
-        for (int i = 0; i < result.size() - 1; i++) {
+        for (int i = 0; i < size - 1; i++) {
             String currentId = result.get(i).getID().toString();
             String nextId = result.get(i + 1).getID().toString();
 
@@ -123,8 +132,8 @@ public class ProductRepositoryTest {
     void findTop5ByOrderByPriceAscRegularTest() {
         System.out.println("Try to find Top 5 products by Price in Ascending order");
 
-        List<ProductEntity> result = productRepository.findTop5ByOrderByPriceAsc();
-
+        Page<ProductEntity> page_result = productRepository.findAllByOrderByPriceAsc(p);
+        List<ProductEntity> result = page_result.getContent();
         assertEquals(5, result.size());
         for (int i = 0; i < result.size() - 1; i++) {
             assertTrue(result.get(i).getPrice() <= result.get(i + 1).getPrice());
@@ -135,7 +144,8 @@ public class ProductRepositoryTest {
     void findTop5ByOrderByPriceDescRegularTest() {
         System.out.println("Try to find Top 5 products by Price in Descending order");
 
-        List<ProductEntity> result = productRepository.findTop5ByOrderByPriceDesc();
+        Page<ProductEntity> page_result = productRepository.findAllByOrderByPriceDesc(p);
+        List<ProductEntity> result = page_result.getContent();
 
         assertEquals(5, result.size());
         for (int i = 0; i < result.size() - 1; i++) {
@@ -147,7 +157,8 @@ public class ProductRepositoryTest {
     void findTop5ByOrderByRatingAscTest() {
         System.out.println("Try to find Top 5 products by Rating in Ascending order");
 
-        List<ProductEntity> result = productRepository.findTop5ByOrderByRatingAsc();
+        Page<ProductEntity> page_result = productRepository.findAllByOrderByRatingAsc(p);
+        List<ProductEntity> result = page_result.getContent();
 
         assertEquals(5, result.size());
         for (int i = 0; i < result.size() - 1; i++) {
@@ -159,7 +170,8 @@ public class ProductRepositoryTest {
     void findTop5ByOrderByRatingDescTest() {
         System.out.println("Try to find Top 5 products by Rating in Descending order");
         
-        List<ProductEntity> result = productRepository.findTop5ByOrderByRatingDesc();
+        Page<ProductEntity> page_result = productRepository.findAllByOrderByRatingDesc(p);
+        List<ProductEntity> result = page_result.getContent();
 
         assertEquals(5, result.size());
         for (int i = 0; i < result.size() - 1; i++) {

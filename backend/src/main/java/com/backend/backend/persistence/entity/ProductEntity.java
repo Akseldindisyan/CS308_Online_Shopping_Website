@@ -83,4 +83,8 @@ public class ProductEntity {
         return country;
     }
 
+    public void setStock(int amount){
+        this.stock = amount;
+    }
+
 }
