@@ -2,6 +2,7 @@ package com.backend.backend.persistence.entity;
 
 import java.util.UUID;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -17,6 +18,7 @@ public class ProductEntity {
     private int stock;
     private String model;
     private String serialNumber;
+    @Column(name = "description")
     private String desc;
     private double price;
     private String distInfo;
@@ -43,7 +45,7 @@ public class ProductEntity {
                 id, productName, rating, stock, model, serialNumber, desc, price, distInfo, country);
     }
 
-    public UUID getID(){
+    public UUID getId(){
         return id;
     }
 
