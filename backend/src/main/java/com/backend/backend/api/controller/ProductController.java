@@ -1,4 +1,4 @@
-package com.backend.backend;
+package com.backend.backend.api.controller;
 
 import com.backend.backend.persistence.entity.ProductEntity;
 import com.backend.backend.persistence.repository.ProductRepository;
