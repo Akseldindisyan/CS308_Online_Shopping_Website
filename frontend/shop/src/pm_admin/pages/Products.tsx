@@ -16,7 +16,10 @@ export default function Products() {
     if (!form.name || !form.stock) return;
     setProducts((prev) => [...prev, {
       id: Date.now(), name: form.name, categoryId: form.categoryId,
-      price: 0, stock: Number(form.stock), active: true,
+      category: initCategories.find(c => c.id === form.categoryId)?.name ?? "",
+      price: 0, rating: 0, image: "", images: [], description: "", features: [],
+      stock: Number(form.stock), active: true,
+      cost: 0, discountRate: 0, discountedPrice: 0,
     }]);
     setForm({ name: "", categoryId: 1, stock: "" });
     setShowModal(false);
