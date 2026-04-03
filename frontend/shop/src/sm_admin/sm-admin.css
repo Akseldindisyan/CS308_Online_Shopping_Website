@@ -1,0 +1,143 @@
+/* SM Admin — additions to the shared pm-shell styles */
+
+/* Print styles for invoice export */
+@media print {
+    .pm-shell > aside,
+    .pm-topbar {
+        display: none !important;
+    }
+
+    .pm-shell {
+        display: block !important;
+    }
+
+    .pm-main {
+        background: #fff !important;
+        color: #000 !important;
+    }
+
+    .pm-shell .pm-panel {
+        background: #fff !important;
+        border: 1px solid #ddd !important;
+        color: #000 !important;
+    }
+
+    .pm-shell table {
+        color: #000 !important;
+    }
+
+    .pm-shell th,
+    .pm-shell td {
+        color: #333 !important;
+        border-bottom-color: #ddd !important;
+    }
+
+    .pm-shell .pm-stat {
+        background: #fff !important;
+        border: 1px solid #ddd !important;
+    }
+
+    .pm-shell .pm-stat-label,
+    .pm-shell .pm-stat-val,
+    .pm-shell .pm-stat-change {
+        color: #000 !important;
+    }
+
+    .pm-shell .pm-pill {
+        border: 1px solid #999 !important;
+    }
+}
+
+/* Notification toast */
+.sm-toast-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.sm-toast {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    border-radius: 8px;
+    background: var(--green-dim);
+    color: var(--green);
+    font-size: 13px;
+    animation: sm-slide-in 0.3s ease-out;
+}
+
+@keyframes sm-slide-in {
+    from { opacity: 0; transform: translateY(-8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Revenue chart container */
+.sm-chart-container {
+    width: 100%;
+    height: 350px;
+}
+
+.sm-chart-container .recharts-cartesian-axis-tick-value {
+    fill: rgba(248, 250, 252, 0.55) !important;
+    font-size: 11px !important;
+}
+
+.sm-chart-container .recharts-tooltip-wrapper .recharts-default-tooltip {
+    background: var(--space, #1E293B) !important;
+    border: 1px solid rgba(248, 250, 252, 0.13) !important;
+    border-radius: 8px !important;
+}
+
+/* Discount badge */
+.sm-discount-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    border-radius: 99px;
+    font-size: 11px;
+    font-weight: 500;
+    background: var(--red-dim);
+    color: #F87171;
+}
+
+/* Modal overlay for SM - slightly different z-index to avoid conflicts */
+.sm-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+}
+
+.sm-price-compare {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.sm-price-original {
+    text-decoration: line-through;
+    color: var(--text-dim);
+    font-size: 13px;
+}
+
+.sm-price-new {
+    color: var(--green);
+    font-weight: 500;
+    font-size: 15px;
+}
+
+/* Invoice print single */
+.sm-invoice-print {
+    display: none;
+}
+
+@media print {
+    .sm-invoice-print {
+        display: block !important;
+    }
+}
