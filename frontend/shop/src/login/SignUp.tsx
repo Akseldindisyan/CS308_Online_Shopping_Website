@@ -1,32 +1,32 @@
 import React from "react";
+
 function SignUpForm() {
   const [state, setState] = React.useState({
     name: "",
     email: "",
     password: ""
   });
-  const handleChange = (evt:any) => {
-    const value = evt.target.value;
-    setState({
-      ...state,
-      [evt.target.name]: value
-    });
+
+  const handleChange = (evt: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = evt.target;
+    setState((currentState) => ({
+      ...currentState,
+      [name]: value
+    }));
   };
 
-  const handleOnSubmit = (evt:any) => {
+  const handleOnSubmit = (evt: React.FormEvent<HTMLFormElement>) => {
     evt.preventDefault();
 
     const { name, email, password } = state;
     alert(
       `You are sign up with name: ${name} email: ${email} and password: ${password}`
     );
-
-    for (const key in state) {
-      setState({
-        ...state,
-        [key]: ""
-      });
-    }
+    setState({
+      name: "",
+      email: "",
+      password: ""
+    });
   };
 
   return (
