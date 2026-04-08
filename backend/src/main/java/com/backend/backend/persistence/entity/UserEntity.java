@@ -21,6 +21,9 @@ public class UserEntity {
     private LocalDate dateOfBirth;
     private String address;
 
+    protected UserEntity() {}
+
+
     public UserEntity(String name, String surname, String username, String email, String password, LocalDate dateOfBirth, String address){
         this.name = name;
         this.surname = surname;
@@ -29,6 +32,13 @@ public class UserEntity {
         this.password = password;
         this.dateOfBirth = dateOfBirth;
         this.address = address;
+    }
+
+    @Override
+    public String toString() {
+        return String.format(
+                "User[id=%s, Name='%s', Surname='%s', Username='%s', Email='%s', Password='%s', dateofBirth = '%s', address = '%s']",
+                id, name, surname, username, email, password, dateOfBirth, address);
     }
 
     public UUID getID(){
