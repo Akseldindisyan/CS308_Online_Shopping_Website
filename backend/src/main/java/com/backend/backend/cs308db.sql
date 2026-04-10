@@ -8,7 +8,7 @@ CREATE TABLE "User" (
 );
 
 CREATE TABLE Product (
-    Product_ID SERIAL PRIMARY KEY,
+    Product_ID UUID PRIMARY KEY,
     Product_Name VARCHAR(128) NOT NULL,
     Product_Image BYTEA,
     Rating DOUBLE PRECISION,
@@ -22,7 +22,7 @@ CREATE TABLE Product (
 );
 
 CREATE TABLE "Order" (
-    Order_ID SERIAL PRIMARY KEY,
+    Order_ID UUID PRIMARY KEY,
     Order_Place_Time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     Is_Arrived BOOLEAN DEFAULT FALSE,
     Order_Arrival_Time TIMESTAMP
@@ -83,7 +83,7 @@ CREATE TABLE CartItemEntity (
 
 CREATE TABLE Wishlist (
     User_ID UUID REFERENCES "User"(User_ID),
-    Product_ID INT REFERENCES Product(Product_ID),
+    Product_ID UUID REFERENCES Product(Product_ID),
     PRIMARY KEY (User_ID, Product_ID)
 );
 
