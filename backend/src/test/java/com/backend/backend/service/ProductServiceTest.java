@@ -5,86 +5,146 @@ import com.backend.backend.persistence.repository.ProductRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mockito;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import java.util.List;
+
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import org.mockito.ArgumentCaptor;
 
 
-@SpringBootTest
+@ExtendWith(MockitoExtension.class)
 public class ProductServiceTest {
 
-    @Autowired
+    @Mock
     ProductRepository productRepository;
 
-    @Autowired
-    ProductService p;
-
-    @BeforeEach
-    void initializeMockupDatabase() {
-        productRepository.save(new ProductEntity("Laptop A", 4.5, 50, "Model X", "SN12345", "High performance laptop", 1200.0, "Distributor A", "USA"));
-        productRepository.save(new ProductEntity("Smartphone", 4.7, 100, "Model Y", "SN54321", "Latest smartphone", 800.0, "Distributor B", "China"));
-        productRepository.save(new ProductEntity("Headphones", 4.2, 70, "Model H", "SN67890", "Noise-cancelling headphones", 200.0, "Distributor C", "Germany"));
-        productRepository.save(new ProductEntity("Monitor", 4.6, 30, "Model M", "SN98765", "4K UHD monitor", 350.0, "Distributor D", "Japan"));
-        productRepository.save(new ProductEntity("Keyboard", 4.1, 120, "Model K", "SN11223", "Mechanical keyboard", 100.0, "Distributor E", "USA"));
-        productRepository.save(new ProductEntity("Mouse", 4.3, 150, "Model S", "SN44556", "Wireless mouse", 50.0, "Distributor F", "China"));
-        productRepository.save(new ProductEntity("Printer", 4.0, 25, "Model P", "SN77889", "All-in-one printer", 250.0, "Distributor G", "Japan"));
-        productRepository.save(new ProductEntity("Laptop B", 4.4, 60, "Model T", "SN99001", "10-inch tablet", 400.0, "Distributor H", "USA"));
-        productRepository.save(new ProductEntity("Camera", 4.5, 40, "Model C", "SN22334", "Digital SLR camera", 900.0, "Distributor I", "Germany"));
-        productRepository.save(new ProductEntity("Smartwatch", 4.2, 80, "Model W", "SN55667", "Fitness smartwatch", 150.0, "Distributor J", "China"));
-    }
-
-    @AfterEach
-    void cleanUpDatabase() {
-        productRepository.deleteAll();
-    }
-
+    @InjectMocks
+    ProductService productService;
 
     @Test
-    void check1(){
-        Page<ProductEntity> deneme = p.getAllOrderByID(0);
+    void getAllByIdAscTest(){
+        List<ProductEntity> productList = List.of(
+                new ProductEntity("Laptop A", 4.5, 50, "Model X", "SN12345", "High performance laptop", 1200.0, "Distributor A", "USA"),
+                new ProductEntity("Smartphone", 4.7, 100, "Model Y", "SN54321", "Latest smartphone", 800.0, "Distributor B", "China")
+        );
+        Page<ProductEntity> expectedProductList = new PageImpl<>(productList);
 
-        deneme.forEach(System.out::println);
+        Mockito.when(productRepository.findAllByOrderByIdAsc(any(Pageable.class))).thenReturn(expectedProductList);
+        Page<ProductEntity> result = productService.getAllOrderByID(0);
+
+        //Check length
+        assertEquals(2, result.getTotalElements());
+        //Get and Check content
+        List<ProductEntity> expectedContent = expectedProductList.getContent();
+        List<ProductEntity> resultContent = result.getContent();
+        for (int i = 0; i < productList.size(); i++) {
+            assertEquals(expectedContent.get(i).getProductName(), resultContent.get(i).getProductName());
+        }
+        //Testing if the Page Request
+        Mockito.verify(productRepository).findAllByOrderByIdAsc(PageRequest.of(0, 5));
+        //result.forEach(System.out::println);
 
     }
 
     @Test
-    void check2(){
-        Page<ProductEntity> deneme = p.getAllOrderByPriceDesc(0);
+    void getAllOrderByPriceTest(){
+        List<ProductEntity> productList = List.of(
+                new ProductEntity("Smartphone", 4.7, 100, "Model Y", "SN54321", "Latest smartphone", 800.0, "Distributor B", "China"),
+                new ProductEntity("Laptop A", 4.5, 50, "Model X", "SN12345", "High performance laptop", 1200.0, "Distributor A", "USA")
+        );
+        Page<ProductEntity> expectedProductList = new PageImpl<>(productList);
 
-        deneme.forEach(System.out::println);
+        Mockito.when(productRepository.findAllByOrderByPriceAsc(any(Pageable.class))).thenReturn(expectedProductList);
+        Page<ProductEntity> result = productService.getAllOrderByPriceAsc(0);
+
+        //Get and Check content
+        List<ProductEntity> expectedContent = expectedProductList.getContent();
+        List<ProductEntity> resultContent = result.getContent();
+        for (int i = 0; i < productList.size(); i++) {
+            assertEquals(expectedContent.get(i).getProductName(), resultContent.get(i).getProductName());
+        }
+        //Testing if the Page Request
+        Mockito.verify(productRepository).findAllByOrderByPriceAsc(PageRequest.of(0, 5));
 
     }
 
     @Test
-    void check3(){
-        Page<ProductEntity> deneme = p.getAllOrderByRatingAsc(0);
+    void getAllOrderByRatingAscTest() {
+        List<ProductEntity> productList = List.of(
+                new ProductEntity("Budget Phone", 3.5, 100, "Model Z", "SN999", "Basic smartphone", 300.0, "Distributor C", "China"),
+                new ProductEntity("Premium Laptop", 4.9, 50, "Model X", "SN123", "High performance", 2000.0, "Distributor A", "USA")
+        );
+        Page<ProductEntity> expectedProductList = new PageImpl<>(productList);
 
-        deneme.forEach(System.out::println);
+        Mockito.when(productRepository.findAllByOrderByRatingAsc(any(Pageable.class))).thenReturn(expectedProductList);
 
+        Page<ProductEntity> result = productService.getAllOrderByRatingAsc(0);
+
+        List<ProductEntity> expectedContent = expectedProductList.getContent();
+        List<ProductEntity> resultContent = result.getContent();
+
+        for (int i = 0; i < productList.size(); i++) {
+            assertEquals(expectedContent.get(i).getProductName(), resultContent.get(i).getProductName());
+        }
+
+        Mockito.verify(productRepository).findAllByOrderByRatingAsc(PageRequest.of(0, 5));
     }
 
     @Test
-    void check4(){
-        Page<ProductEntity> deneme = p.getAllByProductNameContainingIgnoreCaseOrderByProductNameAsc("Laptop",0);
+    void getAllByProductNameContainingIgnoreCaseOrderByProductNameAscTest() {
+        List<ProductEntity> productList = List.of(
+                new ProductEntity("Gaming Laptop", 4.8, 20, "Model G", "SN111", "Fast laptop", 1500.0, "Distributor A", "USA"),
+                new ProductEntity("Work Laptop", 4.2, 50, "Model W", "SN222", "Reliable laptop", 900.0, "Distributor B", "UK")
+        );
+        Page<ProductEntity> expectedProductList = new PageImpl<>(productList);
 
-        deneme.forEach(System.out::println);
+        Mockito.when(productRepository.findAllByProductNameContainingIgnoreCaseOrderByProductNameAsc(
+                Mockito.eq("Laptop"), Mockito.any(Pageable.class))).thenReturn(expectedProductList);
 
+        Page<ProductEntity> result = productService.getAllByProductNameContainingIgnoreCaseOrderByProductNameAsc("Laptop", 0);
+
+        List<ProductEntity> expectedContent = expectedProductList.getContent();
+        List<ProductEntity> resultContent = result.getContent();
+
+        for (int i = 0; i < productList.size(); i++) {
+            assertEquals(expectedContent.get(i).getProductName(), resultContent.get(i).getProductName());
+        }
+
+        Mockito.verify(productRepository).findAllByProductNameContainingIgnoreCaseOrderByProductNameAsc(
+                "Laptop", PageRequest.of(0, 5));
     }
 
-    @Test 
-    void check5(){
-        p.UpdateStock("Keyboard", 0);
-        ProductEntity a = productRepository.findByProductName("Keyboard");
-        System.out.println(a);
-        
+    @Test
+    void UpdateStockTest(){
+        ProductEntity existingProduct = new ProductEntity("Keyboard", 5.0, 20, "Model K", "SN111", "Desc", 50.0, "Dist", "USA");
+        Mockito.when(productRepository.findByProductName("Keyboard")).thenReturn(existingProduct);
+
+        productService.UpdateStock("Keyboard", 0);
+
+        assertEquals(0, existingProduct.getStock());
+        Mockito.verify(productRepository).save(existingProduct);
     }
 
-    @Test 
-    void check6(){
-        p.CreateProduct("A", 0, 0, "A", "A", "A", 0, "A", "A");
-        ProductEntity a = productRepository.findByProductName("A");
-        System.out.println(a);
-        
+    @Test
+    void CreateProductTest(){
+        productService.CreateProduct("Monitor", 4.5, 10, "Model M", "SN222", "4K Monitor", 300.0, "Dist", "USA");
+
+        ArgumentCaptor<ProductEntity> captor = ArgumentCaptor.forClass(ProductEntity.class);
+        Mockito.verify(productRepository).save(captor.capture());
+
+        ProductEntity savedProduct = captor.getValue();
+        assertEquals("Monitor", savedProduct.getProductName());
+        assertEquals(10, savedProduct.getStock());
+        assertEquals(300.0, savedProduct.getPrice());
     }
 
 
