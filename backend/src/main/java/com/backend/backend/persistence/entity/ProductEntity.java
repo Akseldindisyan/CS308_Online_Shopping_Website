@@ -7,12 +7,16 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 
 @Entity
+@Table(name = "product")
 public class ProductEntity {
     @Id
     @GeneratedValue(strategy=GenerationType.AUTO)
+    @Column(name = "product_id")
     private UUID id;
+    @Column(name = "product_name")
     private String productName;
     private double rating;
     private int stock;
@@ -21,7 +25,9 @@ public class ProductEntity {
     @Column(name = "description")
     private String desc;
     private double price;
+    @Column(name = "distributor_info")
     private String distInfo;
+    @Column(name = "country_of_origin")
     private String country;
 
     protected ProductEntity() {}
