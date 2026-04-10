@@ -29,16 +29,16 @@ CREATE TABLE "Order" (
 );
 
 CREATE TABLE Order_Item (
-    Product_ID INT REFERENCES Product(Product_ID),
-    Order_ID INT REFERENCES "Order"(Order_ID),
+    Product_ID UUID REFERENCES Product(Product_ID),
+    Order_ID UUID REFERENCES "Order"(Order_ID),
     Count INT DEFAULT 1,
     Discount NUMERIC(5,2),
     PRIMARY KEY (Product_ID, Order_ID)
 );
 
 CREATE TABLE Review (
-    Review_ID SERIAL PRIMARY KEY,
-    Product_ID INT REFERENCES Product(Product_ID),
+    Review_ID UUID PRIMARY KEY,
+    Product_ID UUID REFERENCES Product(Product_ID),
     User_ID UUID REFERENCES "User"(User_ID),
     Rating DOUBLE PRECISION CHECK (Rating >= 0 AND Rating <= 5),
     Approved_By_Product_Man BOOLEAN DEFAULT FALSE,
@@ -63,7 +63,7 @@ CREATE TABLE Address_Reference_Table (
 
 CREATE TABLE Invoice (
     Invoice_ID UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    Order_ID INT REFERENCES "Order"(Order_ID),
+    Order_ID UUID REFERENCES "Order"(Order_ID),
     User_ID UUID REFERENCES "User"(User_ID),
     Address_ID UUID REFERENCES Address_Pool(Address_ID),
     TotalAmount INT,
@@ -74,7 +74,7 @@ CREATE TABLE Invoice (
 
 CREATE TABLE CartItemEntity (
     User_ID UUID REFERENCES "User"(User_ID),
-    Product_ID INT REFERENCES Product(Product_ID),
+    Product_ID UUID REFERENCES Product(Product_ID),
     Amount INT DEFAULT 1,
     Created_At DATE DEFAULT CURRENT_DATE,
     Updated_At DATE DEFAULT CURRENT_DATE,
