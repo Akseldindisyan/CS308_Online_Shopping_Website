@@ -3,12 +3,16 @@ package com.backend.backend.persistence.repository;
 //Import classes
 import com.backend.backend.persistence.entity.ProductEntity;
 import com.backend.backend.persistence.entity.UserEntity;
+import com.backend.backend.persistence.entity.AddressEntity;
+import com.backend.backend.service.UserService;
 
 //Import basic structures
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+
+import javax.management.relation.Role;
 
 //Import Test libraries
 import org.junit.jupiter.api.*;
@@ -29,14 +33,14 @@ public class UserRepositoryTest {
     //Funtions to automate testing
     @BeforeEach
     void initializeMockupDatabase() {
-        userRepository.deleteAll();
+        userRepository.deleteAll();    
 
         List<UserEntity> mockUsers = List.of(
-                new UserEntity("John", "Doe", "johndoe88", "john.doe@example.com", "pass1234", LocalDate.of(1988, 5, 12), "123 Main St, NY"),
-                new UserEntity("Jane", "Smith", "janesmith99", "jane.smith@example.com", "securepass", LocalDate.of(1999, 8, 24), "456 Oak Ave, CA"),
-                new UserEntity("Alice", "Johnson", "alicej", "alice.j@example.com", "qwerty99", LocalDate.of(1995, 2, 10), "789 Pine Rd, TX"),
-                new UserEntity("Bob", "Brown", "bobbrown", "bob.b@example.com", "admin123", LocalDate.of(1980, 11, 5), "321 Cedar Ln, FL"),
-                new UserEntity("Charlie", "Davis", "charlied", "charlie.d@example.com", "mypassword", LocalDate.of(2001, 7, 19), "654 Elm St, WA")
+                new UserEntity("John", "Doe", "johndoe88", "john.doe@example.com", "pass1234", LocalDate.of(1988, 5, 12), UserEntity.Role.CUSTOMER),
+                new UserEntity("Jane", "Smith", "janesmith99", "jane.smith@example.com", "securepass", LocalDate.of(1999, 8, 24),  UserEntity.Role.CUSTOMER),
+                new UserEntity("Alice", "Johnson", "alicej", "alice.j@example.com", "qwerty99", LocalDate.of(1995, 2, 10),  UserEntity.Role.CUSTOMER),
+                new UserEntity("Bob", "Brown", "bobbrown", "bob.b@example.com", "admin123", LocalDate.of(1980, 11, 5),  UserEntity.Role.CUSTOMER),
+                new UserEntity("Charlie", "Davis", "charlied", "charlie.d@example.com", "mypassword", LocalDate.of(2001, 7, 19), UserEntity.Role.CUSTOMER)
         );
 
         userRepository.saveAll(mockUsers);
@@ -52,11 +56,20 @@ public class UserRepositoryTest {
     //Tests
     @Test
     void findByUserNameTest() {
-        System.out.println("Find User by their name");
+        System.out.println("Find User by their username");
 
-        UserEntity result = userRepository.findByUsername("alicej");
+        Optional<UserEntity> result = userRepository.findByUsername("alicej");
         //Check if it returns the user with the correct name
-        assertEquals("alicej", result.getUsername());
+        assertEquals("alicej", result.orElse(null).getUsername());
+    }
+
+    @Test 
+    void findByEmail(){
+        System.out.println("Find User by their email");
+
+        Optional<UserEntity> result = userRepository.findByEmail("alice.j@example.com");
+        //Check if it returns the user with the correct name
+        assertEquals("alice.j@example.com", result.orElse(null).getEmail());
     }
 
 }
