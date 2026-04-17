@@ -1,3 +1,5 @@
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
 CREATE TABLE "User" (
     User_ID UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     Name VARCHAR(120) NOT NULL,
@@ -8,7 +10,7 @@ CREATE TABLE "User" (
 );
 
 CREATE TABLE Product (
-    Product_ID UUID PRIMARY KEY,
+    Product_ID UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     Product_Name VARCHAR(128) NOT NULL,
     Product_Image BYTEA,
     Rating DOUBLE PRECISION,
@@ -55,6 +57,7 @@ CREATE TABLE Address_Pool (
     Zip_Code VARCHAR(10)
 );
 
+
 CREATE TABLE Address_Reference_Table (
     User_ID UUID REFERENCES "User"(User_ID) ON DELETE CASCADE,
     Address_ID UUID REFERENCES Address_Pool(Address_ID) ON DELETE CASCADE,
@@ -79,7 +82,7 @@ CREATE TABLE CartItemEntity (
     Created_At DATE DEFAULT CURRENT_DATE,
     Updated_At DATE DEFAULT CURRENT_DATE,
     PRIMARY KEY (User_ID, Product_ID)
-);b
+);
 
 CREATE TABLE Wishlist (
     User_ID UUID REFERENCES "User"(User_ID),
@@ -99,3 +102,5 @@ VALUES
     ('Laptop B',    4.4, 60,  'Model T', 'SN99001', '10-inch tablet',                 400.0, 'Distributor H', 'USA'),
     ('Camera',      4.5, 40,  'Model C', 'SN22334', 'Digital SLR camera',             900.0, 'Distributor I', 'Germany'),
     ('Smartwatch',  4.2, 80,  'Model W', 'SN55667', 'Fitness smartwatch',             150.0, 'Distributor J', 'China');
+
+
