@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-
+import './App.css'
 type Product = {
   id: number
   name: string
