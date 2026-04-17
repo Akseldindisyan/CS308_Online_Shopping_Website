@@ -19,10 +19,14 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.server.ResponseStatusException;
 
 import com.backend.backend.api.dto.CartDTO;
+<<<<<<< HEAD
 import com.backend.backend.persistence.entity.AddressEntity;
+=======
+import com.backend.backend.api.exception.ConflictException;
+import com.backend.backend.api.exception.ForbiddenOperationException;
+>>>>>>> 0f97c8d (Global Exception Handling Implemented)
 import com.backend.backend.persistence.entity.CartEntity;
 import com.backend.backend.persistence.entity.CartItemEntity;
 import com.backend.backend.persistence.entity.ProductEntity;
@@ -68,10 +72,10 @@ public class CartServiceTest {
 
     @Test
     void checkoutGuestCart_throwsForbidden() {
-        ResponseStatusException ex = assertThrows(ResponseStatusException.class,
+        ForbiddenOperationException ex = assertThrows(ForbiddenOperationException.class,
                 () -> cartService.checkoutGuestCart("guest-token"));
 
-        assertEquals(HttpStatus.FORBIDDEN, ex.getStatusCode());
+        assertEquals(HttpStatus.FORBIDDEN, ex.getStatus());
     }
 
     @Test
@@ -131,10 +135,10 @@ public class CartServiceTest {
         when(cartRepository.findByUserAndCheckedOutFalse(user)).thenReturn(Optional.of(userCart));
         when(cartItemRepository.findByCart(userCart)).thenReturn(List.of(item));
 
-        ResponseStatusException ex = assertThrows(ResponseStatusException.class,
+        ConflictException ex = assertThrows(ConflictException.class,
                 () -> cartService.checkoutUserCart(userId));
 
-        assertEquals(HttpStatus.CONFLICT, ex.getStatusCode());
+        assertEquals(HttpStatus.CONFLICT, ex.getStatus());
         verify(productRepository, never()).save(any(ProductEntity.class));
     }
 
