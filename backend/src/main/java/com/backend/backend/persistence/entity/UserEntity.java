@@ -73,7 +73,7 @@ public class UserEntity {
         return dateOfBirth;
     }
 
-    public String getAdress(){
+    public String getAddress(){
         return address;
     }
 
