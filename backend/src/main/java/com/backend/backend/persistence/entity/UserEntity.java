@@ -78,7 +78,7 @@ public class UserEntity {
         return dateOfBirth;
     }
 
-    public List<AddressEntity> getAdress(){
+    public String getAddress(){
         return address;
     }
 
