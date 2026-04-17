@@ -21,12 +21,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 
 import com.backend.backend.api.dto.CartDTO;
-<<<<<<< HEAD
-import com.backend.backend.persistence.entity.AddressEntity;
-=======
 import com.backend.backend.api.exception.ConflictException;
 import com.backend.backend.api.exception.ForbiddenOperationException;
->>>>>>> 0f97c8d (Global Exception Handling Implemented)
 import com.backend.backend.persistence.entity.CartEntity;
 import com.backend.backend.persistence.entity.CartItemEntity;
 import com.backend.backend.persistence.entity.ProductEntity;
