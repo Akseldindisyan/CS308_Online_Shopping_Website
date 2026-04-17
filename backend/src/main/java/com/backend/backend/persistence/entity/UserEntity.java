@@ -2,9 +2,13 @@ package com.backend.backend.persistence.entity;
 
 import java.util.UUID;
 import java.time.*;
+import java.util.ArrayList;
+import java.util.List;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import lombok.Builder;
@@ -31,19 +35,20 @@ public class UserEntity {
     private String surname;
     private String username;
     private String email;
-    private String password; //TODO: Make secure implementation
+    private String password;
     private LocalDate dateOfBirth;
-    private String address;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<AddressEntity> address = new ArrayList<>();
     private Role role = Role.CUSTOMER;
 
-    public UserEntity(String name, String surname, String username, String email, String password, LocalDate dateOfBirth, String address, Role role){
+    public UserEntity(String name, String surname, String username, String email, String password, LocalDate dateOfBirth, Role role){
         this.name = name;
         this.surname = surname;
         this.username = username;
         this.email = email;
         this.password = password;
         this.dateOfBirth = dateOfBirth;
-        this.address = address;
         this.role = role;
     }
 
@@ -97,8 +102,8 @@ public class UserEntity {
         this.dateOfBirth = dateOfBirth;
     }
 
-    public void setAddress(String address){
-        this.address = address;
+    public void addAddress(AddressEntity addressEntity){
+        this.address.add(addressEntity);
     }
 
 }
