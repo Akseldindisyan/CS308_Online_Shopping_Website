@@ -1,25 +1,33 @@
-package com.backend.backend;
+package com.backend.backend.persistence.entity;
 
 import java.util.UUID;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 
 @Entity
+@Table(name = "product")
 public class ProductEntity {
     @Id
     @GeneratedValue(strategy=GenerationType.AUTO)
+    @Column(name = "product_id")
     private UUID id;
+    @Column(name = "product_name")
     private String productName;
     private double rating;
     private int stock;
     private String model;
     private String serialNumber;
+    @Column(name = "description")
     private String desc;
     private double price;
+    @Column(name = "distributor_info")
     private String distInfo;
+    @Column(name = "country_of_origin")
     private String country;
 
     protected ProductEntity() {}
@@ -43,7 +51,7 @@ public class ProductEntity {
                 id, productName, rating, stock, model, serialNumber, desc, price, distInfo, country);
     }
 
-    public UUID getID(){
+    public UUID getId(){
         return id;
     }
 
@@ -81,6 +89,10 @@ public class ProductEntity {
 
     public String getCountry(){
         return country;
+    }
+
+    public void setStock(int amount){
+        this.stock = amount;
     }
 
 }
