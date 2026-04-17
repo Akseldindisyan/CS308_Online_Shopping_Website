@@ -4,10 +4,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
+import com.backend.backend.api.exception.BadRequestException;
+import com.backend.backend.api.exception.ConflictException;
+import com.backend.backend.api.exception.ForbiddenOperationException;
+import com.backend.backend.api.exception.ResourceNotFoundException;
 
 import com.backend.backend.api.dto.CartDTO;
 import com.backend.backend.api.dto.CartItemDTO;
@@ -96,14 +98,14 @@ public class CartService {
 
         List<CartItemEntity> items = cartItemRepository.findByCart(cart);
         if (items.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cart is empty");
+            throw new BadRequestException("CART_EMPTY", "Cart is empty");
         }
 
         for (CartItemEntity item : items) {
             ProductEntity product = item.getProduct();
             if (product.getStock() < item.getQuantity()) {
-                throw new ResponseStatusException(
-                        HttpStatus.CONFLICT,
+                throw new ConflictException(
+                        "INSUFFICIENT_STOCK",
                         "Insufficient stock for product: " + product.getProductName());
             }
         }
@@ -119,7 +121,7 @@ public class CartService {
 
     public void checkoutGuestCart(String guestToken) {
         validateGuestToken(guestToken);
-        throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Guests cannot checkout. Please register or login.");
+        throw new ForbiddenOperationException("GUEST_CHECKOUT_FORBIDDEN", "Guests cannot checkout. Please register or login.");
     }
 
     @Transactional
@@ -128,7 +130,7 @@ public class CartService {
         UserEntity user = getExistingUser(userId);
 
         CartEntity guestCart = cartRepository.findByGuestTokenAndCheckedOutFalse(guestToken)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Guest cart not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("GUEST_CART_NOT_FOUND", "Guest cart not found"));
 
         CartEntity userCart = getOrCreateUserCart(user);
         List<CartItemEntity> guestItems = cartItemRepository.findByCart(guestCart);
@@ -155,11 +157,11 @@ public class CartService {
 
     private void addOrUpdateCartItem(CartEntity cart, UUID productId, int quantity) {
         if (quantity <= 0) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Quantity must be greater than zero");
+            throw new BadRequestException("INVALID_QUANTITY", "Quantity must be greater than zero");
         }
 
         ProductEntity product = productRepository.findById(productId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found: " + productId));
+                .orElseThrow(() -> new ResourceNotFoundException("PRODUCT_NOT_FOUND", "Product not found: " + productId));
 
         CartItemEntity item = cartItemRepository.findByCartAndProduct(cart, product).orElseGet(() -> {
             CartItemEntity newItem = new CartItemEntity();
@@ -175,10 +177,10 @@ public class CartService {
 
     private void removeItem(CartEntity cart, UUID productId) {
         ProductEntity product = productRepository.findById(productId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found: " + productId));
+                .orElseThrow(() -> new ResourceNotFoundException("PRODUCT_NOT_FOUND", "Product not found: " + productId));
 
         CartItemEntity item = cartItemRepository.findByCartAndProduct(cart, product)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product does not exist in cart"));
+                .orElseThrow(() -> new ResourceNotFoundException("CART_ITEM_NOT_FOUND", "Product does not exist in cart"));
 
         cartItemRepository.delete(item);
     }
@@ -201,12 +203,12 @@ public class CartService {
 
     private UserEntity getExistingUser(UUID userId) {
         return userRepository.findById(userId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found: " + userId));
+                .orElseThrow(() -> new ResourceNotFoundException("USER_NOT_FOUND", "User not found: " + userId));
     }
 
     private void validateGuestToken(String guestToken) {
         if (guestToken == null || guestToken.isBlank()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Guest token is required");
+            throw new BadRequestException("GUEST_TOKEN_REQUIRED", "Guest token is required");
         }
     }
 
