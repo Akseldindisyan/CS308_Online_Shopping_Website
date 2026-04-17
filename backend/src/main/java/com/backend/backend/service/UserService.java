@@ -74,13 +74,13 @@ public class UserService {
 
     private void validateUniqueness(UserEntity user, UUID currentUserId) {
         userRepository.findByUsername(user.getUsername()).ifPresent(existing -> {
-            if (currentUserId == null || !existing.getID().equals(currentUserId)) {
+            if (currentUserId == null || !existing.getId().equals(currentUserId)) {
                 throw new ResponseStatusException(HttpStatus.CONFLICT, "Username already exists: " + user.getUsername());
             }
         });
 
         userRepository.findByEmail(user.getEmail()).ifPresent(existing -> {
-            if (currentUserId == null || !existing.getID().equals(currentUserId)) {
+            if (currentUserId == null || !existing.getId().equals(currentUserId)) {
                 throw new ResponseStatusException(HttpStatus.CONFLICT, "Email already exists: " + user.getEmail());
             }
         });
