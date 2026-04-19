@@ -32,8 +32,8 @@ public class UserEntity {
     private String username;
     private String email;
     private String password; //TODO: Make secure implementation
-    private LocalDate dateOfBirth;
-    private String address;
+    private LocalDate dateOfBirth = null;
+    private String address = null;
     private Role role = Role.CUSTOMER;
 
     public UserEntity(String name, String surname, String username, String email, String password, LocalDate dateOfBirth, String address, Role role){

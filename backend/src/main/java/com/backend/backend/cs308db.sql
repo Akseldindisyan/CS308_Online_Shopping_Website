@@ -1,4 +1,4 @@
-CREATE TABLE "User" (
+CREATE TABLE IF NOT EXISTS "User" (
     User_ID UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     Name VARCHAR(120) NOT NULL,
     Surname VARCHAR(120),
@@ -7,7 +7,7 @@ CREATE TABLE "User" (
     Birth_Date DATE
 );
 
-CREATE TABLE Product (
+CREATE TABLE IF NOT EXISTS "Product" (
     Product_ID UUID PRIMARY KEY,
     Product_Name VARCHAR(128) NOT NULL,
     Product_Image BYTEA,
@@ -79,23 +79,22 @@ CREATE TABLE CartItemEntity (
     Created_At DATE DEFAULT CURRENT_DATE,
     Updated_At DATE DEFAULT CURRENT_DATE,
     PRIMARY KEY (User_ID, Product_ID)
-);b
+);
 
 CREATE TABLE Wishlist (
     User_ID UUID REFERENCES "User"(User_ID),
     Product_ID UUID REFERENCES Product(Product_ID),
     PRIMARY KEY (User_ID, Product_ID)
 );
-
-INSERT INTO Product (Product_Name, Rating, Stock, Model, Serial_Number, Description, Price, Distributor_Info, Country_of_Origin)
+INSERT INTO Product (product_id,product_name, Rating, Stock, Model, Serial_Number, Description, Price, Distributor_Info, Country_of_Origin)
 VALUES
-    ('Laptop A',    4.5, 50,  'Model X', 'SN12345', 'High performance laptop',       1200.0, 'Distributor A', 'USA'),
-    ('Smartphone',  4.7, 100, 'Model Y', 'SN54321', 'Latest smartphone',              800.0, 'Distributor B', 'China'),
-    ('Headphones',  4.2, 70,  'Model H', 'SN67890', 'Noise-cancelling headphones',    200.0, 'Distributor C', 'Germany'),
-    ('Monitor',     4.6, 30,  'Model M', 'SN98765', '4K UHD monitor',                 350.0, 'Distributor D', 'Japan'),
-    ('Keyboard',    4.1, 120, 'Model K', 'SN11223', 'Mechanical keyboard',            100.0, 'Distributor E', 'USA'),
-    ('Mouse',       4.3, 150, 'Model S', 'SN44556', 'Wireless mouse',                  50.0, 'Distributor F', 'China'),
-    ('Printer',     4.0, 25,  'Model P', 'SN77889', 'All-in-one printer',             250.0, 'Distributor G', 'Japan'),
-    ('Laptop B',    4.4, 60,  'Model T', 'SN99001', '10-inch tablet',                 400.0, 'Distributor H', 'USA'),
-    ('Camera',      4.5, 40,  'Model C', 'SN22334', 'Digital SLR camera',             900.0, 'Distributor I', 'Germany'),
-    ('Smartwatch',  4.2, 80,  'Model W', 'SN55667', 'Fitness smartwatch',             150.0, 'Distributor J', 'China');
+    ('f9c5c63d-6bd1-49f2-a3f4-391e080b27a1','Laptop A',    4.5, 50,  'Model X', 'SN12345', 'High performance laptop',       1200.0, 'Distributor A', 'USA'),
+    ('6ad3ef9e-a5b8-4d12-a864-7f12dbc92bbf','Smartphone',  4.7, 100, 'Model Y', 'SN54321', 'Latest smartphone',              800.0, 'Distributor B', 'China'),
+    ('bff7591d-de8a-4d22-86f2-0a230b8ba15d','Headphones',  4.2, 70,  'Model H', 'SN67890', 'Noise-cancelling headphones',    200.0, 'Distributor C', 'Germany'),
+    ('a83a056d-0a25-4265-ab27-cc3100f0858e','Monitor',     4.6, 30,  'Model M', 'SN98765', '4K UHD monitor',                 350.0, 'Distributor D', 'Japan'),
+    ('44dbfe88-2803-406b-8aa2-a4effe3ee133','Keyboard',    4.1, 120, 'Model K', 'SN11223', 'Mechanical keyboard',            100.0, 'Distributor E', 'USA'),
+    ('565a75e8-1760-45fb-bb59-ae5bed7bf09d','Mouse',       4.3, 150, 'Model S', 'SN44556', 'Wireless mouse',                  50.0, 'Distributor F', 'China'),
+    ('4b444b99-8f97-4463-aaff-0794d686b6d7','Printer',     4.0, 25,  'Model P', 'SN77889', 'All-in-one printer',             250.0, 'Distributor G', 'Japan'),
+    ('b6ead94d-7ada-4379-b575-4b1ae9104582','Laptop B',    4.4, 60,  'Model T', 'SN99001', '10-inch tablet',                 400.0, 'Distributor H', 'USA'),
+    ('2eb5086d-59db-4546-ab2f-fcf6b5b2a639','Camera',      4.5, 40,  'Model C', 'SN22334', 'Digital SLR camera',             900.0, 'Distributor I', 'Germany'),
+    ('3bdda48e-66f2-489e-bf4f-5183fd0b7938','Smartwatch',  4.2, 80,  'Model W', 'SN55667', 'Fitness smartwatch',             150.0, 'Distributor J', 'China');
