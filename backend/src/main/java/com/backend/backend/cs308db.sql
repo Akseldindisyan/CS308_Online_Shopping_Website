@@ -55,6 +55,7 @@ CREATE TABLE Address_Pool (
     Zip_Code VARCHAR(10)
 );
 
+
 CREATE TABLE Address_Reference_Table (
     User_ID UUID REFERENCES "User"(User_ID) ON DELETE CASCADE,
     Address_ID UUID REFERENCES Address_Pool(Address_ID) ON DELETE CASCADE,

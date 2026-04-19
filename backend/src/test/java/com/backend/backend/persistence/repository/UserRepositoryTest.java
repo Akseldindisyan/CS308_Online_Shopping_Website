@@ -3,12 +3,16 @@ package com.backend.backend.persistence.repository;
 //Import classes
 import com.backend.backend.persistence.entity.ProductEntity;
 import com.backend.backend.persistence.entity.UserEntity;
+import com.backend.backend.persistence.entity.AddressEntity;
+import com.backend.backend.service.UserService;
 
 //Import basic structures
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+
+import javax.management.relation.Role;
 
 //Import Test libraries
 import org.junit.jupiter.api.*;
@@ -29,7 +33,7 @@ public class UserRepositoryTest {
     //Funtions to automate testing
     @BeforeEach
     void initializeMockupDatabase() {
-        userRepository.deleteAll();
+        userRepository.deleteAll();    
 
         List<UserEntity> mockUsers = List.of(
                 new UserEntity("John", "Doe", "johndoe88", "john.doe@example.com", "pass1234", LocalDate.of(1988, 5, 12), "123 Main St, NY", UserEntity.Role.CUSTOMER),
@@ -52,7 +56,16 @@ public class UserRepositoryTest {
     //Tests
     @Test
     void findByUserNameTest() {
-        System.out.println("Find User by their name");
+        System.out.println("Find User by their username");
+
+        Optional<UserEntity> result = userRepository.findByUsername("alicej");
+        //Check if it returns the user with the correct name
+        assertEquals("alicej", result.orElse(null).getUsername());
+    }
+
+    @Test 
+    void findByEmail(){
+        System.out.println("Find User by their email");
 
         Optional<UserEntity> result = userRepository.findByUsername("alicej");
         assertTrue(result.isPresent());

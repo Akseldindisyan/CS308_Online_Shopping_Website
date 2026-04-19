@@ -8,6 +8,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.backend.backend.persistence.entity.AddressEntity;
 import com.backend.backend.persistence.entity.UserEntity;
 import com.backend.backend.persistence.repository.UserRepository;
 
@@ -33,6 +34,8 @@ public class UserService {
 
     public UserEntity createUser(UserEntity newUser) {
         validateUniqueness(newUser, null);
+        String hashPassword = encoder.encode(newUser.getPassword());
+        newUser.setPassword(hashPassword);
 
         if (newUser.getRole() == null) {
             newUser.setRole(UserEntity.Role.CUSTOMER);
@@ -45,6 +48,7 @@ public class UserService {
 
     public UserEntity updateUser(UUID id, UserEntity updatedUser) {
         UserEntity existingUser = getUserById(id);
+        String hashPassword = encoder.encode(updatedUser.getPassword());
 
         validateUniqueness(updatedUser, id);
 
@@ -75,16 +79,48 @@ public class UserService {
 
     private void validateUniqueness(UserEntity user, UUID currentUserId) {
         userRepository.findByUsername(user.getUsername()).ifPresent(existing -> {
-            if (currentUserId == null || !existing.getID().equals(currentUserId)) {
+            if (currentUserId == null || !existing.getId().equals(currentUserId)) {
                 throw new ResponseStatusException(HttpStatus.CONFLICT, "Username already exists: " + user.getUsername());
             }
         });
 
         userRepository.findByEmail(user.getEmail()).ifPresent(existing -> {
-            if (currentUserId == null || !existing.getID().equals(currentUserId)) {
+            if (currentUserId == null || !existing.getId().equals(currentUserId)) {
                 throw new ResponseStatusException(HttpStatus.CONFLICT, "Email already exists: " + user.getEmail());
             }
         });
+    }
+
+    public Boolean authenticate(String email, String password){
+        UserEntity user = null;
+        try {
+            user = userRepository.findByEmail(email).orElseThrow(() -> new Exception("Incorrect email or password!"));
+        }
+        catch(Exception e){
+            System.out.println("Error: " + e.getMessage());
+            return false;
+        }
+
+        String userPassword = user.getPassword();
+
+        try {
+            if(encoder.matches(password, userPassword) == true){
+                return true;
+            }
+            throw new Exception("Incorrect email or password!!!!!!!");
+        }
+        catch(Exception e){
+            System.out.println("Error: " + e.getMessage());
+            return false;
+        }
+
+    }
+
+    public UserEntity addAddress(UserEntity user, AddressEntity address){
+        address.setUser(user);
+        user.addAddress(address);
+
+        return userRepository.save(user);
     }
 }
 
