@@ -1,10 +1,16 @@
 import React from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { login, storeAuthToken } from "../api/auth";
 
 function SignInForm() {
+  const navigate = useNavigate();
   const [state, setState] = React.useState({
-    email: "",
+    username: "",
     password: ""
   });
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
+  const [statusMessage, setStatusMessage] = React.useState("");
+  const [statusType, setStatusType] = React.useState<"success" | "error" | "">("");
 
   const handleChange = (evt: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = evt.target;
@@ -12,17 +18,37 @@ function SignInForm() {
       ...currentState,
       [name]: value
     }));
+    setStatusMessage("");
+    setStatusType("");
   };
 
-  const handleOnSubmit = (evt: React.FormEvent<HTMLFormElement>) => {
+  const handleOnSubmit = async (evt: React.FormEvent<HTMLFormElement>) => {
     evt.preventDefault();
 
-    const { email, password } = state;
-    alert(`You are login with email: ${email} and password: ${password}`);
-    setState({
-      email: "",
-      password: ""
-    });
+    const username = state.username.trim();
+    const password = state.password;
+
+    if (!username || !password) {
+      setStatusMessage("Please enter your username and password.");
+      setStatusType("error");
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      const response = await login({ username, password });
+      storeAuthToken(response.token);
+      setStatusMessage("Login successful. Redirecting...");
+      setStatusType("success");
+      navigate("/");
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Login failed.";
+      setStatusMessage(message);
+      setStatusType("error");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -30,10 +56,10 @@ function SignInForm() {
       <form onSubmit={handleOnSubmit}>
         <h1>Sign in</h1>
         <input
-          type="email"
-          placeholder="Email"
-          name="email"
-          value={state.email}
+          type="text"
+          placeholder="Username"
+          name="username"
+          value={state.username}
           onChange={handleChange}
         />
         <input
@@ -44,7 +70,15 @@ function SignInForm() {
           onChange={handleChange}
         />
         <a href="#">Forgot your password?</a>
-        <button>Sign In</button>
+        <p className="login-route-link">
+          New here? <Link to="/register">Create an account</Link>
+        </p>
+        <button type="submit" disabled={isSubmitting}>
+          {isSubmitting ? "Signing In..." : "Sign In"}
+        </button>
+        {statusMessage ? (
+          <p className={`login-status ${statusType}`}>{statusMessage}</p>
+        ) : null}
       </form>
     </div>
   );

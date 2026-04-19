@@ -2,15 +2,23 @@ import { useState, type FormEvent } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { FaStar } from 'react-icons/fa'
 import './product_page.css'
-import { products, type Product, type ProductReview } from './productData'
+import { products, type Product } from './productData'
 import StarRating from './rating'
+
+type ProductReview = {
+  id: number
+  author: string
+  text: string
+  rating: number
+  date: string
+}
 
 function ProductPageContent({ product }: { product: Product }) {
   const [selectedImage, setSelectedImage] = useState(product.image)
   const [statusMessage, setStatusMessage] = useState('')
   const [reviewMessage, setReviewMessage] = useState('')
   const [reviewMessageType, setReviewMessageType] = useState<'success' | 'error' | ''>('')
-  const [reviews, setReviews] = useState<ProductReview[]>(product.reviews ?? [])
+  const [reviews, setReviews] = useState<ProductReview[]>([])
   const [reviewForm, setReviewForm] = useState({ author: '', text: '', rating: 0 })
 
   const formattedPrice = new Intl.NumberFormat('en-US', {
