@@ -4,11 +4,11 @@ import SignInForm from "./SignIn.tsx";
 import SignUpForm from "./SignUp.tsx";
 
 export default function Login() {
-  const [type, setType] = useState("signIn");
-  const handleOnClick = (text:any) => {
+  const [type, setType] = useState<"signIn" | "signUp">("signIn");
+
+  const handleOnClick = (text: "signIn" | "signUp") => {
     if (text !== type) {
       setType(text);
-      return;
     }
   };
   const containerClass =

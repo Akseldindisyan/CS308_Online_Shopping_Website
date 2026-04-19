@@ -1,29 +1,28 @@
 import React from "react";
+
 function SignInForm() {
   const [state, setState] = React.useState({
     email: "",
     password: ""
   });
-  const handleChange = (evt:any) => {
-    const value = evt.target.value;
-    setState({
-      ...state,
-      [evt.target.name]: value
-    });
+
+  const handleChange = (evt: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = evt.target;
+    setState((currentState) => ({
+      ...currentState,
+      [name]: value
+    }));
   };
 
-  const handleOnSubmit = (evt:any) => {
+  const handleOnSubmit = (evt: React.FormEvent<HTMLFormElement>) => {
     evt.preventDefault();
 
     const { email, password } = state;
     alert(`You are login with email: ${email} and password: ${password}`);
-
-    for (const key in state) {
-      setState({
-        ...state,
-        [key]: ""
-      });
-    }
+    setState({
+      email: "",
+      password: ""
+    });
   };
 
   return (

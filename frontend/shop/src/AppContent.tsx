@@ -33,9 +33,9 @@ function AppContent() {
             <Link to="/login" className="btn-secondary">
               Login / Register
             </Link>
-            <button type="button" className="btn-primary">
-              My Cart (2)
-            </button>
+            <Link to="/cart" className="btn-primary">
+              My Cart
+            </Link>
           </div>
         </div>
 
