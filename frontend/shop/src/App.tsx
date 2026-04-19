@@ -11,6 +11,7 @@ export default function App() {
   return (
     <Routes>
       <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Login initialType="signUp" />} />
       <Route path="/" element={<AppContent />} />
       <Route path="/product/:id" element={<ProductPage />} />
       <Route path="/cart" element={<ShoppingCart />} />

@@ -126,6 +126,31 @@
   border-color: var(--focus);
 }
 
+.Login .login-status {
+  margin: 12px 0 0;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.Login .login-status.success {
+  color: #86efac;
+}
+
+.Login .login-status.error {
+  color: #fca5a5;
+}
+
+.Login .login-route-link {
+  margin: 6px 0 10px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.Login .login-route-link a {
+  margin: 0;
+  font-size: 12px;
+}
+
 .Login .container {
   background: var(--card-bg);
   border: 1px solid rgba(148, 163, 184, 0.18);

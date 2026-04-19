@@ -47,8 +47,8 @@ export default function Revenue() {
     filtered.forEach(inv => {
         const prod = products.find(p => p.id === inv.productId);
         const invCost = inv.quantity * (prod?.cost ?? 0);
-        const key = inv.productId;
-        const entry = byProduct.get(key) ?? { name: prod?.name ?? inv.productId, revenue: 0, cost: 0, profit: 0 };
+        const key = String(inv.productId);
+        const entry = byProduct.get(key) ?? { name: prod?.name ?? String(inv.productId), revenue: 0, cost: 0, profit: 0 };
         entry.revenue += inv.totalPrice;
         entry.cost += invCost;
         entry.profit += inv.totalPrice - invCost;
@@ -168,14 +168,22 @@ export default function Revenue() {
                                         color: "#F8FAFC",
                                         fontSize: 13,
                                     }}
-                                    formatter={(value: number) => [`₺${value.toLocaleString()}`, undefined]}
-                                    labelFormatter={(label: string) =>
-                                        new Date(label).toLocaleDateString("en-US", {
+                                    formatter={(value) => `₺${Number(value ?? 0).toLocaleString()}`}
+                                    labelFormatter={(label) => {
+                                        const dateValue = typeof label === "string" || typeof label === "number"
+                                            ? String(label)
+                                            : "";
+
+                                        if (!dateValue) {
+                                            return "";
+                                        }
+
+                                        return new Date(dateValue).toLocaleDateString("en-US", {
                                             month: "long",
                                             day: "numeric",
                                             year: "numeric",
-                                        })
-                                    }
+                                        });
+                                    }}
                                 />
                                 <Legend wrapperStyle={{ color: "rgba(248,250,252,0.55)", fontSize: 12 }} />
                                 <Bar dataKey="revenue" name="Revenue" fill="#3B82F6" radius={[4, 4, 0, 0]} />

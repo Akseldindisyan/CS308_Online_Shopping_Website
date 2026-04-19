@@ -3,6 +3,45 @@ export type Category = {
   name: string;
 };
 
+// Common
+export type UUID = string;
+
+// Login
+export interface LoginRequestDTO {
+  username: string;
+  password: string;
+}
+
+export interface LoginResponseDTO {
+  token: string;
+}
+
+// Register
+export interface RegisterRequestDTO {
+  username: string;
+  name: string;
+  surname: string;
+  email: string;
+  password: string;
+}
+
+// Product card (matches backend ProductCardDTO)
+export interface ProductCardDTO {
+  id: UUID;
+  name: string;
+  categoryId: number | null;
+  price: number;
+  stock: number;
+  active: boolean;
+  imageUrl: string | null;
+}
+
+// Search query params for GET /api/products/search
+export interface ProductSearchParams {
+  name: string;
+  page?: number;
+}
+
 export type Product = {
   // From product_page (canonical base)
   id: number;

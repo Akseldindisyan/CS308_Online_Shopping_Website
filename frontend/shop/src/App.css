@@ -160,6 +160,11 @@ body {
   outline-offset: 2px;
 }
 
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.72;
+}
+
 .category-nav {
   width: min(1200px, 94vw);
   margin: 0 auto;
@@ -196,6 +201,19 @@ body {
   margin: 10px 0 0;
   color: var(--text-muted);
   max-width: 720px;
+}
+
+.search-info,
+.search-error {
+  margin: 10px 0 0;
+}
+
+.search-info {
+  color: #bfdbfe;
+}
+
+.search-error {
+  color: #fca5a5;
 }
 
 .product-grid {
