@@ -35,11 +35,9 @@ public class UserEntity {
     private String surname;
     private String username;
     private String email;
-    private String password;
-    private LocalDate dateOfBirth;
-
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<AddressEntity> address = new ArrayList<>();
+    private String password; //TODO: Make secure implementation
+    private LocalDate dateOfBirth = null;
+    private String address = null;
     private Role role = Role.CUSTOMER;
 
     public UserEntity(String name, String surname, String username, String email, String password, LocalDate dateOfBirth, Role role){

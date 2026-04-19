@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 import com.backend.backend.api.dto.ProductCardDTO;
 import com.backend.backend.api.dto.ProductDetailedDTO;
+import com.backend.backend.api.exception.BadRequestException;
 import com.backend.backend.api.mapper.ProductMapper;
 import com.backend.backend.persistence.entity.ProductEntity;
 import com.backend.backend.persistence.repository.ProductRepository;
@@ -47,9 +48,9 @@ public class ProductService {
         return ProductRepo.findAllByOrderByRatingDesc(p);
     }
 
-    public Page<ProductEntity> getAllByProductNameContainingIgnoreCaseOrderByProductNameAsc(String name, int page){
+    public Page<ProductEntity> searchByProductName(String name, int page){
         Pageable p = PageRequest.of(page, 5);
-        return ProductRepo.findAllByProductNameContainingIgnoreCaseOrderByProductNameAsc(name, p);
+        return ProductRepo.searchByProductNameLike(name, p);
     }
 
     public void UpdateStock(String name, int amount){
@@ -75,7 +76,16 @@ public class ProductService {
     }
 
     public Page<ProductCardDTO> searchProductCards(String name, int page) {
-        return getAllByProductNameContainingIgnoreCaseOrderByProductNameAsc(name, page)
+        String normalizedName = name == null ? "" : name.trim();
+        if (normalizedName.isEmpty()) {
+            throw new BadRequestException("INVALID_SEARCH_QUERY", "Search query cannot be empty");
+        }
+
+        if (normalizedName.length() > 100) {
+            throw new BadRequestException("INVALID_SEARCH_QUERY", "Search query is too long");
+        }
+
+        return searchByProductName(normalizedName, page)
                 .map(ProductMapper::toCardDTO);
     }
 

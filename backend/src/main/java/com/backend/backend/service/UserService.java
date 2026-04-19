@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.UUID;
 
 import org.springframework.http.HttpStatus;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -16,10 +16,11 @@ import com.backend.backend.persistence.repository.UserRepository;
 public class UserService {
 
     private final UserRepository userRepository;
-    private BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(10);
+    private final PasswordEncoder passwordEncoder;
 
-    public UserService(UserRepository userRepository) {
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public List<UserEntity> getAllUsers() {
@@ -40,6 +41,8 @@ public class UserService {
             newUser.setRole(UserEntity.Role.CUSTOMER);
         }
 
+        newUser.setPassword(passwordEncoder.encode(newUser.getPassword()));
+
         return userRepository.save(newUser);
     }
 
@@ -53,7 +56,9 @@ public class UserService {
         existingUser.setSurname(updatedUser.getSurname());
         existingUser.setUsername(updatedUser.getUsername());
         existingUser.setEmail(updatedUser.getEmail());
-        existingUser.setPassword(hashPassword);
+        if (updatedUser.getPassword() != null && !updatedUser.getPassword().isBlank()) {
+            existingUser.setPassword(passwordEncoder.encode(updatedUser.getPassword()));
+        }
         existingUser.setDateOfBirth(updatedUser.getDateOfBirth());
         existingUser.setAddress(updatedUser.getAddress());
 
