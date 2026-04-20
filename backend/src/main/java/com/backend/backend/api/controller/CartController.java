@@ -3,6 +3,7 @@ package com.backend.backend.api.controller;
 import java.util.UUID;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -28,6 +29,7 @@ public class CartController {
     }
 
     @GetMapping("/user/{userId}")
+    @PreAuthorize("isAuthenticated()")
     public CartDTO getUserCart(@PathVariable UUID userId) {
         return cartService.getUserCart(userId);
     }
@@ -44,6 +46,7 @@ public class CartController {
     }
 
     @PostMapping("/user/{userId}/items")
+    @PreAuthorize("isAuthenticated()")
     public CartDTO addItemToUserCart(@PathVariable UUID userId, @RequestBody CartItemRequestDTO request) {
         return cartService.addItemToUserCart(userId, request.productId(), request.quantity());
     }
@@ -54,11 +57,13 @@ public class CartController {
     }
 
     @PostMapping("/merge")
+    @PreAuthorize("isAuthenticated()")
     public CartDTO mergeGuestCartIntoUserCart(@RequestBody CartMergeRequestDTO request) {
         return cartService.mergeGuestCartIntoUserCart(request.guestToken(), request.userId());
     }
 
     @DeleteMapping("/user/{userId}/items/{productId}")
+    @PreAuthorize("isAuthenticated()")
     public CartDTO removeItemFromUserCart(@PathVariable UUID userId, @PathVariable UUID productId) {
         return cartService.removeItemFromUserCart(userId, productId);
     }
@@ -70,6 +75,7 @@ public class CartController {
 
     @PostMapping("/user/{userId}/checkout")
     @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PreAuthorize("isAuthenticated()")
     public void checkoutUser(@PathVariable UUID userId) {
         cartService.checkoutUserCart(userId);
     }

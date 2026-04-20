@@ -229,7 +229,7 @@ public class CartService {
             itemDTOs.add(itemDTO);
         }
 
-        UUID userId = cart.getUser() != null ? cart.getUser().getId() : null;
+        UUID userId = cart.getUser() != null ? cart.getUser().getID() : null;
         return new CartDTO(
                 cart.getId(),
                 userId,

@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.UUID;
 
 import org.springframework.http.HttpStatus;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -16,10 +16,11 @@ import com.backend.backend.persistence.repository.UserRepository;
 public class UserService {
 
     private final UserRepository userRepository;
-    private BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(10);
+    private final PasswordEncoder passwordEncoder;
 
-    public UserService(UserRepository userRepository) {
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public List<UserEntity> getAllUsers() {
@@ -33,19 +34,21 @@ public class UserService {
 
     public UserEntity createUser(UserEntity newUser) {
         validateUniqueness(newUser, null);
-        String hashPassword = encoder.encode(newUser.getPassword());
+        String hashPassword = passwordEncoder.encode(newUser.getPassword());
         newUser.setPassword(hashPassword);
 
         if (newUser.getRole() == null) {
             newUser.setRole(UserEntity.Role.CUSTOMER);
         }
 
+        newUser.setPassword(passwordEncoder.encode(newUser.getPassword()));
+
         return userRepository.save(newUser);
     }
 
     public UserEntity updateUser(UUID id, UserEntity updatedUser) {
         UserEntity existingUser = getUserById(id);
-        String hashPassword = encoder.encode(updatedUser.getPassword());
+        String hashPassword = passwordEncoder.encode(updatedUser.getPassword());
 
         validateUniqueness(updatedUser, id);
 
@@ -53,7 +56,9 @@ public class UserService {
         existingUser.setSurname(updatedUser.getSurname());
         existingUser.setUsername(updatedUser.getUsername());
         existingUser.setEmail(updatedUser.getEmail());
-        existingUser.setPassword(hashPassword);
+        if (updatedUser.getPassword() != null && !updatedUser.getPassword().isBlank()) {
+            existingUser.setPassword(passwordEncoder.encode(updatedUser.getPassword()));
+        }
         existingUser.setDateOfBirth(updatedUser.getDateOfBirth());
         existingUser.setAddress(updatedUser.getAddress());
 
@@ -74,13 +79,13 @@ public class UserService {
 
     private void validateUniqueness(UserEntity user, UUID currentUserId) {
         userRepository.findByUsername(user.getUsername()).ifPresent(existing -> {
-            if (currentUserId == null || !existing.getId().equals(currentUserId)) {
+            if (currentUserId == null || !existing.getID().equals(currentUserId)) {
                 throw new ResponseStatusException(HttpStatus.CONFLICT, "Username already exists: " + user.getUsername());
             }
         });
 
         userRepository.findByEmail(user.getEmail()).ifPresent(existing -> {
-            if (currentUserId == null || !existing.getId().equals(currentUserId)) {
+            if (currentUserId == null || !existing.getID().equals(currentUserId)) {
                 throw new ResponseStatusException(HttpStatus.CONFLICT, "Email already exists: " + user.getEmail());
             }
         });
@@ -99,7 +104,7 @@ public class UserService {
         String userPassword = user.getPassword();
 
         try {
-            if(encoder.matches(password, userPassword) == true){
+            if(passwordEncoder.matches(password, userPassword) == true){
                 return true;
             }
             throw new Exception("Incorrect email or password!!!!!!!");
