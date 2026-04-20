@@ -37,8 +37,10 @@ public class UserEntity {
     private String email;
     private String password; //TODO: Make secure implementation
     private LocalDate dateOfBirth = null;
-    private String address = null;
     private Role role = Role.CUSTOMER;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<AddressEntity> address = new ArrayList<>();
 
     public UserEntity(String name, String surname, String username, String email, String password, LocalDate dateOfBirth, Role role){
         this.name = name;
@@ -52,6 +54,10 @@ public class UserEntity {
 
     public void addAddress(AddressEntity addressEntity){
         this.address.add(addressEntity);
+    }
+
+    public UUID getID(){
+        return this.id;
     }
 
 }

@@ -34,7 +34,7 @@ public class UserService {
 
     public UserEntity createUser(UserEntity newUser) {
         validateUniqueness(newUser, null);
-        String hashPassword = encoder.encode(newUser.getPassword());
+        String hashPassword = passwordEncoder.encode(newUser.getPassword());
         newUser.setPassword(hashPassword);
 
         if (newUser.getRole() == null) {
@@ -48,7 +48,7 @@ public class UserService {
 
     public UserEntity updateUser(UUID id, UserEntity updatedUser) {
         UserEntity existingUser = getUserById(id);
-        String hashPassword = encoder.encode(updatedUser.getPassword());
+        String hashPassword = passwordEncoder.encode(updatedUser.getPassword());
 
         validateUniqueness(updatedUser, id);
 
@@ -79,13 +79,13 @@ public class UserService {
 
     private void validateUniqueness(UserEntity user, UUID currentUserId) {
         userRepository.findByUsername(user.getUsername()).ifPresent(existing -> {
-            if (currentUserId == null || !existing.getId().equals(currentUserId)) {
+            if (currentUserId == null || !existing.getID().equals(currentUserId)) {
                 throw new ResponseStatusException(HttpStatus.CONFLICT, "Username already exists: " + user.getUsername());
             }
         });
 
         userRepository.findByEmail(user.getEmail()).ifPresent(existing -> {
-            if (currentUserId == null || !existing.getId().equals(currentUserId)) {
+            if (currentUserId == null || !existing.getID().equals(currentUserId)) {
                 throw new ResponseStatusException(HttpStatus.CONFLICT, "Email already exists: " + user.getEmail());
             }
         });
@@ -104,7 +104,7 @@ public class UserService {
         String userPassword = user.getPassword();
 
         try {
-            if(encoder.matches(password, userPassword) == true){
+            if(passwordEncoder.matches(password, userPassword) == true){
                 return true;
             }
             throw new Exception("Incorrect email or password!!!!!!!");

@@ -36,11 +36,11 @@ public class UserRepositoryTest {
         userRepository.deleteAll();    
 
         List<UserEntity> mockUsers = List.of(
-                new UserEntity("John", "Doe", "johndoe88", "john.doe@example.com", "pass1234", LocalDate.of(1988, 5, 12), "123 Main St, NY", UserEntity.Role.CUSTOMER),
-                new UserEntity("Jane", "Smith", "janesmith99", "jane.smith@example.com", "securepass", LocalDate.of(1999, 8, 24), "456 Oak Ave, CA", UserEntity.Role.CUSTOMER),
-                new UserEntity("Alice", "Johnson", "alicej", "alice.j@example.com", "qwerty99", LocalDate.of(1995, 2, 10), "789 Pine Rd, TX", UserEntity.Role.CUSTOMER),
-                new UserEntity("Bob", "Brown", "bobbrown", "bob.b@example.com", "admin123", LocalDate.of(1980, 11, 5), "321 Cedar Ln, FL", UserEntity.Role.CUSTOMER),
-                new UserEntity("Charlie", "Davis", "charlied", "charlie.d@example.com", "mypassword", LocalDate.of(2001, 7, 19), "654 Elm St, WA", UserEntity.Role.CUSTOMER)
+                new UserEntity("John", "Doe", "johndoe88", "john.doe@example.com", "pass1234", LocalDate.of(1988, 5, 12), UserEntity.Role.CUSTOMER),
+                new UserEntity("Jane", "Smith", "janesmith99", "jane.smith@example.com", "securepass", LocalDate.of(1999, 8, 24),  UserEntity.Role.CUSTOMER),
+                new UserEntity("Alice", "Johnson", "alicej", "alice.j@example.com", "qwerty99", LocalDate.of(1995, 2, 10),  UserEntity.Role.CUSTOMER),
+                new UserEntity("Bob", "Brown", "bobbrown", "bob.b@example.com", "admin123", LocalDate.of(1980, 11, 5),  UserEntity.Role.CUSTOMER),
+                new UserEntity("Charlie", "Davis", "charlied", "charlie.d@example.com", "mypassword", LocalDate.of(2001, 7, 19), UserEntity.Role.CUSTOMER)
         );
 
         userRepository.saveAll(mockUsers);

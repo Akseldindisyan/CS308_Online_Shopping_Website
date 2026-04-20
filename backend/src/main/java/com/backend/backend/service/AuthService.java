@@ -70,7 +70,6 @@ public class AuthService {
                 request.email(),
                 passwordEncoder.encode(request.password()),
                 request.dateOfBirth(),
-                request.address(),
                 UserEntity.Role.CUSTOMER);
 
         UserEntity savedUser = userRepository.save(newUser);
