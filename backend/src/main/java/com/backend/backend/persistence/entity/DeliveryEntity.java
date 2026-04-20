@@ -26,7 +26,9 @@ public class DeliveryEntity {
     @JoinColumn(name = "customer_id")
     private UserEntity customer;
 
-    private String address;
+    @ManyToOne
+    @JoinColumn(name = "address_id")
+    private AddressEntity address;
     private boolean completed;
     private String status;
     private Date createdAt;

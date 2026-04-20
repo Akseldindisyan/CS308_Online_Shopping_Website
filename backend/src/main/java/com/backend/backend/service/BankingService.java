@@ -106,7 +106,7 @@ public class BankingService {
         DeliveryEntity delivery = new DeliveryEntity();
         delivery.setInvoice(invoice);
         delivery.setCustomer(user);
-        delivery.setAddress(user.getAddress());
+        delivery.setAddress(user.getAddress().getFirst());
         delivery.setCompleted(false);
         delivery.setStatus("PENDING");
         delivery.setCreatedAt(new Date());

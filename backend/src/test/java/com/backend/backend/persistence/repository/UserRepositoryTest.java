@@ -67,9 +67,10 @@ public class UserRepositoryTest {
     void findByEmail(){
         System.out.println("Find User by their email");
 
-        Optional<UserEntity> result = userRepository.findByEmail("alice.j@example.com");
-        //Check if it returns the user with the correct name
-        assertEquals("alice.j@example.com", result.orElse(null).getEmail());
+        Optional<UserEntity> result = userRepository.findByUsername("alicej");
+        assertTrue(result.isPresent());
+        // Check if it returns the user with the correct name.
+        assertEquals("alicej", result.get().getUsername());
     }
 
 }

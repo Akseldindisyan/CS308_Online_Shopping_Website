@@ -35,12 +35,12 @@ public class UserEntity {
     private String surname;
     private String username;
     private String email;
-    private String password;
-    private LocalDate dateOfBirth;
+    private String password; //TODO: Make secure implementation
+    private LocalDate dateOfBirth = null;
+    private Role role = Role.CUSTOMER;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<AddressEntity> address = new ArrayList<>();
-    private Role role = Role.CUSTOMER;
 
     public UserEntity(String name, String surname, String username, String email, String password, LocalDate dateOfBirth, Role role){
         this.name = name;
@@ -52,58 +52,12 @@ public class UserEntity {
         this.role = role;
     }
 
-    public UUID getID(){
-        return id;
-    }
-
-    public String getName(){
-        return name;
-    }
-
-    public String getSurname(){
-        return surname;
-    }
-
-    public String getUsername() { return username; }
-
-    public String getEmail(){
-        return email;
-    }
-
-    public String getPassword(){
-        return password;
-    }
-
-    public LocalDate getDateOfBirth(){
-        return dateOfBirth;
-    }
-
-    public List<AddressEntity> getAdress(){
-        return address;
-    }
-
-    public void setName(String name){
-        this.name = name;
-    }
-
-    public void setSurname(String surname){
-        this.surname = surname;
-    }
-
-    public void setEmail(String email){
-        this.email = email;
-    }
-
-    public void setPassword(String password){
-        this.password = password;
-    }
-
-    public void setDateOfBirth(LocalDate dateOfBirth){ 
-        this.dateOfBirth = dateOfBirth;
-    }
-
     public void addAddress(AddressEntity addressEntity){
         this.address.add(addressEntity);
+    }
+
+    public UUID getID(){
+        return this.id;
     }
 
 }

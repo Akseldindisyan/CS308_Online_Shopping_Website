@@ -1,9 +1,8 @@
 package com.backend.backend.service;
+import com.backend.backend.api.exception.BadRequestException;
 import com.backend.backend.persistence.entity.ProductEntity;
 import com.backend.backend.persistence.repository.ProductRepository;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -100,17 +99,17 @@ public class ProductServiceTest {
     }
 
     @Test
-    void getAllByProductNameContainingIgnoreCaseOrderByProductNameAscTest() {
+    void searchByProductNameTest() {
         List<ProductEntity> productList = List.of(
                 new ProductEntity("Gaming Laptop", 4.8, 20, "Model G", "SN111", "Fast laptop", 1500.0, "Distributor A", "USA"),
                 new ProductEntity("Work Laptop", 4.2, 50, "Model W", "SN222", "Reliable laptop", 900.0, "Distributor B", "UK")
         );
         Page<ProductEntity> expectedProductList = new PageImpl<>(productList);
 
-        Mockito.when(productRepository.findAllByProductNameContainingIgnoreCaseOrderByProductNameAsc(
+        Mockito.when(productRepository.searchByProductNameLike(
                 Mockito.eq("Laptop"), Mockito.any(Pageable.class))).thenReturn(expectedProductList);
 
-        Page<ProductEntity> result = productService.getAllByProductNameContainingIgnoreCaseOrderByProductNameAsc("Laptop", 0);
+        Page<ProductEntity> result = productService.searchByProductName("Laptop", 0);
 
         List<ProductEntity> expectedContent = expectedProductList.getContent();
         List<ProductEntity> resultContent = result.getContent();
@@ -119,8 +118,13 @@ public class ProductServiceTest {
             assertEquals(expectedContent.get(i).getProductName(), resultContent.get(i).getProductName());
         }
 
-        Mockito.verify(productRepository).findAllByProductNameContainingIgnoreCaseOrderByProductNameAsc(
+        Mockito.verify(productRepository).searchByProductNameLike(
                 "Laptop", PageRequest.of(0, 5));
+    }
+
+    @Test
+    void searchProductCardsBlankQueryThrowsBadRequest() {
+        assertThrows(BadRequestException.class, () -> productService.searchProductCards("   ", 0));
     }
 
     @Test

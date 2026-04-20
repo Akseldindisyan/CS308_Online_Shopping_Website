@@ -88,8 +88,8 @@ public class ProductRepositoryTest {
         System.out.println("Try to find Top 10 products by Id");
 
         Page<ProductEntity> page_result =
-                productRepository.findAllByProductNameContainingIgnoreCaseOrderByProductNameAsc("Apple", p);
-        
+                productRepository.searchByProductNameLike("Apple", p);
+
         List<ProductEntity> result = page_result.getContent();        
 
         //Check whether it is present
@@ -100,7 +100,7 @@ public class ProductRepositoryTest {
     void findTop10ProductNameRegularTest() {
         System.out.println("Try to find Top 10 products by Name");
 
-        Page<ProductEntity> page_result = productRepository.findAllByProductNameContainingIgnoreCaseOrderByProductNameAsc("Laptop", p);
+        Page<ProductEntity> page_result = productRepository.searchByProductNameLike("Laptop", p);
         List<ProductEntity> result = page_result.getContent();
 
         assertEquals(2, result.size());
