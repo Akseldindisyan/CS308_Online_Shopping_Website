@@ -1,10 +1,10 @@
-import { useMemo, useState, type FormEvent } from 'react'
+import { useMemo, useState, useEffect, type FormEvent, use } from 'react'
 import { Link } from 'react-router-dom'
-import { products, type Product } from './product_page/productData'
+import { products } from './product_page/productData'
 import { searchProducts } from './api/products'
 import type { ProductCardDTO } from './data/types'
 import './App.css'
-import { useEffect, useState } from 'react'
+
 type Product = {
   id: number
   name: string
@@ -34,6 +34,8 @@ function AppContent() {
   const [searchResults, setSearchResults] = useState<ProductCardDTO[] | null>(null)
   const [isSearching, setIsSearching] = useState(false)
   const [searchError, setSearchError] = useState('')
+  const [products, setProducts] = useState<Product[]>([])
+  console.log(searchResults)
 
   const productCards = useMemo<(Product | ProductCardDTO)[]>(
     () => (searchResults === null ? products : searchResults),
@@ -42,7 +44,7 @@ function AppContent() {
 
   const handleSearchSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-
+    const url = "http://localhost:8080/api/products/search?page=0&size=5&name="
     const name = searchText.trim()
 
     if (!name) {
@@ -55,15 +57,15 @@ function AppContent() {
     setSearchError('')
 
     try {
-      const data = await searchProducts({ name, page: 0 })
+      const response = await fetch(url + name);
+      const data = await response.json()
       setSearchResults(data)
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Search failed.'
-      setSearchError(message)
-      setSearchResults([])
-    } finally {
-      setIsSearching(false)
+      console.log(data)
     }
+    catch(err) {
+      console.log(err)
+    }
+    
   }
 
   const handleResetSearch = () => {
@@ -74,18 +76,15 @@ function AppContent() {
 
   const searchActive = searchResults !== null
 
-
-function AppContent() {
-  const [products, setProducts] = useState<Product[]>([])
-
   useEffect(() => {
-  fetch('http://localhost:8080/api/products?page=0&size=10')
-    .then(res => res.json())
-    .then(data => setProducts(data))
-}, [])
- console.log(products);
+      fetch('http://localhost:8080/api/products?page=0&size=10')
+      .then(res => res.json())
+      .then(data => setProducts(data))
+    }, [])
+    console.log(products);
 
-  return (
+      
+    return (
     <div className="page">
       <header className="header">
         <div className="header-top">
@@ -146,10 +145,6 @@ function AppContent() {
         </section>
 
         <section className="product-grid" aria-label="Technology products">
-          {productCards.length === 0 ? (
-            <article className="product-card">
-              <h2>No products found</h2>
-              <p className="rating">Try a different keyword.</p>
           {products.map((product) => (
             <article key={product.id} className="product-card">
               <span className="product-category">{product.category}</span>
@@ -165,49 +160,7 @@ function AppContent() {
                 </button>
               </div>
             </article>
-          ) : (
-            productCards.map((product) => {
-              const backendProduct = isBackendProduct(product)
-              const imageSrc = backendProduct
-                ? product.imageUrl ?? 'https://via.placeholder.com/640x400?text=Product'
-                : product.image
-
-              return (
-                <article key={product.id} className="product-card">
-                  <img
-                    src={imageSrc}
-                    alt={product.name}
-                    className="product-image"
-                    loading="lazy"
-                  />
-                  <span className="product-category">
-                    {backendProduct ? `Category #${product.categoryId ?? 'N/A'}` : product.category}
-                  </span>
-                  <h2>{product.name}</h2>
-                  {backendProduct ? (
-                    <p className="rating">Stock: {product.stock} • {product.active ? 'Active' : 'Inactive'}</p>
-                  ) : (
-                    <p className="rating">Rating: {product.rating} / 5</p>
-                  )}
-                  <p className="price">${product.price}</p>
-                  <div className="product-actions">
-                    {backendProduct ? (
-                      <button type="button" className="btn-secondary" disabled>
-                        Details
-                      </button>
-                    ) : (
-                      <Link to={`/product/${product.id}`} className="btn-secondary">
-                        Details
-                      </Link>
-                    )}
-                    <button type="button" className="btn-action">
-                      Add to Cart
-                    </button>
-                  </div>
-                </article>
-              )
-            })
-          )}
+          ))}
         </section>
       </main>
 
@@ -233,6 +186,8 @@ function AppContent() {
       </footer>
     </div>
   )
+
+  
 }
 
 export default AppContent
