@@ -6,13 +6,12 @@ import com.backend.backend.service.ProductService;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import java.util.*;
 
 import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
-
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/api")
@@ -23,17 +22,19 @@ public class ProductController {
     private ProductService productService;
 
     @GetMapping("/products")
-    public Page<ProductCardDTO> getAllProducts(
+    public List<ProductCardDTO> getAllProducts(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "id") String sort) {
-        return productService.getProductCards(page, sort);
+            @RequestParam(defaultValue = "id") String sort, 
+            @RequestParam(defaultValue = "5") int size) {
+        return productService.getProductCards(page, sort, size).getContent();
     }
 
     @GetMapping("/products/search")
-    public Page<ProductCardDTO> searchProducts(
+    public List<ProductCardDTO> searchProducts(
             @RequestParam @NotBlank(message = "Search query cannot be blank") @Size(max = 100, message = "Search query must be at most 100 characters") String name,
-            @RequestParam(defaultValue = "0") int page) {
-        return productService.searchProductCards(name, page);
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size) {
+        return productService.searchProductCards(name, page, size).getContent();
     }
 
     @GetMapping("/products/{id}")

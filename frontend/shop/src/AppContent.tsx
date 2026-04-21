@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import './App.css'
+import { useEffect, useState } from 'react'
 type Product = {
   id: number
   name: string
@@ -16,76 +17,21 @@ const categories = [
   'Headphones',
   'Gaming',
   'Accessories',
+  'Camera',
 ]
 
-const products: Product[] = [
-  {
-    id: 1,
-    name: 'NovaBook Pro 14',
-    category: 'Laptops',
-    price: 1299,
-    rating: 4.8,
-    image: 'https://picsum.photos/seed/laptop-novabook/800/500',
-  },
-  {
-    id: 2,
-    name: 'Pulse X Smartphone',
-    category: 'Phones',
-    price: 899,
-    rating: 4.7,
-    image: 'https://picsum.photos/seed/phone-pulsex/800/500',
-  },
-  {
-    id: 3,
-    name: 'CloudTab Air',
-    category: 'Tablets',
-    price: 549,
-    rating: 4.5,
-    image: 'https://picsum.photos/seed/tablet-cloudtab/800/500',
-  },
-  {
-    id: 4,
-    name: 'EchoPods Max',
-    category: 'Headphones',
-    price: 299,
-    rating: 4.6,
-    image: 'https://picsum.photos/seed/headphones-echopods/800/500',
-  },
-  {
-    id: 5,
-    name: 'Falcon RGB Keyboard',
-    category: 'Gaming',
-    price: 149,
-    rating: 4.4,
-    image: 'https://picsum.photos/seed/gaming-falcon/800/500',
-  },
-  {
-    id: 6,
-    name: 'Orbit Docking Hub',
-    category: 'Accessories',
-    price: 99,
-    rating: 4.3,
-    image: 'https://picsum.photos/seed/accessories-orbit/800/500',
-  },
-  {
-    id: 7,
-    name: 'Vertex Ultra Monitor',
-    category: 'Gaming',
-    price: 479,
-    rating: 4.7,
-    image: 'https://picsum.photos/seed/monitor-vertex/800/500',
-  },
-  {
-    id: 8,
-    name: 'SnapCharge 3-in-1',
-    category: 'Accessories',
-    price: 79,
-    rating: 4.5,
-    image: 'https://picsum.photos/seed/charger-snapcharge/800/500',
-  },
-]
+
 
 function AppContent() {
+  const [products, setProducts] = useState<Product[]>([])
+
+  useEffect(() => {
+  fetch('http://localhost:8080/api/products?page=0&size=10')
+    .then(res => res.json())
+    .then(data => setProducts(data))
+}, [])
+ console.log(products);
+
   return (
     <div className="page">
       <header className="header">
@@ -134,12 +80,6 @@ function AppContent() {
         <section className="product-grid" aria-label="Technology products">
           {products.map((product) => (
             <article key={product.id} className="product-card">
-              <img
-                src={product.image}
-                alt={product.name}
-                className="product-image"
-                loading="lazy"
-              />
               <span className="product-category">{product.category}</span>
               <h2>{product.name}</h2>
               <p className="rating">Rating: {product.rating} / 5</p>
