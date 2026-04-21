@@ -94,7 +94,7 @@ body {
   gap: 8px;
 }
 
-.header-actions .btn-secondary {
+.header-actions .btn-secondary  {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -113,6 +113,7 @@ body {
   cursor: pointer;
   transition: transform 0.2s ease, border-color 0.2s ease, background-color 0.2s ease,
     box-shadow 0.2s ease;
+  text-decoration: none;
 }
 
 .btn-secondary {
@@ -159,6 +160,11 @@ body {
   outline-offset: 2px;
 }
 
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.72;
+}
+
 .category-nav {
   width: min(1200px, 94vw);
   margin: 0 auto;
@@ -195,6 +201,19 @@ body {
   margin: 10px 0 0;
   color: var(--text-muted);
   max-width: 720px;
+}
+
+.search-info,
+.search-error {
+  margin: 10px 0 0;
+}
+
+.search-info {
+  color: #bfdbfe;
+}
+
+.search-error {
+  color: #fca5a5;
 }
 
 .product-grid {
@@ -252,6 +271,15 @@ body {
   margin-top: auto;
   display: flex;
   gap: 8px;
+}
+
+.product-actions .btn-secondary,
+.product-actions .btn-action {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
 }
 
 .footer {

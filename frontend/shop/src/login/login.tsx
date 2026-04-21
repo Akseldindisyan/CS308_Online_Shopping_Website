@@ -1,15 +1,27 @@
-import React, { useState } from "react";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import "./style.css";
 import SignInForm from "./SignIn.tsx";
 import SignUpForm from "./SignUp.tsx";
 
-export default function Login() {
-  const [type, setType] = useState("signIn");
-  const handleOnClick = (text:any) => {
-    if (text !== type) {
-      setType(text);
-      return;
+type LoginProps = {
+  initialType?: "signIn" | "signUp";
+};
+
+export default function Login({ initialType = "signIn" }: LoginProps) {
+  const navigate = useNavigate();
+  const [type, setType] = useState<"signIn" | "signUp">(initialType);
+
+  useEffect(() => {
+    setType(initialType);
+  }, [initialType]);
+
+  const handleOnClick = (nextType: "signIn" | "signUp") => {
+    if (nextType !== type) {
+      setType(nextType);
     }
+
+    navigate(nextType === "signUp" ? "/register" : "/login");
   };
   const containerClass =
     "container " + (type === "signUp" ? "right-panel-active" : "");
