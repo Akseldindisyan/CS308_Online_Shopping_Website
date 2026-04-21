@@ -31,3 +31,6 @@ replay_pid*
 # agent related files
 CLAUDE.md
 .claude
+.DS_Store
+package-lock.json
+node_modules/
