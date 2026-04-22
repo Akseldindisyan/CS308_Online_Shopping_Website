@@ -4,9 +4,11 @@ import java.util.List;
 import java.util.UUID;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.backend.backend.persistence.entity.AddressEntity;
 import com.backend.backend.persistence.entity.UserEntity;
 import com.backend.backend.persistence.repository.UserRepository;
 
@@ -14,9 +16,11 @@ import com.backend.backend.persistence.repository.UserRepository;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    public UserService(UserRepository userRepository) {
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public List<UserEntity> getAllUsers() {
@@ -30,16 +34,21 @@ public class UserService {
 
     public UserEntity createUser(UserEntity newUser) {
         validateUniqueness(newUser, null);
+        String hashPassword = passwordEncoder.encode(newUser.getPassword());
+        newUser.setPassword(hashPassword);
 
         if (newUser.getRole() == null) {
             newUser.setRole(UserEntity.Role.CUSTOMER);
         }
+
+        newUser.setPassword(passwordEncoder.encode(newUser.getPassword()));
 
         return userRepository.save(newUser);
     }
 
     public UserEntity updateUser(UUID id, UserEntity updatedUser) {
         UserEntity existingUser = getUserById(id);
+        String hashPassword = passwordEncoder.encode(updatedUser.getPassword());
 
         validateUniqueness(updatedUser, id);
 
@@ -47,7 +56,9 @@ public class UserService {
         existingUser.setSurname(updatedUser.getSurname());
         existingUser.setUsername(updatedUser.getUsername());
         existingUser.setEmail(updatedUser.getEmail());
-        existingUser.setPassword(updatedUser.getPassword());
+        if (updatedUser.getPassword() != null && !updatedUser.getPassword().isBlank()) {
+            existingUser.setPassword(passwordEncoder.encode(updatedUser.getPassword()));
+        }
         existingUser.setDateOfBirth(updatedUser.getDateOfBirth());
         existingUser.setAddress(updatedUser.getAddress());
 
@@ -78,6 +89,38 @@ public class UserService {
                 throw new ResponseStatusException(HttpStatus.CONFLICT, "Email already exists: " + user.getEmail());
             }
         });
+    }
+
+    public Boolean authenticate(String email, String password){
+        UserEntity user = null;
+        try {
+            user = userRepository.findByEmail(email).orElseThrow(() -> new Exception("Incorrect email or password!"));
+        }
+        catch(Exception e){
+            System.out.println("Error: " + e.getMessage());
+            return false;
+        }
+
+        String userPassword = user.getPassword();
+
+        try {
+            if(passwordEncoder.matches(password, userPassword) == true){
+                return true;
+            }
+            throw new Exception("Incorrect email or password!!!!!!!");
+        }
+        catch(Exception e){
+            System.out.println("Error: " + e.getMessage());
+            return false;
+        }
+
+    }
+
+    public UserEntity addAddress(UserEntity user, AddressEntity address){
+        address.setUser(user);
+        user.addAddress(address);
+
+        return userRepository.save(user);
     }
 }
 
