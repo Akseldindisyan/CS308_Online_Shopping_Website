@@ -41,14 +41,14 @@ public class ReviewEntity {
     //Should this exist
     private String comment;
 
-    private boolean approved_by_product_manager;
+    private boolean approvedByProductManager;
 
-    private Date product_buy_date;
+    private Date productBuyDate;
 
-    private int found_this_helpful;
+    private int foundThisHelpful;
 
-    private Date created_at;
+    private Date createdAt;
 
-    private Date approved_at;
+    private Date approvedAt;
 
 }
