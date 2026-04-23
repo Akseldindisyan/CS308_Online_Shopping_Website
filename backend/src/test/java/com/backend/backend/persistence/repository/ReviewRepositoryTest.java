@@ -80,6 +80,30 @@ public class ReviewRepositoryTest {
     void cleanUpDatabase() { reviewRepository.deleteAll(); }
 
     @Test
+    void findByUserTest() {
+        //Get the User
+        Optional<UserEntity> userQuery= userRepository.findByUsername("johndoe88");
+        UserEntity user = userQuery.get();
+
+        List<ReviewEntity> result = reviewRepository.findByUser(user);
+        assertEquals(1, result.size());
+
+        assertEquals(user, result.getFirst().getUser());
+
+    }
+
+    @Test
+    void findByProductTest() {
+        //Get the product
+        ProductEntity product = productRepository.findByProductName("Smartphone");
+
+        List<ReviewEntity> result = reviewRepository.findByProduct(product);
+        assertEquals(1, result.size());
+
+        assertEquals(product, result.getFirst().getProduct());
+    }
+
+    @Test
     void findByRatingTest() {
         List<ReviewEntity> result = reviewRepository.findByRating(9);
 

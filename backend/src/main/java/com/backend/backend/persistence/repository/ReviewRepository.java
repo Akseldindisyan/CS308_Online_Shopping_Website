@@ -15,6 +15,13 @@ import com.backend.backend.persistence.entity.UserEntity;
 
 @Repository
 public interface ReviewRepository extends JpaRepository<ReviewEntity, UUID> {
+
+    //Product
+    List<ReviewEntity> findByUser(UserEntity user);
+
+    //User
+    List<ReviewEntity> findByProduct(ProductEntity product);
+
     //Rating
     List<ReviewEntity> findByRating(int rating);
 
