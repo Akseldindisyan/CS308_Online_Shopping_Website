@@ -5,12 +5,7 @@ import java.time.*;
 import java.util.ArrayList;
 import java.util.List;
 
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
+import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -41,6 +36,9 @@ public class UserEntity {
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<AddressEntity> address = new ArrayList<>();
+
+    @Enumerated(EnumType.STRING)
+    private Role role = Role.CUSTOMER;
 
     public UserEntity(String name, String surname, String username, String email, String password, LocalDate dateOfBirth, Role role){
         this.name = name;

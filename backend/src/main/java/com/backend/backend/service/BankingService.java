@@ -1,18 +1,15 @@
 package com.backend.backend.service;
 
-import com.backend.backend.api.dto.CartDTO;
-import com.backend.backend.api.dto.CartItemDTO;
-import com.backend.backend.api.dto.InvoiceDTO;
-import com.backend.backend.api.dto.InvoiceItemDTO;
+import com.backend.backend.api.dto.*;
 import com.backend.backend.persistence.entity.*;
 import com.backend.backend.persistence.repository.DeliveryRepository;
 import com.backend.backend.persistence.repository.InvoiceRepository;
 import com.backend.backend.persistence.repository.ProductRepository;
 import com.backend.backend.persistence.repository.UserRepository;
+import jakarta.mail.MessagingException;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -23,25 +20,29 @@ public class BankingService {
     private final InvoiceRepository invoiceRepository;
     private final UserRepository userRepository;
     private final DeliveryRepository deliveryRepository;
+    private final InvoiceEmailService invoiceEmailService;
 
     public BankingService(ProductRepository productRepository,
                           InvoiceRepository invoiceRepository,
                           UserRepository userRepository,
-                          DeliveryRepository deliveryRepository) {
+                          DeliveryRepository deliveryRepository,
+                          InvoiceEmailService invoiceEmailService) {
         this.productRepository = productRepository;
         this.invoiceRepository = invoiceRepository;
         this.userRepository = userRepository;
         this.deliveryRepository = deliveryRepository;
+        this.invoiceEmailService = invoiceEmailService;
     }
 
 
 
     @Transactional
-    public InvoiceDTO tryCheckout(CartDTO cart) {
+    public InvoiceDTO tryCheckout(CartDTO cart) throws MessagingException {
         UserEntity user = findUser(cart.userId());
         List<InvoiceItemEntity> invoiceItems = processItems(cart.items());
         InvoiceEntity invoice = createAndSaveInvoice(user, invoiceItems, cart.totalPrice());
         createDelivery(invoice, user, cart);
+        invoiceEmailService.sendInvoiceEmail(invoice);
         return toDTO(invoice, cart.userId());
     }
 
