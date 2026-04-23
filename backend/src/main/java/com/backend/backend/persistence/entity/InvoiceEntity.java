@@ -12,20 +12,25 @@ import java.util.UUID;
 @Setter
 @NoArgsConstructor
 @Entity
+@Table(name = "invoice")
 public class InvoiceEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(name = "invoice_id")
     private UUID id;
 
     @ManyToOne
-    @JoinColumn(name = "customer_id")
+    @JoinColumn(name = "user_id") // Database column is user_id
     private UserEntity customer;
 
     @OneToMany(cascade = CascadeType.ALL)
     @JoinColumn(name = "invoice_id")
     private List<InvoiceItemEntity> items;
 
+    @Column(name = "totalamount")
     private double totalPrice;
+
+    @Column(name = "created_at")
     private Date date;
 }

@@ -57,7 +57,7 @@ public class UserServiceTest {
                 LocalDate.of(1995, 1, 1),
                 UserEntity.Role.SALES_MANAGER));
 
-        assertTrue(userRepository.findById(created.getID()).isPresent());
+        assertTrue(userRepository.findById(created.getId()).isPresent());
         assertEquals("john", created.getUsername());
     }
 
@@ -74,7 +74,7 @@ public class UserServiceTest {
                 LocalDate.of(1998, 4, 15),
                 UserEntity.Role.PRODUCT_MANAGER);
 
-        UserEntity updated = userService.updateUser(existing.getID(), updatePayload);
+        UserEntity updated = userService.updateUser(existing.getId(), updatePayload);
 
         assertEquals("Janet", updated.getName());
         assertEquals("janet", updated.getUsername());
@@ -85,9 +85,9 @@ public class UserServiceTest {
     void deleteUser_removesUser() {
         UserEntity existing = userRepository.findByUsername("jane").orElseThrow();
 
-        userService.deleteUser(existing.getID());
+        userService.deleteUser(existing.getId());
 
-        assertTrue(userRepository.findById(existing.getID()).isEmpty());
+        assertTrue(userRepository.findById(existing.getId()).isEmpty());
     }
 
     @Test

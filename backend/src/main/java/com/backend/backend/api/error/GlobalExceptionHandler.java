@@ -6,11 +6,13 @@ import java.util.List;
 
 import jakarta.servlet.http.HttpServletRequest;
 
+import jakarta.validation.ConstraintViolationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.mail.MailException;
 import org.springframework.validation.BindException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -98,6 +100,37 @@ public class GlobalExceptionHandler {
                 fieldErrors);
 
         return ResponseEntity.status(status).body(body);
+    }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<ApiErrorResponse> handleConstraintViolation(
+            ConstraintViolationException ex, HttpServletRequest request) {
+
+        List<ApiFieldError> fieldErrors = ex.getConstraintViolations()
+                .stream()
+                .map(v -> new ApiFieldError(
+                        v.getPropertyPath().toString(),
+                        v.getMessage()))
+                .toList();
+
+        return buildResponse(
+                HttpStatus.BAD_REQUEST,
+                "VALIDATION_FAILED",
+                "Request validation failed",
+                request.getRequestURI(),
+                fieldErrors);
+    }
+
+    @ExceptionHandler(MailException.class)
+    public ResponseEntity<ApiErrorResponse> handleMailException(MailException ex, HttpServletRequest request) {
+        logger.error("Mail sending failed", ex);
+        return buildResponse(
+                HttpStatus.INTERNAL_SERVER_ERROR,
+                "EMAIL_SEND_FAILED",
+                "E-posta gönderilemedi",
+                request.getRequestURI(),
+                Collections.emptyList()
+        );
     }
 }
 
