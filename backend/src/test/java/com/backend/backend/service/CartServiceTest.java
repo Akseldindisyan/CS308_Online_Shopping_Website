@@ -32,7 +32,6 @@ import com.backend.backend.persistence.repository.CartItemRepository;
 import com.backend.backend.persistence.repository.CartRepository;
 import com.backend.backend.persistence.repository.ProductRepository;
 import com.backend.backend.persistence.repository.UserRepository;
-import com.backend.backend.service.UserService;
 
 @ExtendWith(MockitoExtension.class)
 public class CartServiceTest {
@@ -63,7 +62,7 @@ public class CartServiceTest {
         guestCart = new CartEntity();
         guestCart.setGuestToken("guest-token");
 
-        product = new ProductEntity("Mouse", 4.2, 10, "M", "SN", "Wireless", 20.0, "D", "TR", "Accessories", "");
+        product = new ProductEntity("Mouse", 4.2, 10, "M", "SN", "Wireless", 20.0, "D", "TR");
         setField(product, "id", UUID.randomUUID());
     }
 

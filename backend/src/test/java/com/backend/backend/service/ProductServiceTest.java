@@ -34,8 +34,8 @@ public class ProductServiceTest {
     @Test
     void getAllByIdAscTest(){
         List<ProductEntity> productList = List.of(
-                new ProductEntity("Laptop A", 4.5, 50, "Model X", "SN12345", "High performance laptop", 1200.0, "Distributor A", "USA", "Accessories", ""),
-                new ProductEntity("Smartphone", 4.7, 100, "Model Y", "SN54321", "Latest smartphone", 800.0, "Distributor B", "China", "Accessories", "")
+                new ProductEntity("Laptop A", 4.5, 50, "Model X", "SN12345", "High performance laptop", 1200.0, "Distributor A", "USA"),
+                new ProductEntity("Smartphone", 4.7, 100, "Model Y", "SN54321", "Latest smartphone", 800.0, "Distributor B", "China")
         );
         Page<ProductEntity> expectedProductList = new PageImpl<>(productList);
 
@@ -59,8 +59,8 @@ public class ProductServiceTest {
     @Test
     void getAllOrderByPriceTest(){
         List<ProductEntity> productList = List.of(
-                new ProductEntity("Smartphone", 4.7, 100, "Model Y", "SN54321", "Latest smartphone", 800.0, "Distributor B", "China", "Accessories", ""),
-                new ProductEntity("Laptop A", 4.5, 50, "Model X", "SN12345", "High performance laptop", 1200.0, "Distributor A", "USA", "Accessories", "")
+                new ProductEntity("Smartphone", 4.7, 100, "Model Y", "SN54321", "Latest smartphone", 800.0, "Distributor B", "China"),
+                new ProductEntity("Laptop A", 4.5, 50, "Model X", "SN12345", "High performance laptop", 1200.0, "Distributor A", "USA")
         );
         Page<ProductEntity> expectedProductList = new PageImpl<>(productList);
 
@@ -81,8 +81,8 @@ public class ProductServiceTest {
     @Test
     void getAllOrderByRatingAscTest() {
         List<ProductEntity> productList = List.of(
-                new ProductEntity("Budget Phone", 3.5, 100, "Model Z", "SN999", "Basic smartphone", 300.0, "Distributor C", "China", "Accessories", ""),
-                new ProductEntity("Premium Laptop", 4.9, 50, "Model X", "SN123", "High performance", 2000.0, "Distributor A", "USA", "Accessories", "")
+                new ProductEntity("Budget Phone", 3.5, 100, "Model Z", "SN999", "Basic smartphone", 300.0, "Distributor C", "China"),
+                new ProductEntity("Premium Laptop", 4.9, 50, "Model X", "SN123", "High performance", 2000.0, "Distributor A", "USA")
         );
         Page<ProductEntity> expectedProductList = new PageImpl<>(productList);
 
@@ -103,8 +103,8 @@ public class ProductServiceTest {
     @Test
     void searchByProductNameTest() {
         List<ProductEntity> productList = List.of(
-                new ProductEntity("Gaming Laptop", 4.8, 20, "Model G", "SN111", "Fast laptop", 1500.0, "Distributor A", "USA", "Accessories", ""),
-                new ProductEntity("Work Laptop", 4.2, 50, "Model W", "SN222", "Reliable laptop", 900.0, "Distributor B", "UK", "Accessories", "")
+                new ProductEntity("Gaming Laptop", 4.8, 20, "Model G", "SN111", "Fast laptop", 1500.0, "Distributor A", "USA"),
+                new ProductEntity("Work Laptop", 4.2, 50, "Model W", "SN222", "Reliable laptop", 900.0, "Distributor B", "UK")
         );
         Page<ProductEntity> expectedProductList = new PageImpl<>(productList);
 
@@ -131,7 +131,7 @@ public class ProductServiceTest {
 
     @Test
     void UpdateStockTest(){
-        ProductEntity existingProduct = new ProductEntity("Keyboard", 5.0, 20, "Model K", "SN111", "Desc", 50.0, "Dist", "USA", "Accessories", "");
+        ProductEntity existingProduct = new ProductEntity("Keyboard", 5.0, 20, "Model K", "SN111", "Desc", 50.0, "Dist", "USA");
         Mockito.when(productRepository.findByProductName("Keyboard")).thenReturn(existingProduct);
 
         productService.UpdateStock("Keyboard", 0);
