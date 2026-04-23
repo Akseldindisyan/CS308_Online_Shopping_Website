@@ -10,7 +10,6 @@ CREATE TABLE IF NOT EXISTS "User" (
 CREATE TABLE IF NOT EXISTS "Product" (
     Product_ID UUID PRIMARY KEY,
     Product_Name VARCHAR(128) NOT NULL,
-    Product_Image BYTEA,
     Rating DOUBLE PRECISION,
     Stock INT DEFAULT 0,
     Model VARCHAR(128),
@@ -18,7 +17,8 @@ CREATE TABLE IF NOT EXISTS "Product" (
     Description TEXT,
     Price DOUBLE PRECISION NOT NULL,
     Distributor_Info VARCHAR(256),
-    Country_of_Origin VARCHAR(64)
+    Country_of_Origin VARCHAR(64),
+    image_url VARCHAR(1055)
 );
 
 CREATE TABLE "Order" (
