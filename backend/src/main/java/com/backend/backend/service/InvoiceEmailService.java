@@ -1,6 +1,6 @@
 package com.backend.backend.service;
 
-import com.backend.backend.exception.EmailException;
+import com.backend.backend.api.exception.EmailException;
 import com.backend.backend.persistence.entity.InvoiceEntity;
 import com.backend.backend.persistence.entity.InvoiceItemEntity;
 import jakarta.mail.MessagingException;
@@ -29,7 +29,7 @@ public class InvoiceEmailService {
             helper.setText(buildHtml(invoice), true);
             mailSender.send(message);
         } catch (MessagingException ex) {
-            throw new EmailException("Fatura e-postası gönderilemedi", ex);
+            throw new EmailException("Fatura e-postası gönderilemedi");
         }
     }
 
