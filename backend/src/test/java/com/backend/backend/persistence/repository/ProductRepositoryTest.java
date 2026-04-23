@@ -17,8 +17,11 @@ import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
+
 
 @DataJpaTest
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 public class ProductRepositoryTest {
 
     Pageable p = PageRequest.of(0, 5);
@@ -29,16 +32,16 @@ public class ProductRepositoryTest {
     //Funtions to automate testing
     @BeforeEach
     void initializeMockupDatabase() {
-        productRepository.save(new ProductEntity("Laptop A", 4.5, 50, "Model X", "SN12345", "High performance laptop", 1200.0, "Distributor A", "USA"));
-        productRepository.save(new ProductEntity("Smartphone", 4.7, 100, "Model Y", "SN54321", "Latest smartphone", 800.0, "Distributor B", "China"));
-        productRepository.save(new ProductEntity("Headphones", 4.2, 70, "Model H", "SN67890", "Noise-cancelling headphones", 200.0, "Distributor C", "Germany"));
-        productRepository.save(new ProductEntity("Monitor", 4.6, 30, "Model M", "SN98765", "4K UHD monitor", 350.0, "Distributor D", "Japan"));
-        productRepository.save(new ProductEntity("Keyboard", 4.1, 120, "Model K", "SN11223", "Mechanical keyboard", 100.0, "Distributor E", "USA"));
-        productRepository.save(new ProductEntity("Mouse", 4.3, 150, "Model S", "SN44556", "Wireless mouse", 50.0, "Distributor F", "China"));
-        productRepository.save(new ProductEntity("Printer", 4.0, 25, "Model P", "SN77889", "All-in-one printer", 250.0, "Distributor G", "Japan"));
-        productRepository.save(new ProductEntity("Laptop B", 4.4, 60, "Model T", "SN99001", "10-inch tablet", 400.0, "Distributor H", "USA"));
-        productRepository.save(new ProductEntity("Camera", 4.5, 40, "Model C", "SN22334", "Digital SLR camera", 900.0, "Distributor I", "Germany"));
-        productRepository.save(new ProductEntity("Smartwatch", 4.2, 80, "Model W", "SN55667", "Fitness smartwatch", 150.0, "Distributor J", "China"));
+        productRepository.save(new ProductEntity("Laptop A", 4.5, 50, "Model X", "SN12345", "High performance laptop", 1200.0, "Distributor A", "USA", "Category", ""));
+        productRepository.save(new ProductEntity("Smartphone", 4.7, 100, "Model Y", "SN54321", "Latest smartphone", 800.0, "Distributor B", "China", "Category", ""));
+        productRepository.save(new ProductEntity("Headphones", 4.2, 70, "Model H", "SN67890", "Noise-cancelling headphones", 200.0, "Distributor C", "Germany", "Category", ""));
+        productRepository.save(new ProductEntity("Monitor", 4.6, 30, "Model M", "SN98765", "4K UHD monitor", 350.0, "Distributor D", "Japan", "Category", ""));
+        productRepository.save(new ProductEntity("Keyboard", 4.1, 120, "Model K", "SN11223", "Mechanical keyboard", 100.0, "Distributor E", "USA", "Category", ""));
+        productRepository.save(new ProductEntity("Mouse", 4.3, 150, "Model S", "SN44556", "Wireless mouse", 50.0, "Distributor F", "China", "Category", ""));
+        productRepository.save(new ProductEntity("Printer", 4.0, 25, "Model P", "SN77889", "All-in-one printer", 250.0, "Distributor G", "Japan", "Category", ""));
+        productRepository.save(new ProductEntity("Laptop B", 4.4, 60, "Model T", "SN99001", "10-inch tablet", 400.0, "Distributor H", "USA", "Category", ""));
+        productRepository.save(new ProductEntity("Camera", 4.5, 40, "Model C", "SN22334", "Digital SLR camera", 900.0, "Distributor I", "Germany", "Category", ""));
+        productRepository.save(new ProductEntity("Smartwatch", 4.2, 80, "Model W", "SN55667", "Fitness smartwatch", 150.0, "Distributor J", "China", "Category", ""));
     }
 
     //Cleans the database
@@ -53,7 +56,7 @@ public class ProductRepositoryTest {
     void findUserByIdNotAvailableTest(){
         System.out.println("Try to find a product with non existing id");
         //Create a product and save it
-        ProductEntity productEntity = new ProductEntity("A", 5.0, 10, "A", "A", "A", 5.0, "A", "A");
+        ProductEntity productEntity = new ProductEntity("A", 5.0, 10, "A", "A", "A", 5.0, "A", "A", "Category", "");
         productRepository.save(productEntity);
 
         //Extract its id for search in the database
@@ -68,7 +71,7 @@ public class ProductRepositoryTest {
     void findUserByIdRegularTest(){
         System.out.println("Try to find a produc with id");
         //Create a product and save it
-        ProductEntity productEntity = new ProductEntity("A", 5.0, 10, "A", "A", "A", 5.0, "A", "A");
+        ProductEntity productEntity = new ProductEntity("A", 5.0, 10, "A", "A", "A", 5.0, "A", "A", "Category", "");
         productRepository.save(productEntity);
 
         //Extract its id for search in the database

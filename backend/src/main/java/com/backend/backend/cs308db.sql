@@ -1,6 +1,4 @@
--- ============================================================
---  DDL: CREATE TABLES
--- ============================================================
+
 
 -- 1. user_entity
 CREATE TABLE IF NOT EXISTS user_entity (
@@ -52,7 +50,9 @@ CREATE TABLE IF NOT EXISTS product (
     description       TEXT,
     price             DOUBLE PRECISION NOT NULL,
     distributor_info  VARCHAR(256),
-    country_of_origin VARCHAR(64)
+    country_of_origin VARCHAR(64),
+    category          VARCHAR(64),
+    image_url         VARCHAR(1055)
 );
 
 -- 6. cart_entity
@@ -157,19 +157,19 @@ INSERT INTO address_entity (id, city, street, postal_code, country, user_id) VAL
   ('22000000-0000-0000-0000-000000000003', 'İzmir',    'Karşıyaka Mah. 5. Cad', '35600', 'Türkiye', '11000000-0000-0000-0000-000000000003');
 
 -- ── Products ─────────────────────────────────────────────────
-INSERT INTO product (product_id, product_name, rating, stock, model, serial_number, description, price, distributor_info, country_of_origin) VALUES
-  ('f9c5c63d-6bd1-49f2-a3f4-391e080b27a1', 'Laptop A',        4.5,  50, 'Model X',     'SN12345',    'High performance laptop',         1200.0, 'Distributor A', 'USA'),
-  ('6ad3ef9e-a5b8-4d12-a864-7f12dbc92bbf', 'Smartphone',      4.7, 100, 'Model Y',     'SN54321',    'Latest smartphone',                800.0, 'Distributor B', 'China'),
-  ('bff7591d-de8a-4d22-86f2-0a230b8ba15d', 'Headphones',      4.2,  70, 'Model H',     'SN67890',    'Noise-cancelling headphones',       200.0, 'Distributor C', 'Germany'),
-  ('a83a056d-0a25-4265-ab27-cc3100f0858e', 'Monitor',         4.6,  30, 'Model M',     'SN98765',    '4K UHD monitor',                   350.0, 'Distributor D', 'Japan'),
-  ('44dbfe88-2803-406b-8aa2-a4effe3ee133', 'Keyboard',        4.1, 120, 'Model K',     'SN11223',    'Mechanical keyboard',               100.0, 'Distributor E', 'USA'),
-  ('565a75e8-1760-45fb-bb59-ae5bed7bf09d', 'Mouse',           4.3, 150, 'Model S',     'SN44556',    'Wireless mouse',                     50.0, 'Distributor F', 'China'),
-  ('4b444b99-8f97-4463-aaff-0794d686b6d7', 'Printer',         4.0,  25, 'Model P',     'SN77889',    'All-in-one printer',                250.0, 'Distributor G', 'Japan'),
-  ('b6ead94d-7ada-4379-b575-4b1ae9104582', 'Laptop B',        4.4,  60, 'Model T',     'SN99001',    '10-inch tablet',                   400.0, 'Distributor H', 'USA'),
-  ('2eb5086d-59db-4546-ab2f-fcf6b5b2a639', 'Camera',          4.5,  40, 'Model C',     'SN22334',    'Digital SLR camera',                900.0, 'Distributor I', 'Germany'),
-  ('3bdda48e-66f2-489e-bf4f-5183fd0b7938', 'Smartwatch',      4.2,  80, 'Model W',     'SN55667',    'Fitness smartwatch',                150.0, 'Distributor J', 'China'),
-  ('33000000-0000-0000-0000-000000000003', 'Sony WH-1000XM5', 4.7,  80, 'WH1000XM5/B','SN-003-SWH', 'Kablosuz ANC kulaklık, 30 saat',  8499.0, 'Sony Türkiye',  'Japonya'),
-  ('33000000-0000-0000-0000-000000000005', 'Dell U2723D',      4.5,  35, 'U2723D',      'SN-005-DEL', '27" 4K IPS, USB-C 90W',          18750.0, 'Dell Türkiye',  'Çin');
+INSERT INTO public.product (product_id, country_of_origin, description, distributor_info, model, price, product_name, rating, serial_number, stock, category, image_url) VALUES
+  ('f9c5c63d-6bd1-49f2-a3f4-391e080b27a1', 'USA',     'High performance laptop',    'Distributor A', 'Model X', 1200, 'Laptop A',   3.2, 'SN12345', 50,  'Laptop',      'https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8bGFwdG9wfGVufDB8fDB8fHww'),
+  ('a83a056d-0a25-4265-ab27-cc3100f0858e', 'Japan',   '4K UHD monitor',             'Distributor D', 'Model M', 350,  'Monitor',    4.6, 'SN98765', 30,  'Accessories', 'https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8bW9uaXRvcnxlbnwwfHwwfHx8MA%3D%3D'),
+  ('44dbfe88-2803-406b-8aa2-a4effe3ee133', 'USA',     'Mechanical keyboard',        'Distributor E', 'Model K', 100,  'Keyboard',   4.1, 'SN11223', 120, 'Accessories', 'https://images.unsplash.com/photo-1618384887929-16ec33fab9ef?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8a2V5Ym9hcmR8ZW58MHx8MHx8fDA%3D'),
+  ('565a75e8-1760-45fb-bb59-ae5bed7bf09d', 'China',   'Wireless mouse',             'Distributor F', 'Model S', 50,   'Mouse',      4.3, 'SN44556', 150, 'Accessories', 'https://images.unsplash.com/photo-1615663245857-ac93bb7c39e7?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8bW91c2V8ZW58MHx8MHx8fDA%3D'),
+  ('4b444b99-8f97-4463-aaff-0794d686b6d7', 'Japan',   'All-in-one printer',         'Distributor G', 'Model P', 250,  'Printer',    4.0, 'SN77889', 25,  'Printer',     'https://images.unsplash.com/photo-1650094980833-7373de26feb6?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OHx8cHJpbnRlcnxlbnwwfHwwfHx8MA%3D%3D'),
+  ('b6ead94d-7ada-4379-b575-4b1ae9104582', 'USA',     '10-inch tablet',             'Distributor H', 'Model T', 400,  'Laptop B',   4.4, 'SN99001', 60,  'Tablets',     'https://images.unsplash.com/photo-1541807084-5c52b6b3adef?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Nnx8bGFwdG9wfGVufDB8fDB8fHww'),
+  ('2eb5086d-59db-4546-ab2f-fcf6b5b2a639', 'Germany', 'Digital SLR camera',         'Distributor I', 'Model C', 900,  'Camera',     4.5, 'SN22334', 40,  'Camera',      'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8Y2FtZXJhfGVufDB8fDB8fHww'),
+  ('3bdda48e-66f2-489e-bf4f-5183fd0b7938', 'China',   'Fitness smartwatch',         'Distributor J', 'Model W', 150,  'Smartwatch', 4.2, 'SN55667', 80,  'Accessories', 'https://images.unsplash.com/photo-1660844817855-3ecc7ef21f12?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NHx8c21hcnR3YXRjaHxlbnwwfHwwfHx8MA%3D%3D'),
+  ('6ad3ef9e-a5b8-4d12-a864-7f12dbc92bbf', 'China',   'Latest smartphone',          'Distributor B', 'Model Y', 800,  'Smartphone', 4.7, 'SN54321', 100, 'Phone',       'https://images.unsplash.com/photo-1580910051074-3eb694886505?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NHx8cGhvbmV8ZW58MHx8MHx8fDA%3D'),
+  ('bff7591d-de8a-4d22-86f2-0a230b8ba15d', 'Germany', 'Noise-cancelling headphones','Distributor C', 'Model H', 200,  'Headphones', 4.2, 'SN67890', 70,  'Headphone',   'https://images.unsplash.com/photo-1618366712010-f4ae9c647dcb?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8aGVhZHBob25lfGVufDB8fDB8fHww'),
+  ('33000000-0000-0000-0000-000000000003', 'Japonya', 'Kablosuz ANC kulaklık, 30 saat', 'Sony Türkiye', 'WH1000XM5/B', 8499,  'Sony WH-1000XM5', 4.7, 'SN-003-SWH', 80, 'Headphone',   NULL),
+  ('33000000-0000-0000-0000-000000000005', 'Çin',     '27" 4K IPS, USB-C 90W',      'Dell Türkiye',  'U2723D',  18750, 'Dell U2723D', 4.5, 'SN-005-DEL', 35, 'Accessories', NULL);
 
 -- ── Carts ────────────────────────────────────────────────────
 INSERT INTO cart_entity (id, user_id, guest_token, checked_out) VALUES
