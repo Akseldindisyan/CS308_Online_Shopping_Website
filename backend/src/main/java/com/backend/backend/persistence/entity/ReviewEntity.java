@@ -9,10 +9,12 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.UUID;
 
@@ -38,17 +40,28 @@ public class ReviewEntity {
     @Max(10)
     private int rating;
 
-    //Should this exist
     private String comment;
 
     private boolean approvedByProductManager;
 
-    private Date productBuyDate;
+    private LocalDate productBuyDate;
 
     private int foundThisHelpful;
 
-    private Date createdAt;
+    private LocalDate createdAt;
 
-    private Date approvedAt;
+    private LocalDate approvedAt;
 
+    public ReviewEntity(ProductEntity product, UserEntity user, int rating, String comment, boolean approvedByProductManager, LocalDate productBuyDate, int foundThisHelpful, LocalDate createdAt, LocalDate approvedAt) {
+        this.product = product;
+        this.user = user;
+        this.rating = rating;
+        this.comment = comment;
+        this.approvedByProductManager = approvedByProductManager;
+        this.productBuyDate = productBuyDate;
+        this.foundThisHelpful = foundThisHelpful;
+        this.createdAt = createdAt;
+        this.approvedAt = approvedAt;
+
+    }
 }

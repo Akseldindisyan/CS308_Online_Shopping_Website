@@ -1,5 +1,6 @@
 package com.backend.backend.persistence.repository;
 
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -18,12 +19,12 @@ public interface ReviewRepository extends JpaRepository<ReviewEntity, UUID> {
     List<ReviewEntity> findByRating(int rating);
 
     //Comments
-    Optional<ReviewEntity> findByComment(String comment);
+    List<ReviewEntity> findByComment(String comment);
 
     //Product But Date
-    List<ReviewEntity> findByProductBuyDate(Date productBuyDate);
-    List<ReviewEntity> findByProductBuyDateLessThanEqual(Date productBuyDate);
-    List<ReviewEntity> findByProductBuyDateGreaterThanEqual(Date productBuyDate);
+    List<ReviewEntity> findByProductBuyDate(LocalDate productBuyDate);
+    List<ReviewEntity> findByProductBuyDateLessThanEqual(LocalDate productBuyDate);
+    List<ReviewEntity> findByProductBuyDateGreaterThanEqual(LocalDate productBuyDate);
 
     //Found This Helpful
     List<ReviewEntity> findByFoundThisHelpful(int foundThisHelpful);
@@ -31,14 +32,14 @@ public interface ReviewRepository extends JpaRepository<ReviewEntity, UUID> {
     List<ReviewEntity> findByFoundThisHelpfulGreaterThanEqual(int foundThisHelpful);
 
     //Created At
-    List<ReviewEntity> findByCreatedAt(Date createdAt);
-    List<ReviewEntity> findByCreatedAtLessThanEqual(Date createdAt);
-    List<ReviewEntity> findByCreatedAtGreaterThanEqual(Date createdAt);
+    List<ReviewEntity> findByCreatedAt(LocalDate createdAt);
+    List<ReviewEntity> findByCreatedAtLessThanEqual(LocalDate createdAt);
+    List<ReviewEntity> findByCreatedAtGreaterThanEqual(LocalDate createdAt);
 
     //Approved At
-    List<ReviewEntity> findByApprovedAt(Date approvedAt);
-    List<ReviewEntity> findByApprovedAtLessThanEqual(Date approvedAt);
-    List<ReviewEntity> findByApprovedAtGreaterThanEqual(Date approvedAFixed );
+    List<ReviewEntity> findByApprovedAt(LocalDate approvedAt);
+    List<ReviewEntity> findByApprovedAtLessThanEqual(LocalDate approvedAt);
+    List<ReviewEntity> findByApprovedAtGreaterThanEqual(LocalDate approvedAFixed );
 
 
 
