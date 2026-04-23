@@ -1,15 +1,14 @@
 package com.backend.backend.service;
 
+import com.backend.backend.exception.EmailException;
 import com.backend.backend.persistence.entity.InvoiceEntity;
 import com.backend.backend.persistence.entity.InvoiceItemEntity;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 
 
 @Service
@@ -30,10 +29,7 @@ public class InvoiceEmailService {
             helper.setText(buildHtml(invoice), true);
             mailSender.send(message);
         } catch (MessagingException ex) {
-            throw new ResponseStatusException(
-                    HttpStatus.INTERNAL_SERVER_ERROR,
-                    "Fatura e-postası gönderilemedi"
-            );
+            throw new EmailException("Fatura e-postası gönderilemedi", ex);
         }
     }
 
