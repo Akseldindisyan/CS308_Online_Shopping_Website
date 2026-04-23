@@ -56,7 +56,10 @@ public class ProductEntity {
     @Column(name = "category")
     private String category;
 
-    public ProductEntity(String productName, double rating, int stock, String model, String serialNumber, String desc, double price, String distInfo, String country, String Category){
+    @Column(name = "image_url")
+    private String image_url;
+
+    public ProductEntity(String productName, double rating, int stock, String model, String serialNumber, String desc, double price, String distInfo, String country, String Category, String image_url){
         this.productName = productName;
         this.rating = rating;
         this.stock = stock;
@@ -67,12 +70,6 @@ public class ProductEntity {
         this.distInfo = distInfo;
         this.country = country;
         this.category = category;
-    }
-    
-    @Override
-    public String toString() {
-        return String.format(
-                "Product[id=%s, productName='%s', rating='%.2f', stock='%d', model='%s', serialNumber='%s', desc='%s', price='%.2f', distInfo = '%s', country = '%s']",
-                id, productName, rating, stock, model, serialNumber, desc, price, distInfo, country);
+        this.image_url = image_url;
     }
 }

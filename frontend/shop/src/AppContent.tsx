@@ -44,13 +44,12 @@ function AppContent() {
 
   const handleSearchSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    const url = "http://localhost:8080/api/products/search?page=0&size=5&name="
-    const name = searchText.trim()
+    let url = "http://localhost:8080/api/products/search?page=0&size=5&name="
+    let name = searchText.trim()
 
     if (!name) {
-      setSearchResults(null)
-      setSearchError('')
-      return
+      url = "http://localhost:8080/api/products?page=0&size=10"
+      name = ""
     }
 
     setIsSearching(true)
@@ -59,12 +58,13 @@ function AppContent() {
     try {
       const response = await fetch(url + name);
       const data = await response.json()
-      setSearchResults(data)
+      setProducts(data)
       console.log(data)
     }
     catch(err) {
       console.log(err)
     }
+    setIsSearching(false)
     
   }
 
@@ -152,9 +152,9 @@ function AppContent() {
               <p className="rating">Rating: {product.rating} / 5</p>
               <p className="price">${product.price}</p>
               <div className="product-actions">
-                <button type="button" className="btn-secondary">
+                <Link to={`/product/${product.id}`} className="btn-secondary">
                   Details
-                </button>
+                </Link>
                 <button type="button" className="btn-action">
                   Add to Cart
                 </button>

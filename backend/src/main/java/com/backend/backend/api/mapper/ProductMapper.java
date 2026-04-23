@@ -16,7 +16,7 @@ public class ProductMapper {
         dto.setStock(entity.getStock());
         dto.setActive(entity.getStock() > 0);
         dto.setCategory(entity.getCategory());
-        dto.setImageUrl(null);
+        dto.setImageUrl(entity.getImage_url());
         dto.setRating(entity.getRating());
         return dto;
     }
@@ -33,8 +33,8 @@ public class ProductMapper {
         dto.setDescription(entity.getDesc());
         dto.setDistributorName(entity.getDistInfo());
 
-        dto.setCategory(null);
-        dto.setImage(null);
+        dto.setCategory(entity.getCategory());
+        dto.setImage(entity.getImage_url());
         dto.setExtraImages(Collections.emptyList());
         dto.setFeatures(Collections.emptyList());
         dto.setWarrantyStatus(null);

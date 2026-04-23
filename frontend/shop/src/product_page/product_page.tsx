@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react'
+import { useState,useEffect, type FormEvent } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { FaStar } from 'react-icons/fa'
 import './product_page.css'
@@ -20,7 +20,7 @@ function ProductPageContent({ product }: { product: Product }) {
   const [reviewMessageType, setReviewMessageType] = useState<'success' | 'error' | ''>('')
   const [reviews, setReviews] = useState<ProductReview[]>([])
   const [reviewForm, setReviewForm] = useState({ author: '', text: '', rating: 0 })
-
+  
   const formattedPrice = new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency: 'USD',
@@ -79,7 +79,7 @@ function ProductPageContent({ product }: { product: Product }) {
           <article className="product-gallery-card">
             <img src={selectedImage} alt={product.name} className="product-main-image" />
 
-            <div className="product-thumbnails" aria-label="Product gallery">
+            {/* <div className="product-thumbnails" aria-label="Product gallery">
               {product.images.map((image, index) => (
                 <button
                   key={image}
@@ -91,7 +91,7 @@ function ProductPageContent({ product }: { product: Product }) {
                   <img src={image} alt={`${product.name} preview ${index + 1}`} />
                 </button>
               ))}
-            </div>
+            </div> */}
           </article>
         </div>
 
@@ -253,10 +253,20 @@ function ProductPageContent({ product }: { product: Product }) {
 }
 
 function ProductPage() {
+  const [productInfo, setProductInfo] = useState<Product>()
   const { id } = useParams()
-  const product = products.find((item) => item.id === Number(id))
+  let url = "http://localhost:8080/api/products/"
+  let url_final = url + id
+  useEffect(() => {
+          fetch(url_final)
+          .then(res => res.json())
+          .then(data => setProductInfo(data))
+  }, [])
+  console.log(productInfo)
 
-  if (!product) {
+  //const product = products.find((item) => item.id === Number(id))
+
+  if (!productInfo) {
     return (
       <main className="product-page">
         <section className="product-not-found">
@@ -270,7 +280,7 @@ function ProductPage() {
     )
   }
 
-  return <ProductPageContent key={product.id} product={product} />
+  return <ProductPageContent key={productInfo.id} product={productInfo} />
 }
 
 export default ProductPage
