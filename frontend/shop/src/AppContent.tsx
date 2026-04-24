@@ -1,7 +1,8 @@
-import { useMemo, useState, useEffect, type FormEvent, use } from 'react'
-import { Link } from 'react-router-dom'
+import { useMemo, useState, useEffect, type FormEvent } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
 import { products } from './product_page/productData'
 import { searchProducts } from './api/products'
+import { clearAuthToken, getStoredUsername, createGuestToken, getStoredGuestToken } from './api/auth'
 import type { ProductCardDTO } from './data/types'
 import './App.css'
 
@@ -30,11 +31,13 @@ function isBackendProduct(product: Product | ProductCardDTO): product is Product
 
 
 function AppContent() {
+  const navigate = useNavigate()
   const [searchText, setSearchText] = useState('')
   const [searchResults, setSearchResults] = useState<ProductCardDTO[] | null>(null)
   const [isSearching, setIsSearching] = useState(false)
   const [searchError, setSearchError] = useState('')
   const [products, setProducts] = useState<Product[]>([])
+  const username = getStoredUsername()
   console.log(searchResults)
 
   const productCards = useMemo<(Product | ProductCardDTO)[]>(
@@ -74,7 +77,26 @@ function AppContent() {
     setSearchError('')
   }
 
+  const handleLogout = () => {
+    clearAuthToken()
+    navigate
+    }
+
   const searchActive = searchResults !== null
+
+  useEffect(() => {
+    const initGuestToken = async () => {
+      const existingToken = getStoredGuestToken()
+      if (!existingToken) {
+        try {
+          await createGuestToken()
+        } catch (error) {
+          console.error("Failed to create guest token:", error)
+        }
+      }
+    }
+    initGuestToken()
+  }, [])
 
   useEffect(() => {
       fetch('http://localhost:8080/api/products?page=0&size=10')
@@ -111,12 +133,19 @@ function AppContent() {
           </form>
 
           <div className="header-actions">
-            <Link to="/login" className="btn-secondary">
-              Login / Register
-            </Link>
+            {username ? (
+              <button type="button" className="btn-secondary" onClick={handleLogout}>
+                Logout
+              </button>
+            ) : (
+              <Link to="/login" className="btn-secondary">
+                Login / Register
+              </Link>
+            )}
             <Link to="/cart" className="btn-primary">
               My Cart
             </Link>
+            {username && <span className="user-greeting">Hello, {username}!</span>}
           </div>
         </div>
 
