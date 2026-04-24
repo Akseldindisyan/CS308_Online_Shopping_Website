@@ -1,8 +1,6 @@
 package com.backend.backend.service;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -122,7 +120,7 @@ class AuthServiceTest {
 
         UserEntity savedUser = captor.getValue();
         assertNull(savedUser.getDateOfBirth());
-        assertNull(savedUser.getAddress());
+        assertTrue(savedUser.getAddress().isEmpty());
         assertEquals("jwt-token", response.token());
     }
 }
