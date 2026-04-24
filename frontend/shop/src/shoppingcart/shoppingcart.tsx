@@ -1,22 +1,10 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo } from 'react'
 import { Link } from 'react-router-dom'
-import { products, type Product } from '../product_page/productData'
+import { useCart } from '../hooks/useCart'
+import { useToast } from '../components/ToastProvider'
+import { useNavigate } from 'react-router-dom'
+import { getStoredAuthToken } from '../api/auth'
 import './shoppingcart.css'
-
-type CartItem = Pick<Product, 'id' | 'name' | 'category' | 'price' | 'image'> & {
-  quantity: number
-  delivery: string
-}
-
-const initialCartItems: CartItem[] = products.slice(0, 3).map((product, index) => ({
-  id: product.id,
-  name: product.name,
-  category: product.category,
-  price: product.price,
-  image: product.image,
-  quantity: [1, 2, 1][index] ?? 1,
-  delivery: ['Tomorrow', '2-3 business days', 'Friday'][index] ?? 'This week',
-}))
 
 const formatCurrency = (value: number) =>
   new Intl.NumberFormat('en-US', {
@@ -26,37 +14,92 @@ const formatCurrency = (value: number) =>
   }).format(value)
 
 function ShoppingCart() {
-  const [cartItems, setCartItems] = useState<CartItem[]>(initialCartItems)
+  const {
+    items,
+    cart,
+    loading,
+    productsLoading,
+    error,
+    mutating,
+    removeItem,
+    changeQuantity,
+    checkout,
+  } = useCart()
+  const { showToast } = useToast()
+
+  const navigate = useNavigate()
+  const isLoggedIn = Boolean(getStoredAuthToken())
+  // Surface any cart error as a toast (covers failed add/remove/quantity updates)
+  useEffect(() => {
+    if (error) {
+      showToast(error, 'error')
+    }
+  }, [error, showToast])
 
   const itemCount = useMemo(
-    () => cartItems.reduce((total, item) => total + item.quantity, 0),
-    [cartItems],
+    () => items.reduce((total, item) => total + item.quantity, 0),
+    [items],
   )
 
-  const subtotal = useMemo(
-    () => cartItems.reduce((total, item) => total + item.price * item.quantity, 0),
-    [cartItems],
-  )
-
-  const shipping = cartItems.length === 0 || subtotal >= 1500 ? 0 : 29
+  const subtotal = cart?.totalPrice ?? 0
+  const shipping = items.length === 0 || subtotal >= 1500 ? 0 : 29
   const tax = subtotal * 0.08
   const total = subtotal + shipping + tax
 
-  const changeQuantity = (id: number, delta: number) => {
-    setCartItems((currentItems) =>
-      currentItems.map((item) =>
-        item.id === id
-          ? { ...item, quantity: Math.max(1, item.quantity + delta) }
-          : item,
-      ),
+  const handleRemove = async (productId: string, productName: string) => {
+    await removeItem(productId)
+    // Only toast success if no error was set during the call
+    // (errors are already surfaced via the useEffect above)
+    showToast(`${productName} removed from cart`, 'info')
+  }
+
+  const handleCheckout = async () => {
+    if (!isLoggedIn) {
+      showToast('Please log in to complete your purchase.', 'error')
+      navigate('/login')
+      return
+    }
+    const result = await checkout()
+    if (result.ok) {
+      showToast('Order placed successfully!', 'success')
+      navigate('/checkout/success', { state: { invoice: result.invoice } })
+    } else {
+      showToast(result.message, 'error')
+    }
+  }
+  if (loading) {
+    return (
+      <main className="cart-page">
+        <div className="cart-breadcrumb" aria-label="Breadcrumb">
+          <Link to="/">Home</Link>
+          <span>/</span>
+          <span>Cart</span>
+        </div>
+        <section className="cart-empty-state">
+          <h2>Loading your cart…</h2>
+        </section>
+      </main>
     )
   }
 
-  const removeItem = (id: number) => {
-    setCartItems((currentItems) => currentItems.filter((item) => item.id !== id))
+  if (error && !cart) {
+    return (
+      <main className="cart-page">
+        <div className="cart-breadcrumb" aria-label="Breadcrumb">
+          <Link to="/">Home</Link>
+          <span>/</span>
+          <span>Cart</span>
+        </div>
+        <section className="cart-empty-state">
+          <h2>Could not load your cart</h2>
+          <p>{error}</p>
+          <Link to="/" className="btn-action">Back to shop</Link>
+        </section>
+      </main>
+    )
   }
 
-  if (cartItems.length === 0) {
+  if (items.length === 0) {
     return (
       <main className="cart-page">
         <div className="cart-breadcrumb" aria-label="Breadcrumb">
@@ -102,53 +145,96 @@ function ShoppingCart() {
         <div className="cart-items-panel">
           <div className="cart-panel-title">
             <h2>Cart Items</h2>
-            <span>{itemCount} selected products</span>
+            <span>
+              {itemCount} selected products
+              {productsLoading && ' · refreshing…'}
+            </span>
           </div>
 
-          {cartItems.map((item) => (
-            <article key={item.id} className="cart-item-card">
-              <img src={item.image} alt={item.name} className="cart-item-image" />
+          {items.map((item) => {
+            const atStockLimit =
+              item.stock !== null && item.quantity >= item.stock
+            const overStock =
+              item.stock !== null && item.quantity > item.stock
 
-              <div className="cart-item-meta">
-                <span className="cart-item-badge">{item.category}</span>
-                <h3>{item.name}</h3>
-                <p className="cart-item-subtext">
-                  Delivery estimate: <strong>{item.delivery}</strong>
-                </p>
+            return (
+              <article key={item.productId} className="cart-item-card">
+                {item.imageUrl ? (
+                  <img
+                    src={item.imageUrl}
+                    alt={item.productName}
+                    className="cart-item-image"
+                  />
+                ) : (
+                  <div className="cart-item-image cart-item-image--placeholder" />
+                )}
 
-                <div className="cart-item-actions">
-                  <div className="cart-quantity" aria-label={`Quantity controls for ${item.name}`}>
-                    <button type="button" onClick={() => changeQuantity(item.id, -1)}>
-                      −
-                    </button>
-                    <strong>{item.quantity}</strong>
-                    <button type="button" onClick={() => changeQuantity(item.id, 1)}>
-                      +
+                <div className="cart-item-meta">
+                  {item.category && (
+                    <span className="cart-item-badge">{item.category}</span>
+                  )}
+                  <h3>{item.productName}</h3>
+                  <p className="cart-item-subtext">
+                    {overStock
+                      ? `Only ${item.stock} in stock — please reduce quantity`
+                      : 'In stock · ships soon'}
+                  </p>
+
+                  <div className="cart-item-actions">
+                    <div
+                      className="cart-quantity"
+                      aria-label={`Quantity controls for ${item.productName}`}
+                    >
+                      <button
+                        type="button"
+                        disabled={mutating}
+                        onClick={() =>
+                          changeQuantity(item.productId, item.quantity - 1)
+                        }
+                      >
+                        −
+                      </button>
+                      <strong>{item.quantity}</strong>
+                      <button
+                        type="button"
+                        disabled={mutating || atStockLimit}
+                        onClick={() =>
+                          changeQuantity(item.productId, item.quantity + 1)
+                        }
+                      >
+                        +
+                      </button>
+                    </div>
+
+                    <button
+                      type="button"
+                      className="cart-remove-btn"
+                      disabled={mutating}
+                      onClick={() => handleRemove(item.productId, item.productName)}
+                    >
+                      Remove
                     </button>
                   </div>
-
-                  <button
-                    type="button"
-                    className="cart-remove-btn"
-                    onClick={() => removeItem(item.id)}
-                  >
-                    Remove
-                  </button>
                 </div>
-              </div>
 
-              <div className="cart-item-aside">
-                <span className="cart-item-price">{formatCurrency(item.price * item.quantity)}</span>
-                <span className="cart-item-subtext">{formatCurrency(item.price)} each</span>
-                <span className="cart-item-delivery">In stock</span>
-              </div>
-            </article>
-          ))}
+                <div className="cart-item-aside">
+                  <span className="cart-item-price">
+                    {formatCurrency(item.lineTotal)}
+                  </span>
+                  <span className="cart-item-subtext">
+                    {formatCurrency(item.unitPrice)} each
+                  </span>
+                </div>
+              </article>
+            )
+          })}
         </div>
 
         <aside className="cart-summary-card">
           <h2>Order Summary</h2>
-          <p className="cart-summary-note">Taxes and shipping are calculated for demo purposes.</p>
+          <p className="cart-summary-note">
+            Taxes and shipping are calculated for demo purposes.
+          </p>
 
           <div className="cart-summary-list">
             <div className="cart-summary-row">
@@ -157,7 +243,9 @@ function ShoppingCart() {
             </div>
             <div className="cart-summary-row">
               <span>Shipping</span>
-              <strong>{shipping === 0 ? 'Free' : formatCurrency(shipping)}</strong>
+              <strong>
+                {shipping === 0 ? 'Free' : formatCurrency(shipping)}
+              </strong>
             </div>
             <div className="cart-summary-row">
               <span>Estimated tax</span>
@@ -171,8 +259,17 @@ function ShoppingCart() {
           </div>
 
           <div className="cart-summary-actions">
-            <button type="button" className="btn-action">
-              Proceed to Checkout
+            <button
+              type="button"
+              className="btn-action"
+              disabled={mutating || !cart?.canCheckout}
+              onClick={handleCheckout}
+            >
+              {mutating
+                ? 'Processing…'
+                : isLoggedIn
+                  ? 'Proceed to Checkout'
+                  : 'Log in to Checkout'}
             </button>
             <Link to="/" className="btn-secondary">
               Continue Shopping

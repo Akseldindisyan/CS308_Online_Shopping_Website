@@ -1,17 +1,16 @@
-import { useMemo, useState, useEffect, type FormEvent } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
-import { clearAuthToken, getStoredUsername, createGuestToken, getStoredGuestToken } from './api/auth'
-import type { ProductCardDTO } from './data/types'
+import { useState, useEffect, type FormEvent } from 'react'
+import { Link } from 'react-router-dom'
+import {
+  clearAuthToken,
+  getStoredUsername,
+  createGuestToken,
+  getStoredGuestToken,
+} from './api/auth'
+import { fetchAllProducts, searchProducts } from './api/products'
+import { addItemToCart } from './api/cart'
+import type { ProductCardDTO, UUID } from './data/types'
+import { useToast } from './components/ToastProvider'
 import './App.css'
-
-type Product = {
-  id: number
-  name: string
-  category: string
-  price: number
-  rating: number
-  image: string
-}
 
 const categories = [
   'Laptops',
@@ -23,82 +22,96 @@ const categories = [
   'Camera',
 ]
 
-
-
 function AppContent() {
   const [searchText, setSearchText] = useState('')
-  const [searchResults, setSearchResults] = useState<ProductCardDTO[] | null>(null)
+  const [products, setProducts] = useState<ProductCardDTO[]>([])
   const [isSearching, setIsSearching] = useState(false)
   const [searchError, setSearchError] = useState('')
-  const [products, setProducts] = useState<Product[]>([])
+  const [searchActive, setSearchActive] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [addingToCart, setAddingToCart] = useState<UUID | null>(null)
   const username = getStoredUsername()
-  console.log(searchResults)
+  const { showToast } = useToast()
 
-  const productCards = useMemo<(Product | ProductCardDTO)[]>(
-    () => (searchResults === null ? products : searchResults),
-    [searchResults],
-  )
+  // Initial load — all products + ensure guest token exists
+  useEffect(() => {
+    const init = async () => {
+      try {
+        if (!getStoredGuestToken()) {
+          await createGuestToken().catch((err) =>
+            console.error('Failed to create guest token:', err),
+          )
+        }
+        const data = await fetchAllProducts({ page: 0, size: 10 })
+        setProducts(data)
+      } catch (err) {
+        setSearchError(
+          err instanceof Error ? err.message : 'Failed to load products',
+        )
+      } finally {
+        setLoading(false)
+      }
+    }
+    init()
+  }, [])
 
   const handleSearchSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    let url = "http://localhost:8080/api/products/search?page=0&size=5&name="
-    let name = searchText.trim()
-
-    if (!name) {
-      url = "http://localhost:8080/api/products?page=0&size=10"
-      name = ""
-    }
-
+    const name = searchText.trim()
     setIsSearching(true)
     setSearchError('')
 
     try {
-      const response = await fetch(url + name);
-      const data = await response.json()
-      setProducts(data)
-      console.log(data)
+      if (name) {
+        const data = await searchProducts({ name, page: 0 })
+        setProducts(data)
+        setSearchActive(true)
+      } else {
+        const data = await fetchAllProducts({ page: 0, size: 10 })
+        setProducts(data)
+        setSearchActive(false)
+      }
+    } catch (err) {
+      setSearchError(err instanceof Error ? err.message : 'Search failed')
+    } finally {
+      setIsSearching(false)
     }
-    catch (err) {
-      console.log(err)
-    }
-    setIsSearching(false)
-
   }
 
-  const handleResetSearch = () => {
+  const handleResetSearch = async () => {
     setSearchText('')
-    setSearchResults(null)
     setSearchError('')
+    setSearchActive(false)
+    setIsSearching(true)
+    try {
+      const data = await fetchAllProducts({ page: 0, size: 10 })
+      setProducts(data)
+    } catch (err) {
+      setSearchError(err instanceof Error ? err.message : 'Failed to reload')
+    } finally {
+      setIsSearching(false)
+    }
+  }
+
+  const handleAddToCart = async (productId: UUID, productName: string) => {
+    setAddingToCart(productId)
+    try {
+      await addItemToCart(productId, 1)
+      showToast(`${productName} added to cart`, 'success')
+    } catch (err) {
+      showToast(
+        err instanceof Error ? err.message : 'Failed to add to cart',
+        'error',
+      )
+    } finally {
+      setAddingToCart(null)
+    }
   }
 
   const handleLogout = () => {
     clearAuthToken()
     window.location.reload()
   }
-
-  const searchActive = searchResults !== null
-
-  useEffect(() => {
-    const initGuestToken = async () => {
-      const existingToken = getStoredGuestToken()
-      if (!existingToken) {
-        try {
-          await createGuestToken()
-        } catch (error) {
-          console.error("Failed to create guest token:", error)
-        }
-      }
-    }
-    initGuestToken()
-  }, [])
-
-  useEffect(() => {
-    fetch('http://localhost:8080/api/products?page=0&size=10')
-      .then(res => res.json())
-      .then(data => setProducts(data))
-  }, [])
-  console.log(products);
-
 
   return (
     <div className="page">
@@ -119,11 +132,15 @@ function AppContent() {
             <button type="submit" disabled={isSearching}>
               {isSearching ? 'Searching...' : 'Search'}
             </button>
-            {searchActive ? (
-              <button type="button" className="btn-secondary" onClick={handleResetSearch}>
+            {searchActive && (
+              <button
+                type="button"
+                className="btn-secondary"
+                onClick={handleResetSearch}
+              >
                 Clear
               </button>
-            ) : null}
+            )}
           </form>
 
           <div className="header-actions">
@@ -159,32 +176,55 @@ function AppContent() {
             Discover high-performance devices and accessories with fast delivery
             and secure checkout.
           </p>
-          {searchActive ? (
+          {searchActive && (
             <p className="search-info">
               Showing search results for "{searchText.trim()}".
             </p>
-          ) : null}
-          {searchError ? <p className="search-error">{searchError}</p> : null}
+          )}
+          {searchError && <p className="search-error">{searchError}</p>}
         </section>
 
-        <section className="product-grid" aria-label="Technology products">
-          {products.map((product) => (
-            <article key={product.id} className="product-card">
-              <span className="product-category">{product.category}</span>
-              <h2>{product.name}</h2>
-              <p className="rating">Rating: {product.rating} / 5</p>
-              <p className="price">${product.price}</p>
-              <div className="product-actions">
-                <Link to={`/product/${product.id}`} className="btn-secondary">
-                  Details
-                </Link>
-                <button type="button" className="btn-action">
-                  Add to Cart
-                </button>
-              </div>
-            </article>
-          ))}
-        </section>
+        {loading ? (
+          <p>Loading products…</p>
+        ) : products.length === 0 ? (
+          <p>No products found.</p>
+        ) : (
+          <section className="product-grid" aria-label="Technology products">
+            {products.map((product) => (
+              <article key={product.id} className="product-card">
+                {product.imageUrl && (
+                  <img
+                    src={product.imageUrl}
+                    alt={product.name}
+                    className="product-image"
+                  />
+                )}
+                <span className="product-category">{product.category}</span>
+                <h2>{product.name}</h2>
+                <p className="rating">Rating: {product.rating} / 5</p>
+                <p className="price">${product.price}</p>
+                {product.stock === 0 && (
+                  <p className="out-of-stock">Out of stock</p>
+                )}
+                <div className="product-actions">
+                  <Link to={`/product/${product.id}`} className="btn-secondary">
+                    Details
+                  </Link>
+                  <button
+                    type="button"
+                    className="btn-action"
+                    disabled={
+                      product.stock === 0 || addingToCart === product.id
+                    }
+                    onClick={() => handleAddToCart(product.id, product.name)}
+                  >
+                    {addingToCart === product.id ? 'Adding…' : 'Add to Cart'}
+                  </button>
+                </div>
+              </article>
+            ))}
+          </section>
+        )}
       </main>
 
       <footer className="footer">
@@ -209,8 +249,6 @@ function AppContent() {
       </footer>
     </div>
   )
-
-
 }
 
 export default AppContent
