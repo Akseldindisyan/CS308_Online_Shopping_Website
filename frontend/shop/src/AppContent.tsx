@@ -1,7 +1,5 @@
 import { useMemo, useState, useEffect, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { products } from './product_page/productData'
-import { searchProducts } from './api/products'
 import { clearAuthToken, getStoredUsername, createGuestToken, getStoredGuestToken } from './api/auth'
 import type { ProductCardDTO } from './data/types'
 import './App.css'
@@ -25,13 +23,9 @@ const categories = [
   'Camera',
 ]
 
-function isBackendProduct(product: Product | ProductCardDTO): product is ProductCardDTO {
-  return typeof product.id === 'string'
-}
 
 
 function AppContent() {
-  const navigate = useNavigate()
   const [searchText, setSearchText] = useState('')
   const [searchResults, setSearchResults] = useState<ProductCardDTO[] | null>(null)
   const [isSearching, setIsSearching] = useState(false)
@@ -64,11 +58,11 @@ function AppContent() {
       setProducts(data)
       console.log(data)
     }
-    catch(err) {
+    catch (err) {
       console.log(err)
     }
     setIsSearching(false)
-    
+
   }
 
   const handleResetSearch = () => {
@@ -79,8 +73,8 @@ function AppContent() {
 
   const handleLogout = () => {
     clearAuthToken()
-    navigate
-    }
+    window.location.reload()
+  }
 
   const searchActive = searchResults !== null
 
@@ -99,14 +93,14 @@ function AppContent() {
   }, [])
 
   useEffect(() => {
-      fetch('http://localhost:8080/api/products?page=0&size=10')
+    fetch('http://localhost:8080/api/products?page=0&size=10')
       .then(res => res.json())
       .then(data => setProducts(data))
-    }, [])
-    console.log(products);
+  }, [])
+  console.log(products);
 
-      
-    return (
+
+  return (
     <div className="page">
       <header className="header">
         <div className="header-top">
@@ -216,7 +210,7 @@ function AppContent() {
     </div>
   )
 
-  
+
 }
 
 export default AppContent
