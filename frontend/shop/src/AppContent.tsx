@@ -1,18 +1,9 @@
-import { useMemo, useState, type FormEvent } from 'react'
+import { useMemo, useState, type FormEvent, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { products, type Product } from './product_page/productData'
+import { products as localProducts, type Product } from './product_page/productData'
 import { searchProducts } from './api/products'
 import type { ProductCardDTO } from './data/types'
 import './App.css'
-import { useEffect, useState } from 'react'
-type Product = {
-  id: number
-  name: string
-  category: string
-  price: number
-  rating: number
-  image: string
-}
 
 const categories = [
   'Laptops',
@@ -28,7 +19,6 @@ function isBackendProduct(product: Product | ProductCardDTO): product is Product
   return typeof product.id === 'string'
 }
 
-
 function AppContent() {
   const [searchText, setSearchText] = useState('')
   const [searchResults, setSearchResults] = useState<ProductCardDTO[] | null>(null)
@@ -36,24 +26,20 @@ function AppContent() {
   const [searchError, setSearchError] = useState('')
 
   const productCards = useMemo<(Product | ProductCardDTO)[]>(
-    () => (searchResults === null ? products : searchResults),
+    () => (searchResults === null ? localProducts : searchResults),
     [searchResults],
   )
 
   const handleSearchSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-
     const name = searchText.trim()
-
     if (!name) {
       setSearchResults(null)
       setSearchError('')
       return
     }
-
     setIsSearching(true)
     setSearchError('')
-
     try {
       const data = await searchProducts({ name, page: 0 })
       setSearchResults(data)
@@ -73,17 +59,6 @@ function AppContent() {
   }
 
   const searchActive = searchResults !== null
-
-
-function AppContent() {
-  const [products, setProducts] = useState<Product[]>([])
-
-  useEffect(() => {
-  fetch('http://localhost:8080/api/products?page=0&size=10')
-    .then(res => res.json())
-    .then(data => setProducts(data))
-}, [])
- console.log(products);
 
   return (
     <div className="page">
@@ -112,6 +87,12 @@ function AppContent() {
           </form>
 
           <div className="header-actions">
+            <Link to="/wishlist" className="btn-secondary">
+              Wishlist
+            </Link>
+            <Link to="/orders" className="btn-secondary">
+              My Orders
+            </Link>
             <Link to="/login" className="btn-secondary">
               Login / Register
             </Link>
@@ -150,20 +131,6 @@ function AppContent() {
             <article className="product-card">
               <h2>No products found</h2>
               <p className="rating">Try a different keyword.</p>
-          {products.map((product) => (
-            <article key={product.id} className="product-card">
-              <span className="product-category">{product.category}</span>
-              <h2>{product.name}</h2>
-              <p className="rating">Rating: {product.rating} / 5</p>
-              <p className="price">${product.price}</p>
-              <div className="product-actions">
-                <button type="button" className="btn-secondary">
-                  Details
-                </button>
-                <button type="button" className="btn-action">
-                  Add to Cart
-                </button>
-              </div>
             </article>
           ) : (
             productCards.map((product) => {

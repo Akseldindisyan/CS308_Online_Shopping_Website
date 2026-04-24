@@ -5,6 +5,8 @@ import SMDashboard from "./sm_admin/SMDashboard";
 import AppContent from "./AppContent";
 import ProductPage from "./product_page/product_page";
 import ShoppingCart from "./shoppingcart/shoppingcart";
+import DeliveryStatus from "./deliverystatus/DeliveryStatus";
+import Wishlist from "./wishlist/Wishlist";
 import "./App.css";
 
 export default function App() {
@@ -15,6 +17,8 @@ export default function App() {
       <Route path="/" element={<AppContent />} />
       <Route path="/product/:id" element={<ProductPage />} />
       <Route path="/cart" element={<ShoppingCart />} />
+      <Route path="/orders" element={<DeliveryStatus />} />
+      <Route path="/wishlist" element={<Wishlist />} />
       <Route path="/pm-admin/*" element={<PMDashboard />} />
       <Route path="/sm-admin/*" element={<SMDashboard />} />
     </Routes>

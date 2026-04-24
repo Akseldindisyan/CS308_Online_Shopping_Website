@@ -1,0 +1,279 @@
+.wl-page {
+  width: min(1200px, 94vw);
+  margin: 0 auto;
+  padding: 28px 0 42px;
+}
+
+.wl-breadcrumb {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 18px;
+  color: var(--text-muted);
+}
+
+.wl-breadcrumb a {
+  color: var(--focus);
+  text-decoration: none;
+}
+
+.wl-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 22px;
+}
+
+.wl-header h1 {
+  margin: 0;
+  font-size: clamp(1.6rem, 3vw, 2.2rem);
+}
+
+.wl-header p {
+  margin: 6px 0 0;
+  color: var(--text-muted);
+}
+
+.wl-chip {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 7px 12px;
+  background: rgba(59, 130, 246, 0.12);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  color: #93c5fd;
+  font-size: 0.82rem;
+  white-space: nowrap;
+}
+
+/* Grid */
+.wl-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 16px;
+}
+
+/* Card */
+.wl-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  transition: border-color 0.2s;
+}
+
+.wl-card:hover {
+  border-color: #3f536f;
+}
+
+.wl-remove-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 2;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: rgba(15, 23, 42, 0.75);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  backdrop-filter: blur(4px);
+}
+
+.wl-remove-btn:hover {
+  background: rgba(248, 113, 113, 0.25);
+  color: #F87171;
+  border-color: rgba(248, 113, 113, 0.4);
+}
+
+.wl-img-link {
+  display: block;
+}
+
+.wl-card-image {
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+  display: block;
+  border-bottom: 1px solid var(--border);
+}
+
+.wl-card-body {
+  padding: 14px 16px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+}
+
+.wl-card-name {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.wl-card-name a {
+  color: var(--text);
+  text-decoration: none;
+}
+
+.wl-card-name a:hover {
+  color: #93c5fd;
+}
+
+.wl-rating {
+  color: var(--text-muted);
+  font-size: 0.88rem;
+}
+
+.wl-star {
+  color: #fbbf24;
+}
+
+/* Price */
+.wl-price-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.wl-price {
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.wl-price-original {
+  text-decoration: line-through;
+  color: var(--text-muted);
+  font-size: 0.95rem;
+}
+
+.wl-price-new {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #22C55E;
+}
+
+.wl-discount-badge {
+  font-size: 0.75rem;
+  font-weight: 700;
+  background: rgba(248, 113, 113, 0.18);
+  color: #F87171;
+  border: 1px solid rgba(248, 113, 113, 0.3);
+  border-radius: 999px;
+  padding: 2px 8px;
+}
+
+/* Stock */
+.wl-stock-line {
+  font-size: 0.83rem;
+}
+
+.wl-in-stock {
+  color: #86efac;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.wl-out-stock {
+  color: #F87171;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.wl-stock-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.wl-stock-dot.in { background: #22C55E; }
+.wl-stock-dot.out { background: #F87171; }
+
+/* Actions */
+.wl-actions {
+  margin-top: auto;
+  display: flex;
+  gap: 8px;
+  padding-top: 4px;
+}
+
+.wl-cart-btn,
+.wl-detail-btn {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  font-size: 0.88rem;
+}
+
+.wl-cart-added {
+  background: #16a34a !important;
+  cursor: default;
+}
+
+/* Empty state */
+.wl-empty {
+  text-align: center;
+  padding: 64px 24px;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+
+.wl-empty-icon {
+  color: var(--text-muted);
+  opacity: 0.5;
+}
+
+.wl-empty h2 {
+  margin: 0;
+  font-size: 1.4rem;
+}
+
+.wl-empty p {
+  margin: 0;
+  color: var(--text-muted);
+  max-width: 400px;
+}
+
+.wl-empty .btn-action {
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@media (max-width: 640px) {
+  .wl-header {
+    flex-direction: column;
+  }
+
+  .wl-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 420px) {
+  .wl-grid {
+    grid-template-columns: 1fr;
+  }
+}

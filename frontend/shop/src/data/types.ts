@@ -82,7 +82,7 @@ export type Delivery = {
   address: string;
   addressDetail: string;
   completed: boolean;
-  status: "completed" | "in-transit" | "preparing" | "delayed";
+  status: "delivered" | "in-transit" | "processing";
 };
 
 export type Invoice = {
