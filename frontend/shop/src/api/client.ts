@@ -1,3 +1,5 @@
+import { getStoredAuthToken, getStoredGuestToken } from "./auth";
+
 const API_BASE_URL = "http://localhost:8080";
 
 function toApiUrl(path: string): string {
@@ -20,7 +22,9 @@ async function parseErrorMessage(response: Response): Promise<string> {
         return String(value);
     };
 
-    const extractValidationDetails = (data: Record<string, unknown>): string[] => {
+    const extractValidationDetails = (
+        data: Record<string, unknown>,
+    ): string[] => {
         const details: string[] = [];
 
         const addDetail = (field: string, message: unknown) => {
@@ -55,7 +59,9 @@ async function parseErrorMessage(response: Response): Promise<string> {
                     if (item && typeof item === "object") {
                         const obj = item as Record<string, unknown>;
                         addDetail(
-                            toStringMessage(obj.field ?? obj.property ?? obj.path),
+                            toStringMessage(
+                                obj.field ?? obj.property ?? obj.path,
+                            ),
                             obj.message ?? obj.error ?? obj.defaultMessage,
                         );
                     }
@@ -64,7 +70,11 @@ async function parseErrorMessage(response: Response): Promise<string> {
             }
 
             if (candidate && typeof candidate === "object") {
-                for (const [field, value] of Object.entries(candidate as Record<string, unknown>)) {
+                for (
+                    const [field, value] of Object.entries(
+                        candidate as Record<string, unknown>,
+                    )
+                ) {
                     if (Array.isArray(value)) {
                         for (const item of value) {
                             addDetail(field, item);
@@ -84,8 +94,7 @@ async function parseErrorMessage(response: Response): Promise<string> {
 
         if (contentType.includes("application/json")) {
             const data = (await response.json()) as Record<string, unknown>;
-            const baseMessage =
-                toStringMessage(data.message) ||
+            const baseMessage = toStringMessage(data.message) ||
                 toStringMessage(data.error) ||
                 toStringMessage(data.title) ||
                 fallbackMessage;
@@ -112,13 +121,29 @@ export async function apiRequest<T>(
 ): Promise<T> {
     let response: Response;
 
+    const authToken = getStoredAuthToken();
+    const guestToken = getStoredGuestToken();
+    const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+        ...(typeof init?.headers === "object" &&
+                !(init.headers instanceof Headers)
+            ? (init.headers as Record<string, string>)
+            : {}),
+    };
+
+    if (authToken) {
+        headers["Authorization"] = `Bearer ${authToken}`;
+    }
+    /*
+    else if (guestToken) {
+        headers["X-Guest-Token"] = guestToken;
+    }
+    */
+
     try {
         response = await fetch(toApiUrl(path), {
-            headers: {
-                "Content-Type": "application/json",
-                ...(init?.headers ?? {}),
-            },
             ...init,
+            headers,
         });
     } catch {
         throw new Error(

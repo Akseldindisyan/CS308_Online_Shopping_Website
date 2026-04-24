@@ -45,6 +45,18 @@
     z-index: 10;
 }
 
+.pm-shell .pm-topbar-content {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.pm-shell .pm-topbar-greeting {
+    font-size: 12px;
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
 .pm-shell .pm-topbar-title {
     font-size: 16px;
     font-weight: 500;
