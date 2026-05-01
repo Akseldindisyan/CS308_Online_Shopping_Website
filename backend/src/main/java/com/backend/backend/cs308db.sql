@@ -33,14 +33,14 @@ CREATE TABLE IF NOT EXISTS address_entity (
 
 -- 4. address_reference_table
 CREATE TABLE IF NOT EXISTS address_reference_table (
-                                                       user_id    UUID REFERENCES user_entity(id)          ON DELETE CASCADE,
+    user_id    UUID REFERENCES user_entity(id)          ON DELETE CASCADE,
     address_id UUID REFERENCES address_pool(address_id) ON DELETE CASCADE,
     PRIMARY KEY (user_id, address_id)
     );
 
 -- 5. product
 CREATE TABLE IF NOT EXISTS product (
-                                       product_id        UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    product_id        UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     product_name      VARCHAR(255)     NOT NULL,
     product_image     BYTEA,
     rating            DOUBLE PRECISION NOT NULL DEFAULT 0,
@@ -52,7 +52,8 @@ CREATE TABLE IF NOT EXISTS product (
     distributor_info  VARCHAR(256),
     country_of_origin VARCHAR(64),
     category          VARCHAR(64),
-    image_url         VARCHAR(1055)
+    image_url         VARCHAR(1055),
+    active            boolean
     );
 
 -- 6. cart_entity
