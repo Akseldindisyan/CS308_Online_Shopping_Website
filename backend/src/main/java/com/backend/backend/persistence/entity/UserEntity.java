@@ -32,12 +32,12 @@ public class UserEntity {
     private String email;
     private String password; //TODO: Make secure implementation
     private LocalDate dateOfBirth = null;
-    private String address;
+    private List<AddressEntity> address;
 
     @Enumerated(EnumType.STRING)
     private Role role = Role.CUSTOMER;
 
-    public UserEntity(String name, String surname, String username, String email, String password, LocalDate dateOfBirth, Role role, String address){
+    public UserEntity(String name, String surname, String username, String email, String password, LocalDate dateOfBirth, Role role){
         this.name = name;
         this.surname = surname;
         this.username = username;
@@ -45,7 +45,10 @@ public class UserEntity {
         this.password = password;
         this.dateOfBirth = dateOfBirth;
         this.role = role;
-        this.address = address;
+    }
+
+    public void addAddress(AddressEntity addressEntity){
+        this.address.add(addressEntity);
     }
 
     public UUID getID(){

@@ -4,6 +4,7 @@ import com.backend.backend.persistence.entity.AddressEntity;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.UUID;
 
 @NoArgsConstructor
@@ -17,6 +18,6 @@ public class UserDTO {
     private String username;
     private String email;
     private LocalDate dateOfBirth;
-    private String address;
+    private List<AddressEntity> address;
 
 }
