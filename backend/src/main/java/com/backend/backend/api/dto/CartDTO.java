@@ -12,4 +12,3 @@ public record CartDTO(
         List<CartItemDTO> items,
         double totalPrice) {
 }
-

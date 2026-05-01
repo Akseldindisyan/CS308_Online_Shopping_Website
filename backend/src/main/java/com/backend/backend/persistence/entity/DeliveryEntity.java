@@ -13,7 +13,6 @@ import java.util.UUID;
 @NoArgsConstructor
 @Entity
 public class DeliveryEntity {
-
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
@@ -26,9 +25,8 @@ public class DeliveryEntity {
     @JoinColumn(name = "customer_id")
     private UserEntity customer;
 
-    @ManyToOne
-    @JoinColumn(name = "address_id")
-    private AddressEntity address;
+    private String address;
+
     private boolean completed;
     private String status;
     private Date createdAt;

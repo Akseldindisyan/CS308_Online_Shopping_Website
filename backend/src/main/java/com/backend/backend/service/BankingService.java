@@ -35,13 +35,12 @@ public class BankingService {
     }
 
 
-
     @Transactional
-    public InvoiceDTO tryCheckout(CartDTO cart) throws MessagingException {
+    public InvoiceDTO tryCheckout(CartDTO cart, String address) throws MessagingException {
         UserEntity user = findUser(cart.userId());
         List<InvoiceItemEntity> invoiceItems = processItems(cart.items());
         InvoiceEntity invoice = createAndSaveInvoice(user, invoiceItems, cart.totalPrice());
-        createDelivery(invoice, user, cart);
+        createDelivery(invoice, user, address);
         invoiceEmailService.sendInvoiceEmail(invoice);
         return toDTO(invoice, cart.userId());
     }
@@ -103,11 +102,11 @@ public class BankingService {
         );
     }
 
-    private DeliveryEntity createDelivery(InvoiceEntity invoice, UserEntity user, CartDTO cart) {
+    private DeliveryEntity createDelivery(InvoiceEntity invoice, UserEntity user, String address) {
         DeliveryEntity delivery = new DeliveryEntity();
         delivery.setInvoice(invoice);
         delivery.setCustomer(user);
-        delivery.setAddress(user.getAddress().getFirst());
+        delivery.setAddress(address);
         delivery.setCompleted(false);
         delivery.setStatus("PENDING");
         delivery.setCreatedAt(new Date());

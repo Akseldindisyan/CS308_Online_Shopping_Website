@@ -20,13 +20,14 @@ public class CheckoutController {
     }
 
     @PostMapping
-    public ResponseEntity<?> checkout(@RequestBody CartDTO cartDTO) {
+    public ResponseEntity<?> checkout(@RequestBody CartDTO cartDTO, @RequestParam String address) {
         try {
-            InvoiceDTO invoice = bankingService.tryCheckout(cartDTO);
+            InvoiceDTO invoice = bankingService.tryCheckout(cartDTO, address);
             return ResponseEntity.ok(invoice);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+            e.printStackTrace();
+            String msg = e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName();
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(msg);
         }
-
     }
 }
