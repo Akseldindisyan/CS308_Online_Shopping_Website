@@ -110,7 +110,9 @@ function AppContent() {
 
   const handleLogout = () => {
     clearAuthToken()
-n  }
+    showToast('Logged out successfully', 'success')
+    window.location.reload()
+  }
 
   return (
     <div className="page">

@@ -160,13 +160,12 @@ export type WishlistEntry = {
 
 
 export interface InvoiceItemDTO {
-  productId: UUID;
-  productName: string;
-  quantity: number;
-  unitPrice: number;
-  lineTotal: number;
+  productId: UUID
+  productName: string
+  quantity: number
+  unitPrice: number
+  totalPrice: number
 }
-
 export interface InvoiceDTO {
   invoiceId: UUID;
   customerId: UUID;

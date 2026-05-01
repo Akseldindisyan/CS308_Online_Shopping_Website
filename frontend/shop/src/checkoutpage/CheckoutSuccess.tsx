@@ -52,13 +52,13 @@ function CheckoutSuccess() {
                 <div className="checkout-success-items">
                     <h2>Items</h2>
                     <ul>
-                        {invoice.items.map((item: { productId: Key | null | undefined; productName: string | number | bigint | boolean | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | Promise<string | number | bigint | boolean | ReactPortal | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | null | undefined> | null | undefined; quantity: string | number | bigint | boolean | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | Promise<string | number | bigint | boolean | ReactPortal | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | null | undefined> | null | undefined; lineTotal: number }) => (
+                        {invoice.items.map((item) => (
                             <li key={item.productId}>
                                 <div>
                                     <strong>{item.productName}</strong>
                                     <span> × {item.quantity}</span>
                                 </div>
-                                <span>{formatCurrency(item.lineTotal)}</span>
+                                <span>{formatCurrency(item.totalPrice)}</span>
                             </li>
                         ))}
                     </ul>

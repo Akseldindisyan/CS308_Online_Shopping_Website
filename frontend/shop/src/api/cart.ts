@@ -86,21 +86,19 @@ export async function updateItemQuantity(
     return addItemToCart(productId, newQuantity);
 }
 
-export async function checkoutCart(): Promise<InvoiceDTO> {
+export async function checkoutCart(address: string): Promise<InvoiceDTO> {
     const authToken = getStoredAuthToken();
     const userId = getStoredUserId();
-
     if (!authToken || !userId) {
         throw new Error("Please log in to complete your purchase.");
     }
 
-    // Fetch the latest cart so we send the server's source of truth
     const cart = await fetchCart();
     if (cart.items.length === 0) {
         throw new Error("Your cart is empty.");
     }
 
-    return apiRequest<InvoiceDTO>(`/api/checkout`, {
+    return apiRequest<InvoiceDTO>(`/api/checkout?address=${encodeURIComponent(address)}`, {
         method: "POST",
         body: JSON.stringify(cart),
     });

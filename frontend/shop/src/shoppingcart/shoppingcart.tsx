@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useCart } from '../hooks/useCart'
 import { useToast } from '../components/ToastProvider'
@@ -26,10 +26,12 @@ function ShoppingCart() {
     checkout,
   } = useCart()
   const { showToast } = useToast()
-
   const navigate = useNavigate()
+
+  const [address, setAddress] = useState('')
+
   const isLoggedIn = Boolean(getStoredAuthToken())
-  // Surface any cart error as a toast (covers failed add/remove/quantity updates)
+
   useEffect(() => {
     if (error) {
       showToast(error, 'error')
@@ -48,25 +50,32 @@ function ShoppingCart() {
 
   const handleRemove = async (productId: string, productName: string) => {
     await removeItem(productId)
-    // Only toast success if no error was set during the call
-    // (errors are already surfaced via the useEffect above)
     showToast(`${productName} removed from cart`, 'info')
   }
 
-  const handleCheckout = async () => {
+  const checkoutBlockReason = !isLoggedIn
+    ? 'You need to log in before checking out.'
+    : !address.trim()
+      ? 'Please enter a delivery address to continue.'
+      : !cart?.canCheckout
+        ? 'Some items in your cart are unavailable or out of stock.'
+        : null
+
+  const isCheckoutDisabled = mutating || !!checkoutBlockReason
+
+  const handleCheckout = () => {
     if (!isLoggedIn) {
       showToast('Please log in to complete your purchase.', 'error')
       navigate('/login')
       return
     }
-    const result = await checkout()
-    if (result.ok) {
-      showToast('Order placed successfully!', 'success')
-      navigate('/checkout/success', { state: { invoice: result.invoice } })
-    } else {
-      showToast(result.message, 'error')
+    if (!address.trim()) {
+      showToast('Please enter a delivery address.', 'error')
+      return
     }
+    navigate('/checkout/payment', { state: { address: address.trim() } })
   }
+
   if (loading) {
     return (
       <main className="cart-page">
@@ -107,7 +116,6 @@ function ShoppingCart() {
           <span>/</span>
           <span>Cart</span>
         </div>
-
         <section className="cart-empty-state">
           <h2>Your cart is empty</h2>
           <p>
@@ -258,11 +266,24 @@ function ShoppingCart() {
             <strong>{formatCurrency(total)}</strong>
           </div>
 
+          <div className="cart-address-field">
+            <label htmlFor="delivery-address">
+              Delivery Address <span aria-hidden="true" style={{ color: '#e24b4a' }}>*</span>
+            </label>
+            <textarea
+              id="delivery-address"
+              value={address}
+              onChange={(e) => setAddress(e.target.value)}
+              placeholder="Enter your full delivery address…"
+              rows={3}
+            />
+          </div>
+
           <div className="cart-summary-actions">
             <button
               type="button"
               className="btn-action"
-              disabled={mutating || !cart?.canCheckout}
+              disabled={isCheckoutDisabled}
               onClick={handleCheckout}
             >
               {mutating
@@ -271,6 +292,13 @@ function ShoppingCart() {
                   ? 'Proceed to Checkout'
                   : 'Log in to Checkout'}
             </button>
+
+            {checkoutBlockReason && !mutating && (
+              <p className="cart-checkout-hint" role="status">
+                {checkoutBlockReason}
+              </p>
+            )}
+
             <Link to="/" className="btn-secondary">
               Continue Shopping
             </Link>

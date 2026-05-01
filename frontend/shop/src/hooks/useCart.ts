@@ -19,7 +19,7 @@ interface UseCartResult {
     addItem: (productId: UUID, quantity?: number) => Promise<void>;
     removeItem: (productId: UUID) => Promise<void>;
     changeQuantity: (productId: UUID, newQuantity: number) => Promise<void>;
-    checkout: () => Promise<
+    checkout: (address: string) => Promise<
         { ok: true; invoice: InvoiceDTO } | { ok: false; message: string }
     >;
 
@@ -133,14 +133,14 @@ export function useCart(): UseCartResult {
         [runMutation],
     );
 
-    const checkout = useCallback(async (): Promise<
+    // checkout fonksiyonu
+    const checkout = useCallback(async (address: string): Promise<
         { ok: true; invoice: InvoiceDTO } | { ok: false; message: string }
     > => {
         setMutating(true);
         setError(null);
         try {
-            const invoice = await checkoutCart();
-            // Backend has cleared the cart server-side; refresh our local state
+            const invoice = await checkoutCart(address);
             await refresh();
             return { ok: true, invoice };
         } catch (err) {
