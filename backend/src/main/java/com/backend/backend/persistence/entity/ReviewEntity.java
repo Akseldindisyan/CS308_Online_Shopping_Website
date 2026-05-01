@@ -16,10 +16,12 @@ import java.util.UUID;
 @Setter
 @NoArgsConstructor
 @Entity
+@Table(name = "review")
 public class ReviewEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(name = "review_id")
     private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
@@ -31,20 +33,26 @@ public class ReviewEntity {
     private UserEntity user;
 
     @Min(1)
-    @Max(10)
+    @Max(5)
+    @Column(name = "rating")
     private double rating;
 
     @Column(name = "review_comment")
     private String comment;
 
+    @Column(name = "approved_by_product_man")
     private boolean approvedByProductMan;
 
+    @Column(name = "product_buy_date")
     private LocalDate productBuyDate;
 
+    @Column(name = "found_this_helpful")
     private int foundThisHelpful;
 
+    @Column(name = "created_at")
     private LocalDate createdAt;
 
+    @Column(name = "approved_at")
     private LocalDate approvedAt;
 
     public ReviewEntity(ProductEntity product, UserEntity user, double rating, String comment, boolean approvedByProductMan, LocalDate productBuyDate, int foundThisHelpful, LocalDate createdAt, LocalDate approvedAt) {

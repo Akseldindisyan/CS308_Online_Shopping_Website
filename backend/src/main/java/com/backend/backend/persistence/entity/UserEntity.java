@@ -32,15 +32,15 @@ public class UserEntity {
     private String email;
     private String password; //TODO: Make secure implementation
     private LocalDate dateOfBirth = null;
-
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<AddressEntity> address = new ArrayList<>();
-
+    private String country;
+    private String city;
+    private String street;
+    private String postal_code;
 
     @Enumerated(EnumType.STRING)
     private Role role = Role.CUSTOMER;
 
-    public UserEntity(String name, String surname, String username, String email, String password, LocalDate dateOfBirth, Role role){
+    public UserEntity(String name, String surname, String username, String email, String password, LocalDate dateOfBirth, Role role, String country, String city, String street, String postal_code){
         this.name = name;
         this.surname = surname;
         this.username = username;
@@ -48,14 +48,10 @@ public class UserEntity {
         this.password = password;
         this.dateOfBirth = dateOfBirth;
         this.role = role;
-    }
-
-    public void addAddress(AddressEntity addressEntity){
-        this.address.add(addressEntity);
-    }
-
-    public UUID getID(){
-        return this.id;
+        this.country = country;
+        this.city = city;
+        this.street = street;
+        this.postal_code = postal_code;
     }
 
 }

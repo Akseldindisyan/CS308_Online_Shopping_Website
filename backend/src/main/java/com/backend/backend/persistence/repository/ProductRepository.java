@@ -1,5 +1,6 @@
 package com.backend.backend.persistence.repository;
 
+import java.util.Optional;
 import java.util.UUID;
 import com.backend.backend.persistence.entity.ProductEntity;
 

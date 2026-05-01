@@ -120,7 +120,6 @@ class AuthServiceTest {
 
         UserEntity savedUser = captor.getValue();
         assertNull(savedUser.getDateOfBirth());
-        assertTrue(savedUser.getAddress().isEmpty());
         assertEquals("jwt-token", response.token());
     }
 }

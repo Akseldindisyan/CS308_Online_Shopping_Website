@@ -3,6 +3,7 @@ package com.backend.backend.service;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import com.backend.backend.api.dto.ProductCardDTO;
@@ -11,6 +12,7 @@ import com.backend.backend.api.exception.BadRequestException;
 import com.backend.backend.api.mapper.ProductMapper;
 import com.backend.backend.persistence.entity.ProductEntity;
 import com.backend.backend.persistence.repository.ProductRepository;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.UUID;
 
@@ -21,6 +23,11 @@ public class ProductService {
 
     public ProductService(ProductRepository ProductRepo){
         this.ProductRepo = ProductRepo;
+    }
+
+    public ProductEntity getProductById(UUID id){
+        return ProductRepo.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found: "));
     }
 
     public Page<ProductEntity> getAllOrderByID(int page, int size){

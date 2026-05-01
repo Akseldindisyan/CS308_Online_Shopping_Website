@@ -1,14 +1,15 @@
 package com.backend.backend.service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
+import org.apache.catalina.User;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import com.backend.backend.persistence.entity.AddressEntity;
 import com.backend.backend.persistence.entity.UserEntity;
 import com.backend.backend.persistence.repository.UserRepository;
 
@@ -60,7 +61,10 @@ public class UserService {
             existingUser.setPassword(passwordEncoder.encode(updatedUser.getPassword()));
         }
         existingUser.setDateOfBirth(updatedUser.getDateOfBirth());
-        existingUser.setAddress(updatedUser.getAddress());
+        existingUser.setCountry(updatedUser.getCountry());
+        existingUser.setCity(updatedUser.getCity());
+        existingUser.setStreet(updatedUser.getStreet());
+        existingUser.setPostal_code(updatedUser.getPostal_code());
 
         if (updatedUser.getRole() != null) {
             existingUser.setRole(updatedUser.getRole());
@@ -79,13 +83,13 @@ public class UserService {
 
     private void validateUniqueness(UserEntity user, UUID currentUserId) {
         userRepository.findByUsername(user.getUsername()).ifPresent(existing -> {
-            if (currentUserId == null || !existing.getID().equals(currentUserId)) {
+            if (currentUserId == null || !existing.getId().equals(currentUserId)) {
                 throw new ResponseStatusException(HttpStatus.CONFLICT, "Username already exists: " + user.getUsername());
             }
         });
 
         userRepository.findByEmail(user.getEmail()).ifPresent(existing -> {
-            if (currentUserId == null || !existing.getID().equals(currentUserId)) {
+            if (currentUserId == null || !existing.getId().equals(currentUserId)) {
                 throw new ResponseStatusException(HttpStatus.CONFLICT, "Email already exists: " + user.getEmail());
             }
         });
@@ -116,12 +120,11 @@ public class UserService {
 
     }
 
-    public UserEntity addAddress(UserEntity user, AddressEntity address){
-        address.setUser(user);
-        user.addAddress(address);
-
-        return userRepository.save(user);
+    public UserEntity getUserByUsername(String username){
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found: " + username));
     }
+
 }
 
 

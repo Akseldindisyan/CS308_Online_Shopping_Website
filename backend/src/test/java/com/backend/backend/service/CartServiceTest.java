@@ -21,7 +21,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 
 import com.backend.backend.api.dto.CartDTO;
-import com.backend.backend.persistence.entity.AddressEntity;
 import com.backend.backend.api.exception.ConflictException;
 import com.backend.backend.api.exception.ForbiddenOperationException;
 import com.backend.backend.persistence.entity.CartEntity;
@@ -91,9 +90,7 @@ public class CartServiceTest {
 
     @Test
     void checkoutUserCart_decrementsStockAndClearsCart() throws Exception {
-        AddressEntity address = new AddressEntity("Istanbul", "A", "11111", "Turkey");    
-        UserEntity user = new UserEntity("A", "B", "ab", "ab@example.com", "pw", null, UserEntity.Role.CUSTOMER);
-        userService.addAddress(user, address);
+        UserEntity user = new UserEntity("A", "B", "ab", "ab@example.com", "pw", null, UserEntity.Role.CUSTOMER, "Turkey", "Istanbul", "A", "11111");
         UUID userId = UUID.randomUUID();
         setField(user, "id", userId);
 
@@ -116,9 +113,7 @@ public class CartServiceTest {
 
     @Test
     void checkoutUserCart_whenStockInsufficient_throwsConflict() throws Exception {
-        AddressEntity address = new AddressEntity("Istanbul", "A", "11111", "Turkey");    
-        UserEntity user = new UserEntity("A", "B", "ab", "ab@example.com", "pw", null, UserEntity.Role.CUSTOMER);
-        userService.addAddress(user, address);
+        UserEntity user = new UserEntity("A", "B", "ab", "ab@example.com", "pw", null, UserEntity.Role.CUSTOMER, "Turkey", "Istanbul", "A", "11111");
         UUID userId = UUID.randomUUID();
         setField(user, "id", userId);
 
@@ -140,9 +135,7 @@ public class CartServiceTest {
 
     @Test
     void mergeGuestCartIntoUserCart_mergesItemsAndDeletesGuestCart() throws Exception {
-        AddressEntity address = new AddressEntity("Istanbul", "A", "11111", "Turkey");    
-        UserEntity user = new UserEntity("A", "B", "ab", "ab@example.com", "pw", null, UserEntity.Role.CUSTOMER);
-        userService.addAddress(user, address);
+        UserEntity user = new UserEntity("A", "B", "ab", "ab@example.com", "pw", null, UserEntity.Role.CUSTOMER, "Turkey", "Istanbul", "A", "11111");
         UUID userId = UUID.randomUUID();
         setField(user, "id", userId);
 

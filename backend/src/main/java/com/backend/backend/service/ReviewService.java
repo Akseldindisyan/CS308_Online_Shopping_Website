@@ -10,6 +10,7 @@ import com.backend.backend.persistence.entity.UserEntity;
 import com.backend.backend.persistence.repository.ProductRepository;
 import com.backend.backend.persistence.repository.ReviewRepository;
 import com.backend.backend.persistence.repository.UserRepository;
+import org.springframework.cglib.core.Local;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -38,15 +39,10 @@ public class ReviewService {
         //Convert all review entities to O and add to the result list
         for (int i = 0; i < reviewEntities.size(); i++) {
             ReviewEntity tempReview = reviewEntities.get(i);
-            //Create product DTO
-            ProductEntity tempProduct = tempReview.getProduct();
-            ProductCardDTO productDetailedDTO = new ProductCardDTO(tempProduct.getId(), tempProduct.getProductName(), tempProduct.getCategory(),
-                    tempProduct.getPrice(), tempProduct.getStock(), true, tempProduct.getImage_url(), tempProduct.getRating());
-            //Create User DTO
-            UserEntity tempUser = tempReview.getUser();
-            UserDTO userDTO = new UserDTO(tempUser.getID(), tempUser.getName(), tempUser.getSurname(), tempUser.getUsername(),
-                    tempUser.getEmail(), tempUser.getDateOfBirth(), tempUser.getAddress());
-            result.add(new ReviewDTO(tempReview.getRating(), productDetailedDTO, userDTO, tempReview.getCreatedAt()));
+            if(tempReview.isApprovedByProductMan() == true) {
+                ReviewDTO temp = new ReviewDTO(tempReview.getRating(), tempReview.getId(), tempReview.getUser().getUsername(), tempReview.getComment(), tempReview.getCreatedAt(), tempReview.getProduct().getId(), tempReview.getProduct().getProductName());
+                result.add(temp);
+            }
         }
         return result;
     }
@@ -58,15 +54,10 @@ public class ReviewService {
         //Convert all review entities to DTo and add to the result list
         for (int i = 0; i < reviewEntities.size(); i++) {
             ReviewEntity tempReview = reviewEntities.get(i);
-            //Create product DTO
-            ProductEntity tempProduct = tempReview.getProduct();
-            ProductCardDTO productCardDTO = new ProductCardDTO(tempProduct.getId(), tempProduct.getProductName(), tempProduct.getCategory(),
-                    tempProduct.getPrice(), tempProduct.getStock(), tempProduct.isActive(), tempProduct.getImage_url(), tempProduct.getRating());
-            //Create User DTO
-            UserEntity tempUser = tempReview.getUser();
-            UserDTO userDTO = new UserDTO(tempUser.getID(), tempUser.getName(), tempUser.getSurname(), tempUser.getUsername(),
-                    tempUser.getEmail(), tempUser.getDateOfBirth(), tempUser.getAddress());
-            result.add(new ReviewDTO(tempReview.getRating(), productCardDTO, userDTO, tempReview.getCreatedAt()));
+            if(tempReview.isApprovedByProductMan() == true) {
+                ReviewDTO temp = new ReviewDTO(tempReview.getRating(), tempReview.getId(), tempReview.getUser().getUsername(), tempReview.getComment(), tempReview.getCreatedAt(), tempReview.getProduct().getId(), tempReview.getProduct().getProductName());
+                result.add(temp);
+            }
         }
         return result;
     }

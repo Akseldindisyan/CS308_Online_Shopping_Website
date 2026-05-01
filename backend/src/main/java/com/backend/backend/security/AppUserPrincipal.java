@@ -23,7 +23,7 @@ public class AppUserPrincipal implements UserDetails {
     private final UserEntity.Role role;
 
     public AppUserPrincipal(UserEntity user) {
-        this.userId = user.getID();
+        this.userId = user.getId();
         this.username = user.getUsername();
         this.password = user.getPassword();
         this.role = user.getRole();

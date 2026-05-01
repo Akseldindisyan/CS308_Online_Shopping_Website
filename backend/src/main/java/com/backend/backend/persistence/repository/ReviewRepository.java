@@ -23,7 +23,7 @@ public interface ReviewRepository extends JpaRepository<ReviewEntity, UUID> {
     List<ReviewEntity> findByProduct(ProductEntity product);
 
     //Rating
-    List<ReviewEntity> findByRating(int rating);
+    List<ReviewEntity> findByRating(double rating);
 
     //Comments
     List<ReviewEntity> findByComment(String comment);

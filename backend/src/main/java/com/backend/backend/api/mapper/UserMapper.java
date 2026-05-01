@@ -7,13 +7,16 @@ public class UserMapper {
 
     public static UserDTO toDTO(UserEntity entity) {
         UserDTO dto = new UserDTO();
-        dto.setId(entity.getID());
+        dto.setId(entity.getId());
         dto.setName(entity.getName());
         dto.setSurname(entity.getSurname());
         dto.setUsername(entity.getUsername());
         dto.setEmail(entity.getEmail());
         dto.setDateOfBirth(entity.getDateOfBirth());
-        dto.setAddress(entity.getAddress());
+        dto.setCountry(entity.getCountry());
+        dto.setCity(entity.getCity());
+        dto.setStreet(entity.getStreet());
+        dto.setPostal_code(entity.getPostal_code());
         return dto;
     }
 }

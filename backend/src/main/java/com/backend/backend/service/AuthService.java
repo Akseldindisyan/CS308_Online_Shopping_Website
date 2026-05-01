@@ -70,7 +70,7 @@ public class AuthService {
                 request.email(),
                 passwordEncoder.encode(request.password()),
                 request.dateOfBirth(),
-                UserEntity.Role.CUSTOMER);
+                UserEntity.Role.CUSTOMER, "Turkey", "Istanbul", "A", "11111");
 
         UserEntity savedUser = userRepository.save(newUser);
         String token = jwtService.generateToken(new AppUserPrincipal(savedUser));

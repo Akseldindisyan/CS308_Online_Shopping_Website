@@ -40,7 +40,7 @@ public class ReviewServiceTest {
     @Test
     void getUserReviewsTest() {
         UUID userId = UUID.randomUUID();
-        UserEntity mockUser = new UserEntity("John", "Doe", "johndoe", "john@example.com", "pass", LocalDate.of(1990, 1, 1), UserEntity.Role.CUSTOMER);
+        UserEntity mockUser = new UserEntity("John", "Doe", "johndoe", "john@example.com", "pass", LocalDate.of(1990, 1, 1), UserEntity.Role.CUSTOMER, "Turkey", "Istanbul", "A", "1111");
         mockUser.setId(userId);
 
         ProductEntity mockProduct = new ProductEntity("Laptop", 4.5, 50, "M1", "SN1", "Desc", 1200.0, "Dist", "USA", true);
@@ -55,8 +55,8 @@ public class ReviewServiceTest {
 
         assertEquals(1, result.size());
         assertEquals(5.0, result.get(0).rating());
-        assertEquals("Laptop", result.get(0).product().getName());
-        assertEquals("John", result.get(0).user().getName());
+        assertEquals("Laptop", result.get(0).product_name());
+        assertEquals("johndoe", result.get(0).username());
 
         Mockito.verify(userRepository).findById(userId);
         Mockito.verify(reviewRepository).findByUser(mockUser);
@@ -65,7 +65,7 @@ public class ReviewServiceTest {
     @Test
     void getProductReviewsTest() {
         UUID productId = UUID.randomUUID();
-        UserEntity mockUser = new UserEntity("Jane", "Smith", "janesmith", "jane@example.com", "pass", LocalDate.of(1995, 1, 1), UserEntity.Role.CUSTOMER);
+        UserEntity mockUser = new UserEntity("Jane", "Smith", "janesmith", "jane@example.com", "pass", LocalDate.of(1995, 1, 1), UserEntity.Role.CUSTOMER, "Turkey", "Istanbul", "A", "1111");
 
         ProductEntity mockProduct = new ProductEntity("Smartphone", 4.7, 100, "M2", "SN2", "Desc", 800.0, "Dist", "China", true);
         mockProduct.setId(productId);
@@ -79,8 +79,8 @@ public class ReviewServiceTest {
 
         assertEquals(1, result.size());
         assertEquals(4.0, result.get(0).rating());
-        assertEquals("Smartphone", result.get(0).product().getName());
-        assertEquals("Jane", result.get(0).user().getName());
+        assertEquals("Smartphone", result.get(0).product_name());
+        assertEquals("janesmith", result.get(0).username());
 
         Mockito.verify(productRepository).findById(productId);
         Mockito.verify(reviewRepository).findByProduct(mockProduct);
@@ -96,7 +96,7 @@ public class ReviewServiceTest {
 
         UserEntity result = reviewService.getExistingUser(userId);
 
-        assertEquals(userId, result.getID());
+        assertEquals(userId, result.getId());
     }
 
     @Test
