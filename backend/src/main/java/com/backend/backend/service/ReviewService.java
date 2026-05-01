@@ -12,6 +12,7 @@ import com.backend.backend.persistence.repository.ReviewRepository;
 import com.backend.backend.persistence.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -78,6 +79,12 @@ public class ReviewService {
     public ProductEntity getExistingProduct(UUID productId) {
         return productRepository.findById(productId)
                 .orElseThrow(() -> new ResourceNotFoundException("PRODUCT_NOT_FOUND", "Product not found: " + productId));
+    }
+
+    //Save reviews
+    public void CreateReview(ProductEntity product, UserEntity user, double rating, String comment, boolean approvedByProductMan, LocalDate productBuyDate, int foundThisHelpful, LocalDate createdAt, LocalDate approvedAt) {
+        ReviewEntity newReview = new ReviewEntity(product, user, rating, comment, approvedByProductMan, productBuyDate, foundThisHelpful, createdAt, approvedAt);
+        reviewRepository.save(newReview);
     }
 
 
