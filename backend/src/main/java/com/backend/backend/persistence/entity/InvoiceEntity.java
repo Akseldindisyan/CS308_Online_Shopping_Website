@@ -24,8 +24,8 @@ public class InvoiceEntity {
     @JoinColumn(name = "user_id") // Database column is user_id
     private UserEntity customer;
 
-    @OneToMany(cascade = CascadeType.ALL)
-    @JoinColumn(name = "invoice_id")
+    // InvoiceEntity
+    @OneToMany(mappedBy = "invoice", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<InvoiceItemEntity> items;
 
     @Column(name = "totalamount")

@@ -2,10 +2,7 @@ package com.backend.backend.service;
 
 import com.backend.backend.api.dto.*;
 import com.backend.backend.persistence.entity.*;
-import com.backend.backend.persistence.repository.DeliveryRepository;
-import com.backend.backend.persistence.repository.InvoiceRepository;
-import com.backend.backend.persistence.repository.ProductRepository;
-import com.backend.backend.persistence.repository.UserRepository;
+import com.backend.backend.persistence.repository.*;
 import jakarta.mail.MessagingException;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
@@ -21,17 +18,20 @@ public class BankingService {
     private final UserRepository userRepository;
     private final DeliveryRepository deliveryRepository;
     private final InvoiceEmailService invoiceEmailService;
+    private final CartRepository cartRepository;
 
     public BankingService(ProductRepository productRepository,
                           InvoiceRepository invoiceRepository,
                           UserRepository userRepository,
                           DeliveryRepository deliveryRepository,
-                          InvoiceEmailService invoiceEmailService) {
+                          InvoiceEmailService invoiceEmailService,
+                          CartRepository cartRepository) {
         this.productRepository = productRepository;
         this.invoiceRepository = invoiceRepository;
         this.userRepository = userRepository;
         this.deliveryRepository = deliveryRepository;
         this.invoiceEmailService = invoiceEmailService;
+        this.cartRepository = cartRepository;
     }
 
 
@@ -41,6 +41,7 @@ public class BankingService {
         List<InvoiceItemEntity> invoiceItems = processItems(cart.items());
         InvoiceEntity invoice = createAndSaveInvoice(user, invoiceItems, cart.totalPrice());
         createDelivery(invoice, user, address);
+        clearCart(cart.cartId());
         invoiceEmailService.sendInvoiceEmail(invoice);
         return toDTO(invoice, cart.userId());
     }
@@ -78,9 +79,10 @@ public class BankingService {
     private InvoiceEntity createAndSaveInvoice(UserEntity user, List<InvoiceItemEntity> items, double totalPrice) {
         InvoiceEntity invoice = new InvoiceEntity();
         invoice.setCustomer(user);
-        invoice.setItems(items);
         invoice.setTotalPrice(totalPrice);
         invoice.setDate(new Date());
+        items.forEach(item -> item.setInvoice(invoice));
+        invoice.setItems(items);
         return invoiceRepository.save(invoice);
     }
 
@@ -88,6 +90,7 @@ public class BankingService {
         List<InvoiceItemDTO> itemDTOs = invoice.getItems().stream()
                 .map(i -> new InvoiceItemDTO(
                         i.getProduct().getId(),
+                        i.getProduct().getProductName(),
                         i.getQuantity(),
                         i.getUnitPrice(),
                         i.getTotalPrice()
@@ -111,5 +114,12 @@ public class BankingService {
         delivery.setStatus("PENDING");
         delivery.setCreatedAt(new Date());
         return deliveryRepository.save(delivery);
+    }
+
+    private void clearCart(UUID cartId) {
+        cartRepository.findById(cartId).ifPresent(cart -> {
+            cart.getItems().clear();
+            cartRepository.save(cart);
+        });
     }
 }

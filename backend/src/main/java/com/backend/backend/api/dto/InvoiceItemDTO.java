@@ -4,6 +4,7 @@ import java.util.UUID;
 
 public record InvoiceItemDTO(
         UUID productId,
+        String productName,
         Integer quantity,
         Double unitPrice,
         Double totalPrice

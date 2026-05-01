@@ -18,6 +18,10 @@ public class InvoiceItemEntity {
     private UUID id;
 
     @ManyToOne
+    @JoinColumn(name = "invoice_id", nullable = false)
+    private InvoiceEntity invoice;
+
+    @ManyToOne
     @JoinColumn(name = "product_id")
     private ProductEntity product;
 
