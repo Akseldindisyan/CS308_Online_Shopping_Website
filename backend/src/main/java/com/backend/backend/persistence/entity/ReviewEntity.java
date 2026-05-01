@@ -32,7 +32,7 @@ public class ReviewEntity {
 
     @Min(1)
     @Max(10)
-    private int rating;
+    private double rating;
 
     @Column(name = "review_comment")
     private String comment;
@@ -47,7 +47,7 @@ public class ReviewEntity {
 
     private LocalDate approvedAt;
 
-    public ReviewEntity(ProductEntity product, UserEntity user, int rating, String comment, boolean approvedByProductMan, LocalDate productBuyDate, int foundThisHelpful, LocalDate createdAt, LocalDate approvedAt) {
+    public ReviewEntity(ProductEntity product, UserEntity user, double rating, String comment, boolean approvedByProductMan, LocalDate productBuyDate, int foundThisHelpful, LocalDate createdAt, LocalDate approvedAt) {
         this.product = product;
         this.user = user;
         this.rating = rating;
