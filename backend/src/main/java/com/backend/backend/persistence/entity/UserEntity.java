@@ -32,7 +32,10 @@ public class UserEntity {
     private String email;
     private String password; //TODO: Make secure implementation
     private LocalDate dateOfBirth = null;
-    private List<AddressEntity> address;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<AddressEntity> address = new ArrayList<>();
+
 
     @Enumerated(EnumType.STRING)
     private Role role = Role.CUSTOMER;

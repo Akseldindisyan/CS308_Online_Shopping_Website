@@ -34,8 +34,8 @@ public class ProductServiceTest {
     @Test
     void getAllByIdAscTest(){
         List<ProductEntity> productList = List.of(
-                new ProductEntity("Laptop A", 4.5, 50, "Model X", "SN12345", "High performance laptop", 1200.0, "Distributor A", "USA"),
-                new ProductEntity("Smartphone", 4.7, 100, "Model Y", "SN54321", "Latest smartphone", 800.0, "Distributor B", "China")
+                new ProductEntity("Laptop A", 4.5, 50, "Model X", "SN12345", "High performance laptop", 1200.0, "Distributor A", "USA", true),
+                new ProductEntity("Smartphone", 4.7, 100, "Model Y", "SN54321", "Latest smartphone", 800.0, "Distributor B", "China", true)
         );
         Page<ProductEntity> expectedProductList = new PageImpl<>(productList);
 
@@ -59,8 +59,8 @@ public class ProductServiceTest {
     @Test
     void getAllOrderByPriceTest(){
         List<ProductEntity> productList = List.of(
-                new ProductEntity("Smartphone", 4.7, 100, "Model Y", "SN54321", "Latest smartphone", 800.0, "Distributor B", "China"),
-                new ProductEntity("Laptop A", 4.5, 50, "Model X", "SN12345", "High performance laptop", 1200.0, "Distributor A", "USA")
+                new ProductEntity("Smartphone", 4.7, 100, "Model Y", "SN54321", "Latest smartphone", 800.0, "Distributor B", "China", true),
+                new ProductEntity("Laptop A", 4.5, 50, "Model X", "SN12345", "High performance laptop", 1200.0, "Distributor A", "USA", true)
         );
         Page<ProductEntity> expectedProductList = new PageImpl<>(productList);
 
@@ -81,8 +81,8 @@ public class ProductServiceTest {
     @Test
     void getAllOrderByRatingAscTest() {
         List<ProductEntity> productList = List.of(
-                new ProductEntity("Budget Phone", 3.5, 100, "Model Z", "SN999", "Basic smartphone", 300.0, "Distributor C", "China"),
-                new ProductEntity("Premium Laptop", 4.9, 50, "Model X", "SN123", "High performance", 2000.0, "Distributor A", "USA")
+                new ProductEntity("Budget Phone", 3.5, 100, "Model Z", "SN999", "Basic smartphone", 300.0, "Distributor C", "China", true),
+                new ProductEntity("Premium Laptop", 4.9, 50, "Model X", "SN123", "High performance", 2000.0, "Distributor A", "USA", true)
         );
         Page<ProductEntity> expectedProductList = new PageImpl<>(productList);
 
@@ -103,8 +103,8 @@ public class ProductServiceTest {
     @Test
     void searchByProductNameTest() {
         List<ProductEntity> productList = List.of(
-                new ProductEntity("Gaming Laptop", 4.8, 20, "Model G", "SN111", "Fast laptop", 1500.0, "Distributor A", "USA"),
-                new ProductEntity("Work Laptop", 4.2, 50, "Model W", "SN222", "Reliable laptop", 900.0, "Distributor B", "UK")
+                new ProductEntity("Gaming Laptop", 4.8, 20, "Model G", "SN111", "Fast laptop", 1500.0, "Distributor A", "USA",true),
+                new ProductEntity("Work Laptop", 4.2, 50, "Model W", "SN222", "Reliable laptop", 900.0, "Distributor B", "UK",true)
         );
         Page<ProductEntity> expectedProductList = new PageImpl<>(productList);
 
@@ -131,7 +131,7 @@ public class ProductServiceTest {
 
     @Test
     void UpdateStockTest(){
-        ProductEntity existingProduct = new ProductEntity("Keyboard", 5.0, 20, "Model K", "SN111", "Desc", 50.0, "Dist", "USA");
+        ProductEntity existingProduct = new ProductEntity("Keyboard", 5.0, 20, "Model K", "SN111", "Desc", 50.0, "Dist", "USA",true);
         Mockito.when(productRepository.findByProductName("Keyboard")).thenReturn(existingProduct);
 
         productService.UpdateStock("Keyboard", 0);
@@ -142,7 +142,7 @@ public class ProductServiceTest {
 
     @Test
     void CreateProductTest(){
-        productService.CreateProduct("Monitor", 4.5, 10, "Model M", "SN222", "4K Monitor", 300.0, "Dist", "USA", "Accessories");
+        productService.CreateProduct("Monitor", 4.5, 10, "Model M", "SN222", "4K Monitor", 300.0, "Dist", "USA", "Accessories",true);
 
         ArgumentCaptor<ProductEntity> captor = ArgumentCaptor.forClass(ProductEntity.class);
         Mockito.verify(productRepository).save(captor.capture());
