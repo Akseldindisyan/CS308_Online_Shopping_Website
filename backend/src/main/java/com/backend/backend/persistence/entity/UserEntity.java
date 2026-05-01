@@ -36,6 +36,7 @@ public class UserEntity {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<AddressEntity> address = new ArrayList<>();
 
+
     @Enumerated(EnumType.STRING)
     private Role role = Role.CUSTOMER;
 

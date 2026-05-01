@@ -62,7 +62,7 @@ public class CartServiceTest {
         guestCart = new CartEntity();
         guestCart.setGuestToken("guest-token");
 
-        product = new ProductEntity("Mouse", 4.2, 10, "M", "SN", "Wireless", 20.0, "D", "TR");
+        product = new ProductEntity("Mouse", 4.2, 10, "M", "SN", "Wireless", 20.0, "D", "TR",true);
         setField(product, "id", UUID.randomUUID());
     }
 

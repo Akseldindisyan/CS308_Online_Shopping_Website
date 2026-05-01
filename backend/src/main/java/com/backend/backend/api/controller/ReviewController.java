@@ -32,9 +32,9 @@ public class ReviewController {
      * URL: GET /api/reviews/user/{userId}
      */
     @GetMapping("/user/{userId}")
-    public ResponseEntity<List<ReviewDTO>> getUserReviews(@PathVariable UUID userId) {
+    public List<ReviewDTO> getUserReviews(@PathVariable UUID userId) {
         List<ReviewDTO> reviews = reviewService.getUserReviews(userId);
-        return ResponseEntity.ok(reviews);
+        return reviews;
     }
 
     /**
@@ -42,8 +42,8 @@ public class ReviewController {
      * URL: GET /api/reviews/product/{productId}
      */
     @GetMapping("/product/{productId}")
-    public ResponseEntity<List<ReviewDTO>> getProductReviews(@PathVariable UUID productId) {
+    public List<ReviewDTO> getProductReviews(@PathVariable UUID productId) {
         List<ReviewDTO> reviews = reviewService.getProductReviews(productId);
-        return ResponseEntity.ok(reviews);
+        return reviews;
     }
 }

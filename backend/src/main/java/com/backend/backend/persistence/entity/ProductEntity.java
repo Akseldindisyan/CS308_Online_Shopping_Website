@@ -11,6 +11,7 @@ import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.apache.el.parser.BooleanNode;
 
 
 @NoArgsConstructor
@@ -57,7 +58,10 @@ public class ProductEntity {
     @Column(name = "image_url")
     private String image_url;
 
-    public ProductEntity(String productName, double rating, int stock, String model, String serialNumber, String desc, double price, String distInfo, String country){
+    @Column(name = "active")
+    private boolean active;
+
+    public ProductEntity(String productName, double rating, int stock, String model, String serialNumber, String desc, double price, String distInfo, String country, boolean active){
         this.productName = productName;
         this.rating = rating;
         this.stock = stock;
@@ -69,5 +73,6 @@ public class ProductEntity {
         this.country = country;
         this.category = category;
         this.image_url = image_url;
+        this.active = active;
     }
 }

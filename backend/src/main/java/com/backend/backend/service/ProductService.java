@@ -59,8 +59,8 @@ public class ProductService {
         ProductRepo.save(product);
     }
 
-    public void CreateProduct(String productName, double rating, int stock, String model, String serialNumber, String desc, double price, String distInfo, String country, String category){
-        ProductEntity newProduct = new ProductEntity(productName, rating, stock, model, serialNumber, desc, price, distInfo, country);
+    public void CreateProduct(String productName, double rating, int stock, String model, String serialNumber, String desc, double price, String distInfo, String country, String category, boolean active){
+        ProductEntity newProduct = new ProductEntity(productName, rating, stock, model, serialNumber, desc, price, distInfo, country, active);
         ProductRepo.save(newProduct);
     }
 

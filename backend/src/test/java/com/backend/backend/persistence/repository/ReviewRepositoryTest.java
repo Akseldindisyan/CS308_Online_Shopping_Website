@@ -40,9 +40,9 @@ public class ReviewRepositoryTest {
     void initializeMockupDatabase() {
         reviewRepository.deleteAll();
         //Products
-        ProductEntity product1 = new ProductEntity("Laptop A", 4.5, 50, "Model X", "SN12345", "High performance laptop", 1200.0, "Distributor A", "USA");
-        ProductEntity product2 = new ProductEntity("Smartphone", 4.7, 100, "Model Y", "SN54321", "Latest smartphone", 800.0, "Distributor B", "China");
-        ProductEntity product3 = new ProductEntity("Headphones", 4.2, 70, "Model H", "SN67890", "Noise-cancelling headphones", 200.0, "Distributor C", "Germany");
+        ProductEntity product1 = new ProductEntity("Laptop A", 4.5, 50, "Model X", "SN12345", "High performance laptop", 1200.0, "Distributor A", "USA",true);
+        ProductEntity product2 = new ProductEntity("Smartphone", 4.7, 100, "Model Y", "SN54321", "Latest smartphone", 800.0, "Distributor B", "China",true);
+        ProductEntity product3 = new ProductEntity("Headphones", 4.2, 70, "Model H", "SN67890", "Noise-cancelling headphones", 200.0, "Distributor C", "Germany",true);
 
         //Save product Repository
         productRepository.saveAll(List.of(product1, product2, product3));

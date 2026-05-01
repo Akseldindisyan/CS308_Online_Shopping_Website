@@ -13,7 +13,7 @@ public class UserMapper {
         dto.setUsername(entity.getUsername());
         dto.setEmail(entity.getEmail());
         dto.setDateOfBirth(entity.getDateOfBirth());
-        dto.setAddress(entity.getAddress().getFirst());
+        dto.setAddress(entity.getAddress());
         return dto;
     }
 }
