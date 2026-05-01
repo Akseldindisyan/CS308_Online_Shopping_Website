@@ -6,6 +6,8 @@ import AppContent from "./AppContent";
 import ProductPage from "./product_page/product_page";
 import ShoppingCart from "./shoppingcart/shoppingcart";
 import "./App.css";
+import CheckoutSuccess from "./checkoutpage/CheckoutSuccess";
+import PaymentPage from "./payment_page/PaymentPage";
 
 export default function App() {
   return (
@@ -17,6 +19,8 @@ export default function App() {
       <Route path="/cart" element={<ShoppingCart />} />
       <Route path="/pm-admin/*" element={<PMDashboard />} />
       <Route path="/sm-admin/*" element={<SMDashboard />} />
+      <Route path="/checkout/success" element={<CheckoutSuccess />} />
+      <Route path="/checkout/payment" element={<PaymentPage />} />
     </Routes>
   );
 }
