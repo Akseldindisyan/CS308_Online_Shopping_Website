@@ -3,23 +3,39 @@ import { Link, useParams } from 'react-router-dom'
 import { FaStar } from 'react-icons/fa'
 import './product_page.css'
 import { products, type Product } from './productData'
+import { getStoredAuthToken } from '../api/auth'
 import StarRating from './rating'
+import { useToast } from '../components/ToastProvider'
+import { useNavigate } from 'react-router-dom'
+
 
 type ProductReview = {
   id: number
-  author: string
-  text: string
+  username: string
+  comment: string
   rating: number
-  date: string
+  createdAt: string
 }
 
 function ProductPageContent({ product }: { product: Product }) {
+  let url = "http://localhost:8080/api/review/product/"
+  let id = product.id
+
+  useEffect(() => {
+  fetch(url + id)
+  .then(res => res.json())
+  .then(data => setReviews(data))
+  }, [])
+  console.log(products);
+
   const [selectedImage, setSelectedImage] = useState(product.image)
   const [statusMessage, setStatusMessage] = useState('')
   const [reviewMessage, setReviewMessage] = useState('')
   const [reviewMessageType, setReviewMessageType] = useState<'success' | 'error' | ''>('')
   const [reviews, setReviews] = useState<ProductReview[]>([])
-  const [reviewForm, setReviewForm] = useState({ author: '', text: '', rating: 0 })
+  const [reviewForm, setReviewForm] = useState({ author: '', text: '', rating: 0, })
+  const { showToast } = useToast()
+  const navigate = useNavigate()
   
   const formattedPrice = new Intl.NumberFormat('en-US', {
     style: 'currency',
@@ -37,31 +53,57 @@ function ProductPageContent({ product }: { product: Product }) {
   const handleReviewSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
 
-    const author = reviewForm.author.trim()
-    const text = reviewForm.text.trim()
+    const isLoggedIn = Boolean(getStoredAuthToken())
+    const username = reviewForm.author.trim()
+    const comment = reviewForm.text.trim()
 
-    if (!author || !text || reviewForm.rating === 0) {
+    if (!isLoggedIn) {
+      showToast('Please log in to comment.', 'error')
+      return
+    }
+
+    if (!comment || reviewForm.rating === 0) {
       setReviewMessage('Please add your name, a comment, and a star rating before submitting.')
       setReviewMessageType('error')
       return
     }
 
+    let url = "http://localhost:8080/api/review/product/comment/"
+    let id = product.id
+    const token = localStorage.getItem('authToken')
+    const today = new Date().toISOString().split('T')[0]
+
     const newReview: ProductReview = {
-      id: Date.now(),
-      author,
-      text,
+      id,
+      username,
+      comment,
       rating: reviewForm.rating,
-      date: new Date().toLocaleDateString('en-US', {
+      createdAt: new Date().toLocaleDateString('en-US', {
         month: 'short',
         day: 'numeric',
         year: 'numeric',
       }),
     }
 
-    setReviews((currentReviews) => [newReview, ...currentReviews])
-    setReviewForm({ author: '', text: '', rating: 0 })
+    fetch(url, {
+      method: "POST",
+      headers: {
+        'Content-Type':'application/json'
+      },
+      body: JSON.stringify({
+        token: token,
+        productId: id,
+        comment: reviewForm.text,
+        rating: reviewForm.rating,
+        commentDate: today
+      })
+    })
+
+    //setReviews((currentReviews) => [newReview, ...currentReviews])
+    setReviewForm({ author: '', text: '', rating: 0})
     setReviewMessage('Thanks! Your comment was added in demo mode.')
     setReviewMessageType('success')
+    window.location.reload();
   }
 
   return (
@@ -169,12 +211,13 @@ function ProductPageContent({ product }: { product: Product }) {
                 <article key={review.id} className="product-review-card">
                   <div className="product-review-top">
                     <div>
-                      <h3>{review.author}</h3>
-                      <span className="product-review-date">{review.date}</span>
+                      <h3>{review.username}</h3>
+                      <span className="product-review-date">{review.createdAt}</span>
                     </div>
                     <StarRating value={review.rating} readOnly size={18} />
                   </div>
-                  <p>{review.text}</p>
+                  <p>{review.comment}</p>
+
                 </article>
               ))
             ) : (
@@ -189,7 +232,7 @@ function ProductPageContent({ product }: { product: Product }) {
             <p className="product-review-help">Your feedback helps other shoppers in this demo store.</p>
 
             <form className="product-review-form" onSubmit={handleReviewSubmit}>
-              <label className="product-form-field">
+              {/* <label className="product-form-field">
                 <span>Your name</span>
                 <input
                   type="text"
@@ -204,8 +247,7 @@ function ProductPageContent({ product }: { product: Product }) {
                   }}
                   placeholder="Enter your name"
                 />
-              </label>
-
+              </label> */}
               <label className="product-form-field">
                 <span>Your comment</span>
                 <textarea
@@ -213,7 +255,7 @@ function ProductPageContent({ product }: { product: Product }) {
                   onChange={(event) => {
                     setReviewForm((currentForm) => ({
                       ...currentForm,
-                      text: event.target.value,
+                      text: event.target.value, 
                     }))
                     setReviewMessage('')
                     setReviewMessageType('')
@@ -263,8 +305,6 @@ function ProductPage() {
           .then(data => setProductInfo(data))
   }, [])
   console.log(productInfo)
-
-  //const product = products.find((item) => item.id === Number(id))
 
   if (!productInfo) {
     return (
