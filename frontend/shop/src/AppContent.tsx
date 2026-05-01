@@ -110,8 +110,7 @@ function AppContent() {
 
   const handleLogout = () => {
     clearAuthToken()
-    window.location.reload()
-  }
+n  }
 
   return (
     <div className="page">
