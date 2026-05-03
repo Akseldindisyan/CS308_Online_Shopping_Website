@@ -29,11 +29,13 @@ export interface RegisterRequestDTO {
 export interface ProductCardDTO {
   id: UUID;
   name: string;
+  category: string;
   categoryId: number | null;
   price: number;
   stock: number;
   active: boolean;
   imageUrl: string | null;
+  rating: number | null;
 }
 
 // Search query params for GET /api/products/search

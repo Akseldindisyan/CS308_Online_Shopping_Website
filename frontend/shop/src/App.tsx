@@ -17,6 +17,7 @@ export default function App() {
       <Route path="/cart" element={<ShoppingCart />} />
       <Route path="/pm-admin/*" element={<PMDashboard />} />
       <Route path="/sm-admin/*" element={<SMDashboard />} />
+      <Route path="*" element={<h1>404 Not Found</h1>} />
     </Routes>
   );
 }

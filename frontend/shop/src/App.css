@@ -137,7 +137,7 @@ body {
 .btn-secondary:hover,
 .btn-primary:hover,
 .btn-action:hover,
-.category-nav a:hover,
+.category-nav button:hover,
 .search-wrap button:hover {
   transform: translateY(-1px);
 }
@@ -162,7 +162,7 @@ body {
 .btn-secondary:focus-visible,
 .btn-primary:focus-visible,
 .btn-action:focus-visible,
-.category-nav a:focus-visible,
+.category-nav button:focus-visible,
 .search-wrap button:focus-visible {
   outline: 2px solid var(--focus);
   outline-offset: 2px;
@@ -183,14 +183,22 @@ button:disabled {
   gap: 10px;
 }
 
-.category-nav a {
-  text-decoration: none;
+.category-nav button {
   color: var(--text);
   background: var(--card-bg);
   border: 1px solid var(--border);
   border-radius: 999px;
   padding: 8px 14px;
   font-size: 0.88rem;
+  cursor: pointer;
+  transition: transform 0.2s ease, border-color 0.2s ease, background-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.category-nav button.active {
+  background: var(--focus);
+  border-color: var(--focus);
+  box-shadow: 0 8px 18px rgba(37, 99, 235, 0.24);
 }
 
 .main-content {
@@ -224,6 +232,60 @@ button:disabled {
   color: #fca5a5;
 }
 
+.catalog-controls {
+  margin-top: 22px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 14px;
+  align-items: end;
+  padding: 14px;
+  background: rgba(30, 41, 59, 0.72);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+}
+
+.filter-panel,
+.sort-panel {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: end;
+}
+
+.sort-panel {
+  justify-content: flex-end;
+}
+
+.control-group {
+  display: grid;
+  gap: 6px;
+  min-width: 140px;
+}
+
+.control-group label {
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.control-group input,
+.control-group select {
+  width: 100%;
+  min-height: 40px;
+  background: #111827;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--text);
+  padding: 9px 11px;
+  font: inherit;
+}
+
+.control-group input:focus,
+.control-group select:focus {
+  border-color: var(--focus);
+  outline: 2px solid rgba(59, 130, 246, 0.35);
+}
+
 .product-grid {
   margin-top: 22px;
   display: grid;
@@ -239,6 +301,7 @@ button:disabled {
   display: flex;
   flex-direction: column;
   gap: 10px;
+  max-width: 300px;
 }
 
 .product-image {
@@ -328,5 +391,22 @@ button:disabled {
 
   .product-actions {
     flex-direction: column;
+  }
+
+  .catalog-controls {
+    grid-template-columns: 1fr;
+  }
+
+  .filter-panel,
+  .sort-panel {
+    width: 100%;
+  }
+
+  .control-group {
+    flex: 1 1 160px;
+  }
+
+  .sort-panel .btn-secondary {
+    width: 100%;
   }
 }
