@@ -279,6 +279,7 @@ button:disabled {
   margin-top: auto;
   display: flex;
   gap: 8px;
+  flex-wrap: wrap;
 }
 
 .product-actions .btn-secondary,

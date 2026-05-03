@@ -8,6 +8,8 @@ import {
 } from './api/auth'
 import { fetchAllProducts, searchProducts } from './api/products'
 import { addItemToCart } from './api/cart'
+import { addToWishlist } from './api/wishlist'
+import { getStoredUserId } from './api/auth'
 import type { ProductCardDTO, UUID } from './data/types'
 import { useToast } from './components/ToastProvider'
 import './App.css'
@@ -108,6 +110,17 @@ function AppContent() {
     }
   }
 
+  const handleAddToWishlist = async (productId: UUID) => {
+    const userId = getStoredUserId()
+    if (!userId) { showToast('Please login to use wishlist', 'error'); return }
+    try {
+      await addToWishlist(userId, productId)
+      showToast('Added to wishlist', 'success')
+    } catch {
+      showToast('Failed to add to wishlist', 'error')
+    }
+  }
+
   const handleLogout = () => {
     clearAuthToken()
     showToast('Logged out successfully', 'success')
@@ -153,6 +166,12 @@ function AppContent() {
               <Link to="/login" className="btn-secondary">
                 Login / Register
               </Link>
+            )}
+            {username && (
+              <>
+                <Link to="/wishlist" className="btn-secondary">My Wishlist</Link>
+                <Link to="/orders" className="btn-secondary">My Orders</Link>
+              </>
             )}
             <Link to="/cart" className="btn-primary">
               My Cart
@@ -220,6 +239,13 @@ function AppContent() {
                     onClick={() => handleAddToCart(product.id, product.name)}
                   >
                     {addingToCart === product.id ? 'Adding…' : 'Add to Cart'}
+                  </button>
+                  <button
+                    type="button"
+                    className="btn-secondary"
+                    onClick={() => handleAddToWishlist(product.id)}
+                  >
+                    ♡ Wishlist
                   </button>
                 </div>
               </article>
