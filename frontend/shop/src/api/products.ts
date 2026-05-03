@@ -19,6 +19,9 @@ export async function searchProducts(
   const query = new URLSearchParams({
     name: params.name,
     page: String(params.page ?? 0),
+    size: String(params.size ?? 10),
+    sort: params.sort ?? "id",
+    inStock: String(params.inStock ?? false),
   });
   const response = await apiRequest<SearchResponseShape>(
     `/api/products/search?${query.toString()}`,
@@ -79,11 +82,13 @@ export async function fetchAllProducts(params?: {
   page?: number;
   size?: number;
   sort?: string;
+  inStock?: boolean;
 }): Promise<ProductCardDTO[]> {
   const query = new URLSearchParams({
     page: String(params?.page ?? 0),
     size: String(params?.size ?? 10),
     sort: params?.sort ?? "id",
+    inStock: String(params?.inStock ?? false),
   });
   const response = await apiRequest<SearchResponseShape>(
     `/api/products?${query.toString()}`,

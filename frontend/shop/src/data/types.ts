@@ -96,6 +96,9 @@ export interface ProductDetailedDTO {
 export interface ProductSearchParams {
   name: string;
   page?: number;
+  size?: number;
+  sort?: string;
+  inStock?: boolean;
 }
 
 export type Product = {

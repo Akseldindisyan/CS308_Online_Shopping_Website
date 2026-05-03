@@ -1,4 +1,4 @@
-import { useState, useEffect, type FormEvent } from 'react'
+import { useState, useEffect, useCallback, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 import {
   clearAuthToken,
@@ -28,10 +28,57 @@ function AppContent() {
   const [isSearching, setIsSearching] = useState(false)
   const [searchError, setSearchError] = useState('')
   const [searchActive, setSearchActive] = useState(false)
+  const [sortBy, setSortBy] = useState('id')
+  const [inStockOnly, setInStockOnly] = useState(false)
   const [loading, setLoading] = useState(true)
   const [addingToCart, setAddingToCart] = useState<UUID | null>(null)
   const username = getStoredUsername()
   const { showToast } = useToast()
+
+  const loadProducts = useCallback(async (
+    queryText: string,
+    options?: { sort?: string; inStock?: boolean; setLoadingState?: boolean },
+  ) => {
+    const trimmedQuery = queryText.trim()
+    const nextSort = options?.sort ?? sortBy
+    const nextInStock = options?.inStock ?? inStockOnly
+    const shouldSetLoadingState = options?.setLoadingState ?? true
+
+    if (shouldSetLoadingState) {
+      setIsSearching(true)
+    }
+
+    setSearchError('')
+    try {
+      if (trimmedQuery) {
+        const data = await searchProducts({
+          name: trimmedQuery,
+          page: 0,
+          size: 10,
+          sort: nextSort,
+          inStock: nextInStock,
+        })
+        setProducts(data)
+        setSearchActive(true)
+        return
+      }
+
+      const data = await fetchAllProducts({
+        page: 0,
+        size: 10,
+        sort: nextSort,
+        inStock: nextInStock,
+      })
+      setProducts(data)
+      setSearchActive(false)
+    } catch (err) {
+      setSearchError(err instanceof Error ? err.message : 'Failed to load products')
+    } finally {
+      if (shouldSetLoadingState) {
+        setIsSearching(false)
+      }
+    }
+  }, [inStockOnly, sortBy])
 
   // Initial load — all products + ensure guest token exists
   useEffect(() => {
@@ -42,8 +89,11 @@ function AppContent() {
             console.error('Failed to create guest token:', err),
           )
         }
-        const data = await fetchAllProducts({ page: 0, size: 10 })
-        setProducts(data)
+        await loadProducts('', {
+          sort: 'id',
+          inStock: false,
+          setLoadingState: false,
+        })
       } catch (err) {
         setSearchError(
           err instanceof Error ? err.message : 'Failed to load products',
@@ -53,44 +103,35 @@ function AppContent() {
       }
     }
     init()
-  }, [])
+  }, [loadProducts])
 
   const handleSearchSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    const name = searchText.trim()
-    setIsSearching(true)
-    setSearchError('')
-
-    try {
-      if (name) {
-        const data = await searchProducts({ name, page: 0 })
-        setProducts(data)
-        setSearchActive(true)
-      } else {
-        const data = await fetchAllProducts({ page: 0, size: 10 })
-        setProducts(data)
-        setSearchActive(false)
-      }
-    } catch (err) {
-      setSearchError(err instanceof Error ? err.message : 'Search failed')
-    } finally {
-      setIsSearching(false)
-    }
+    await loadProducts(searchText)
   }
 
   const handleResetSearch = async () => {
     setSearchText('')
-    setSearchError('')
-    setSearchActive(false)
-    setIsSearching(true)
-    try {
-      const data = await fetchAllProducts({ page: 0, size: 10 })
-      setProducts(data)
-    } catch (err) {
-      setSearchError(err instanceof Error ? err.message : 'Failed to reload')
-    } finally {
-      setIsSearching(false)
-    }
+    await loadProducts('')
+  }
+
+  const handleSortChange = async (nextSort: string) => {
+    setSortBy(nextSort)
+    await loadProducts(searchActive ? searchText : '', { sort: nextSort })
+  }
+
+  const handleInStockToggle = async (nextInStock: boolean) => {
+    setInStockOnly(nextInStock)
+    await loadProducts(searchActive ? searchText : '', { inStock: nextInStock })
+  }
+
+  const handleResetFilters = async () => {
+    setSortBy('id')
+    setInStockOnly(false)
+    await loadProducts(searchActive ? searchText : '', {
+      sort: 'id',
+      inStock: false,
+    })
   }
 
   const handleAddToCart = async (productId: UUID, productName: string) => {
@@ -185,47 +226,100 @@ function AppContent() {
           {searchError && <p className="search-error">{searchError}</p>}
         </section>
 
-        {loading ? (
-          <p>Loading products…</p>
-        ) : products.length === 0 ? (
-          <p>No products found.</p>
-        ) : (
-          <section className="product-grid" aria-label="Technology products">
-            {products.map((product) => (
-              <article key={product.id} className="product-card">
-                {product.imageUrl && (
-                  <img
-                    src={product.imageUrl}
-                    alt={product.name}
-                    className="product-image"
-                  />
-                )}
-                <span className="product-category">{product.category}</span>
-                <h2>{product.name}</h2>
-                <p className="rating">Rating: {product.rating} / 5</p>
-                <p className="price">${product.price}</p>
-                {product.stock === 0 && (
-                  <p className="out-of-stock">Out of stock</p>
-                )}
-                <div className="product-actions">
-                  <Link to={`/product/${product.id}`} className="btn-secondary">
-                    Details
-                  </Link>
-                  <button
-                    type="button"
-                    className="btn-action"
-                    disabled={
-                      product.stock === 0 || addingToCart === product.id
-                    }
-                    onClick={() => handleAddToCart(product.id, product.name)}
+        <section className="catalog-layout" aria-label="Product catalog and filters">
+          <aside className="filter-sidebar" aria-label="Filters">
+            <div className="filter-card">
+              <div className="filter-header">
+                <h2>Filters</h2>
+                <button
+                  type="button"
+                  className="btn-secondary"
+                  disabled={isSearching || (sortBy === 'id' && !inStockOnly)}
+                  onClick={() => void handleResetFilters()}
+                >
+                  Clear
+                </button>
+              </div>
+
+              <fieldset className="filter-section">
+                <legend>Sort by</legend>
+                <label className="filter-option" htmlFor="sort-products">
+                  <span>Product order</span>
+                  <select
+                    id="sort-products"
+                    value={sortBy}
+                    onChange={(event) => void handleSortChange(event.target.value)}
+                    disabled={isSearching}
                   >
-                    {addingToCart === product.id ? 'Adding…' : 'Add to Cart'}
-                  </button>
-                </div>
-              </article>
-            ))}
-          </section>
-        )}
+                    <option value="id">Default</option>
+                    <option value="price_asc">Price: low to high</option>
+                    <option value="price_desc">Price: high to low</option>
+                    <option value="rating_desc">Highest rated</option>
+                    <option value="rating_asc">Lowest rated</option>
+                  </select>
+                </label>
+              </fieldset>
+
+              <fieldset className="filter-section">
+                <legend>Availability</legend>
+                <label className="stock-filter" htmlFor="in-stock-only">
+                  <input
+                    id="in-stock-only"
+                    type="checkbox"
+                    checked={inStockOnly}
+                    onChange={(event) => void handleInStockToggle(event.target.checked)}
+                    disabled={isSearching}
+                  />
+                  <span>In stock only</span>
+                </label>
+              </fieldset>
+            </div>
+          </aside>
+
+          <div className="catalog-results">
+            {loading ? (
+              <p>Loading products…</p>
+            ) : products.length === 0 ? (
+              <p>No products found.</p>
+            ) : (
+              <section className="product-grid" aria-label="Technology products">
+                {products.map((product) => (
+                  <article key={product.id} className="product-card">
+                    {product.imageUrl && (
+                      <img
+                        src={product.imageUrl}
+                        alt={product.name}
+                        className="product-image"
+                      />
+                    )}
+                    <span className="product-category">{product.category}</span>
+                    <h2>{product.name}</h2>
+                    <p className="rating">Rating: {product.rating} / 5</p>
+                    <p className="price">${product.price}</p>
+                    {product.stock === 0 && (
+                      <p className="out-of-stock">Out of stock</p>
+                    )}
+                    <div className="product-actions">
+                      <Link to={`/product/${product.id}`} className="btn-secondary">
+                        Details
+                      </Link>
+                      <button
+                        type="button"
+                        className="btn-action"
+                        disabled={
+                          product.stock === 0 || addingToCart === product.id
+                        }
+                        onClick={() => handleAddToCart(product.id, product.name)}
+                      >
+                        {addingToCart === product.id ? 'Adding…' : 'Add to Cart'}
+                      </button>
+                    </div>
+                  </article>
+                ))}
+              </section>
+            )}
+          </div>
+        </section>
       </main>
 
       <footer className="footer">

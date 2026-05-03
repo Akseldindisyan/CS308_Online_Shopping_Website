@@ -16,7 +16,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
 
 
@@ -179,6 +181,31 @@ public class ProductRepositoryTest {
         assertEquals(5, result.size());
         for (int i = 0; i < result.size() - 1; i++) {
             assertTrue(result.get(i).getRating() >= result.get(i + 1).getRating());
+        }
+    }
+
+    @Test
+    void findProductsInStockOrderedByPriceDescTest() {
+        System.out.println("Try to filter in-stock products and order them by price descending");
+
+        productRepository.save(new ProductEntity("Out of stock laptop", 4.9, 0, "Model O", "SN000", "No stock", 3000.0, "Distributor Z", "USA", true));
+
+        Specification<ProductEntity> inStockSpec = (root, query, cb) -> {
+            query.distinct(true);
+            return cb.gt(root.<Integer>get("stock"), 0);
+        };
+
+        Page<ProductEntity> pageResult = productRepository.findAll(
+                inStockSpec,
+                PageRequest.of(0, 20, Sort.by(Sort.Direction.DESC, "price")));
+
+        List<ProductEntity> result = pageResult.getContent();
+
+        assertFalse(result.isEmpty());
+        assertTrue(result.stream().allMatch(product -> product.getStock() > 0));
+
+        for (int i = 0; i < result.size() - 1; i++) {
+            assertTrue(result.get(i).getPrice() >= result.get(i + 1).getPrice());
         }
     }
 

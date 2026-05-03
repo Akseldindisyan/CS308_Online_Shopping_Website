@@ -15,6 +15,7 @@ import java.util.List;
 
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import org.mockito.ArgumentCaptor;
@@ -121,7 +122,7 @@ public class ProductServiceTest {
         }
 
         Mockito.verify(productRepository).searchByProductNameLike(
-                "Laptop", PageRequest.of(0, 5));
+                "Laptop", PageRequest.of(0, 5, Sort.by(Sort.Direction.ASC, "productName")));
     }
 
     @Test
