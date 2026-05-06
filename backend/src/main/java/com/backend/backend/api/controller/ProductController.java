@@ -25,16 +25,19 @@ public class ProductController {
     public List<ProductCardDTO> getAllProducts(
             @RequestParam(name = "page", defaultValue = "0") int page,
             @RequestParam(name = "sort", defaultValue = "id") String sort,
-            @RequestParam(name = "size", defaultValue = "5") int size) {
-        return productService.getProductCards(page, sort, size).getContent();
+            @RequestParam(name = "size", defaultValue = "5") int size,
+            @RequestParam(name = "inStock", defaultValue = "false") boolean inStock) {
+        return productService.getProductCards(page, sort, size, inStock).getContent();
     }
 
     @GetMapping("/products/search")
     public List<ProductCardDTO> searchProducts(
             @RequestParam @NotBlank(message = "Search query cannot be blank") @Size(max = 100, message = "Search query must be at most 100 characters") String name,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "5") int size) {
-        return productService.searchProductCards(name, page, size).getContent();
+            @RequestParam(defaultValue = "5") int size,
+            @RequestParam(defaultValue = "id") String sort,
+            @RequestParam(defaultValue = "false") boolean inStock) {
+        return productService.searchProductCards(name, page, size, sort, inStock).getContent();
     }
 
     @GetMapping("/products/{id}")
