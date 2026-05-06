@@ -131,19 +131,26 @@ export type Comment = {
   status: "pending" | "approved" | "rejected";
   date: string;
 };
-
-export type Delivery = {
-  deliveryId: string;
-  customerId: string;
-  productId: number;
+export interface DeliveryItem {
+  productId: UUID;
+  productName: string;
   quantity: number;
+  unitPrice: number;
+  totalPrice: number;
+}
+
+export type DeliveryStatus = "completed" | "in-transit" | "preparing" | "delayed";
+
+export interface Delivery {
+  deliveryId: UUID;
+  customerId: UUID;
+  items: DeliveryItem[];
   totalPrice: number;
   address: string;
   addressDetail: string;
   completed: boolean;
-  status: "completed" | "in-transit" | "preparing" | "delayed";
-};
-
+  status: DeliveryStatus;
+}
 export type Invoice = {
   invoiceId: string;
   customerId: string;

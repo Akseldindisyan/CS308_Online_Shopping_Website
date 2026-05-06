@@ -1,5 +1,6 @@
 package com.backend.backend.api.controller;
 import com.backend.backend.api.dto.DeliveryDTO;
+import com.backend.backend.api.dto.UpdateDeliveryStatusRequest;
 import com.backend.backend.service.DeliveryService;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
@@ -15,4 +16,18 @@ public class DeliveryController {
     public List<DeliveryDTO> getDeliveriesByUser(@PathVariable UUID userId) {
         return deliveryService.getDeliveriesByUser(userId);
     }
+
+    @GetMapping
+    public List<DeliveryDTO> getAllDeliveries() {
+        return deliveryService.getAllDeliveries();
+    }
+
+    @PatchMapping("/{deliveryId}/status")
+    public DeliveryDTO updateDeliveryStatus(
+            @PathVariable UUID deliveryId,
+            @RequestBody UpdateDeliveryStatusRequest request) {
+        return deliveryService.updateStatus(deliveryId, request.status());
+    }
+
+
 }
