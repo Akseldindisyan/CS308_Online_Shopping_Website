@@ -143,7 +143,7 @@ function ProductPageContent({ product }: { product: Product }) {
 
           <div className="product-meta">
             <span>
-              <FaStar color="#ffc107" /> {averageRating.toFixed(1)} / 5 rating
+              <FaStar color="#ffc107" /> {product.rating} / 5 rating
             </span>
             <span>•</span>
             <span>{totalReviewsLabel}</span>

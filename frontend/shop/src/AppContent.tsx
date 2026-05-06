@@ -326,7 +326,7 @@ function AppContent() {
                     )}
                     <span className="product-category">{product.category}</span>
                     <h2>{product.name}</h2>
-                    <p className="rating">Rating: {product.rating} / 5</p>
+                    <p className="rating">Rating: {(product.rating) == 0 ? "No review" : product.rating  + " / 5"}</p>
                     <p className="price">${product.price}</p>
                     {product.stock === 0 && (
                       <p className="out-of-stock">Out of stock</p>
