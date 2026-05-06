@@ -78,5 +78,18 @@ public class ReviewService {
         reviewRepository.save(newReview);
     }
 
+    public void updateRating(ProductEntity product){
+        List<ReviewEntity> reviews = reviewRepository.findByProduct(product);
+        ReviewEntity lastReview = reviews.getLast();
+        int len = reviews.size();
+        double currentRating = product.getRating();
+        double added_rating = lastReview.getRating();
+        double sum = currentRating * (len - 1);
+        double newRating = (sum + added_rating) / len;
+        double rounded = Math.round(newRating * 10.0) / 10.0;
+        product.setRating(rounded);
+        productRepository.save(product);
+    }
+
 
 }

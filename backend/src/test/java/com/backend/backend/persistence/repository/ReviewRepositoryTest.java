@@ -57,19 +57,19 @@ public class ReviewRepositoryTest {
         userRepository.saveAll(List.of(user1, user2, user3, user4, user5));
 
         List<ReviewEntity> mockReviews = List.of(
-                new ReviewEntity(product1, user1, 9, "Excellent quality, very satisfied with this purchase.", true,
+                new ReviewEntity(product1, user1, 4, "Excellent quality, very satisfied with this purchase.", true,
                         LocalDate.of(2023, 5, 10), 24, LocalDate.of(2023, 5, 12), LocalDate.of(2023, 5, 12)),
 
-                new ReviewEntity(product1, user2, 4, "It works, but the build quality feels a bit cheap.", true,
+                new ReviewEntity(product1, user2, 2, "It works, but the build quality feels a bit cheap.", true,
                         LocalDate.of(2023, 6, 15), 2, LocalDate.of(2023, 6, 20), LocalDate.of(2023, 6, 21)),
 
-                new ReviewEntity(product2, user3, 1, "Terrible. Broke on the first day. Do not buy.", false,
+                new ReviewEntity(product2, user3, 3, "Terrible. Broke on the first day. Do not buy.", false,
                         LocalDate.of(2023, 7, 1), 0, LocalDate.of(2023, 7, 2), null),
 
-                new ReviewEntity(product3, user4, 10, "Absolutely perfect. Exceeded all expectations.", true,
+                new ReviewEntity(product3, user4, 2, "Absolutely perfect. Exceeded all expectations.", true,
                         LocalDate.of(2023, 8, 12), 56, LocalDate.of(2023, 8, 14), LocalDate.of(2023, 8, 14)),
 
-                new ReviewEntity(product3, user5, 7, "Good product, but shipping was delayed.", true,
+                new ReviewEntity(product3, user5, 3, "Good product, but shipping was delayed.", true,
                         LocalDate.of(2023, 9, 5), 5, LocalDate.of(2023, 9, 10), LocalDate.of(2023, 9, 10))
         );
 
@@ -105,12 +105,12 @@ public class ReviewRepositoryTest {
 
     @Test
     void findByRatingTest() {
-        List<ReviewEntity> result = reviewRepository.findByRating(9);
+        List<ReviewEntity> result = reviewRepository.findByRating(4);
 
         assertEquals(1, result.size());
 
         assertEquals("Excellent quality, very satisfied with this purchase.", result.getFirst().getComment());
-        assertEquals(9,result.getFirst().getRating());
+        assertEquals(4,result.getFirst().getRating());
     }
 
     @Test

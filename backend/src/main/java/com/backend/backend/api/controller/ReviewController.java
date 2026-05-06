@@ -70,6 +70,7 @@ public class ReviewController {
         ProductEntity p = productService.getProductById(uuid);
         LocalDate date = LocalDate.parse(comment.commentDate());
         reviewService.CreateReview(p, user, comment.rating(), comment.comment(), true, null, 0, date, null);
+        reviewService.updateRating(p);
         return true;
     }
 
