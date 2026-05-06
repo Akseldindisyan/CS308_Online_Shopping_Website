@@ -105,3 +105,10 @@
     margin-top: 12px;
     margin-bottom: 0;
 }
+
+.payment-error {
+    display: block;
+    color: #d33;
+    font-size: 0.85rem;
+    margin: -8px 0 8px;
+}

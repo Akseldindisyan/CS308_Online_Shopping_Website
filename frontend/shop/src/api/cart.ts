@@ -103,3 +103,12 @@ export async function checkoutCart(address: string): Promise<InvoiceDTO> {
         body: JSON.stringify(cart),
     });
 }
+export async function getCartItemCount(): Promise<number> {
+    try {
+        const cart = await fetchCart();
+        if (!cart?.items) return 0;
+        return cart.items.reduce((sum, item) => sum + item.quantity, 0);
+    } catch {
+        return 0;
+    }
+}

@@ -8,6 +8,13 @@ interface PaymentState {
     address: string
 }
 
+type FieldErrors = {
+    cardName?: string
+    cardNumber?: string
+    expiry?: string
+    cvv?: string
+}
+
 function formatCardNumber(value: string) {
     return value.replace(/\D/g, '').slice(0, 16).replace(/(.{4})/g, '$1 ').trim()
 }
@@ -16,6 +23,33 @@ function formatExpiry(value: string) {
     const digits = value.replace(/\D/g, '').slice(0, 4)
     if (digits.length >= 3) return digits.slice(0, 2) + ' / ' + digits.slice(2)
     return digits
+}
+
+function isValidExpiry(expiry: string): boolean {
+    const match = expiry.match(/^(\d{2})\s*\/\s*(\d{2})$/)
+    if (!match) return false
+
+    const month = parseInt(match[1], 10)
+    const year = parseInt(match[2], 10)
+
+    if (month < 1 || month > 12) return false
+
+    const now = new Date()
+    const currentYear = now.getFullYear() % 100
+    const currentMonth = now.getMonth() + 1
+
+    if (year < currentYear) return false
+    if (year === currentYear && month < currentMonth) return false
+
+    if (year > currentYear + 20) return false
+
+    return true
+}
+
+function isValidCardName(name: string): boolean {
+    const trimmed = name.trim()
+    if (trimmed.length < 2 || trimmed.length > 50) return false
+    return /^[A-Za-zÀ-ÿĞğÜüŞşİıÖöÇç\s'-]+$/.test(trimmed)
 }
 
 function PaymentPage() {
@@ -32,15 +66,72 @@ function PaymentPage() {
     const [expiry, setExpiry] = useState('')
     const [cvv, setCvv] = useState('')
     const [loading, setLoading] = useState(false)
+    const [errors, setErrors] = useState<FieldErrors>({})
+    const [touched, setTouched] = useState<Record<keyof FieldErrors, boolean>>({
+        cardName: false,
+        cardNumber: false,
+        expiry: false,
+        cvv: false,
+    })
 
-    const isValid =
-        cardName.trim().length > 0 &&
-        cardNumber.replace(/\s/g, '').length === 16 &&
-        expiry.length === 7 &&
-        cvv.length >= 3
+    const validateField = (field: keyof FieldErrors, value: string): string | undefined => {
+        switch (field) {
+            case 'cardName':
+                if (!value.trim()) return 'Cardholder name is required'
+                if (!isValidCardName(value)) return 'Enter a valid name (letters only)'
+                return undefined
+            case 'cardNumber': {
+                const digits = value.replace(/\s/g, '')
+                if (!digits) return 'Card number is required'
+                if (digits.length !== 16) return 'Card number must be 16 digits'
+                return undefined
+            }
+            case 'expiry':
+                if (!value) return 'Expiry date is required'
+                if (value.length !== 7) return 'Use MM / YY format'
+                if (!isValidExpiry(value)) return 'Card is expired or invalid'
+                return undefined
+            case 'cvv':
+                if (!value) return 'CVV is required'
+                if (value.length !== 3) return 'CVV must be 3 digits'
+                return undefined
+        }
+    }
+
+    const handleBlur = (field: keyof FieldErrors, value: string) => {
+        setTouched((prev) => ({ ...prev, [field]: true }))
+        setErrors((prev) => ({ ...prev, [field]: validateField(field, value) }))
+    }
+
+    const updateField = (
+        field: keyof FieldErrors,
+        value: string,
+        setter: (v: string) => void,
+    ) => {
+        setter(value)
+        // Touched ise canlı doğrulama yap, kullanıcı hatayı düzeltirken anında geri bildirim alsın
+        if (touched[field]) {
+            setErrors((prev) => ({ ...prev, [field]: validateField(field, value) }))
+        }
+    }
+
+    const validateAll = (): boolean => {
+        const newErrors: FieldErrors = {
+            cardName: validateField('cardName', cardName),
+            cardNumber: validateField('cardNumber', cardNumber),
+            expiry: validateField('expiry', expiry),
+            cvv: validateField('cvv', cvv),
+        }
+        setErrors(newErrors)
+        setTouched({ cardName: true, cardNumber: true, expiry: true, cvv: true })
+        return Object.values(newErrors).every((e) => !e)
+    }
 
     const handleConfirm = async () => {
-        if (!isValid) return
+        if (!validateAll()) {
+            showToast('Please fix the errors before continuing', 'error')
+            return
+        }
         setLoading(true)
         const result = await checkout(state.address)
         setLoading(false)
@@ -63,18 +154,35 @@ function PaymentPage() {
                     id="card-name"
                     type="text"
                     placeholder="John Smith"
+                    autoComplete="cc-name"
                     value={cardName}
-                    onChange={(e) => setCardName(e.target.value)}
+                    aria-invalid={!!errors.cardName}
+                    aria-describedby={errors.cardName ? 'card-name-error' : undefined}
+                    onChange={(e) => updateField('cardName', e.target.value, setCardName)}
+                    onBlur={(e) => handleBlur('cardName', e.target.value)}
                 />
+                {errors.cardName && (
+                    <span id="card-name-error" className="payment-error">{errors.cardName}</span>
+                )}
 
                 <label htmlFor="card-number">Card number</label>
                 <input
                     id="card-number"
                     type="text"
+                    inputMode="numeric"
                     placeholder="1234 5678 9012 3456"
+                    autoComplete="cc-number"
                     value={cardNumber}
-                    onChange={(e) => setCardNumber(formatCardNumber(e.target.value))}
+                    aria-invalid={!!errors.cardNumber}
+                    aria-describedby={errors.cardNumber ? 'card-number-error' : undefined}
+                    onChange={(e) =>
+                        updateField('cardNumber', formatCardNumber(e.target.value), setCardNumber)
+                    }
+                    onBlur={(e) => handleBlur('cardNumber', e.target.value)}
                 />
+                {errors.cardNumber && (
+                    <span id="card-number-error" className="payment-error">{errors.cardNumber}</span>
+                )}
 
                 <div className="payment-row">
                     <div>
@@ -82,21 +190,45 @@ function PaymentPage() {
                         <input
                             id="expiry"
                             type="text"
+                            inputMode="numeric"
                             placeholder="MM / YY"
+                            autoComplete="cc-exp"
                             value={expiry}
-                            onChange={(e) => setExpiry(formatExpiry(e.target.value))}
+                            aria-invalid={!!errors.expiry}
+                            aria-describedby={errors.expiry ? 'expiry-error' : undefined}
+                            onChange={(e) =>
+                                updateField('expiry', formatExpiry(e.target.value), setExpiry)
+                            }
+                            onBlur={(e) => handleBlur('expiry', e.target.value)}
                         />
+                        {errors.expiry && (
+                            <span id="expiry-error" className="payment-error">{errors.expiry}</span>
+                        )}
                     </div>
                     <div>
                         <label htmlFor="cvv">CVV</label>
                         <input
                             id="cvv"
                             type="text"
+                            inputMode="numeric"
                             placeholder="123"
-                            maxLength={4}
+                            maxLength={3}
+                            autoComplete="cc-csc"
                             value={cvv}
-                            onChange={(e) => setCvv(e.target.value.replace(/\D/g, '').slice(0, 4))}
+                            aria-invalid={!!errors.cvv}
+                            aria-describedby={errors.cvv ? 'cvv-error' : undefined}
+                            onChange={(e) =>
+                                updateField(
+                                    'cvv',
+                                    e.target.value.replace(/\D/g, '').slice(0, 3),
+                                    setCvv,
+                                )
+                            }
+                            onBlur={(e) => handleBlur('cvv', e.target.value)}
                         />
+                        {errors.cvv && (
+                            <span id="cvv-error" className="payment-error">{errors.cvv}</span>
+                        )}
                     </div>
                 </div>
 
@@ -115,7 +247,7 @@ function PaymentPage() {
 
                 <button
                     className="payment-btn"
-                    disabled={!isValid || loading}
+                    disabled={loading}
                     onClick={handleConfirm}
                 >
                     {loading ? 'Processing…' : 'Confirm payment'}
