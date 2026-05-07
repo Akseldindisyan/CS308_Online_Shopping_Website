@@ -104,18 +104,24 @@ export interface ProductSearchParams {
 export type Product = {
   // From product_page (canonical base)
   id: number;
-  name: string;
-  category: string;
-  price: number;
+  productName: string;
   rating: number;
-  image: string;
-  images: string[];
-  description: string;
-  features: string[];
   stock: number;
+  model: string;
+  serialNumber: string;
+  desc: string;
+  price: number;
+  distInfo: string;
+  country: string;
+  category: string;
+  image_url: string;
+  active: boolean;
+  warrant_status:string;
+
+  images: string[];
+  features: string[];
   // From pm_admin
   categoryId: number;
-  active: boolean;
   // New for SM admin
   cost: number;
   discountRate: number;

@@ -30,7 +30,7 @@ function ProductPageContent({ product: initialProduct }: { product: Product }) {
       .then(data => setReviews(data))
   }, [])
 
-  const [selectedImage, setSelectedImage] = useState(product.image)
+  const [selectedImage, setSelectedImage] = useState(product.image_url)
   const [statusMessage, setStatusMessage] = useState('')
   const [reviewMessage, setReviewMessage] = useState('')
   const [reviewMessageType, setReviewMessageType] = useState<'success' | 'error' | ''>('')
@@ -136,13 +136,13 @@ function ProductPageContent({ product: initialProduct }: { product: Product }) {
         <span>/</span>
         <span>{product.category}</span>
         <span>/</span>
-        <span>{product.name}</span>
+        <span>{product.productName}</span>
       </div>
 
       <section className="product-detail-layout">
         <div>
           <article className="product-gallery-card">
-            <img src={selectedImage} alt={product.name} className="product-main-image" />
+            <img src={selectedImage} alt={product.productName} className="product-main-image" />
 
             {/* <div className="product-thumbnails" aria-label="Product gallery">
               {product.images.map((image, index) => (
@@ -162,7 +162,7 @@ function ProductPageContent({ product: initialProduct }: { product: Product }) {
 
         <article className="product-summary-card">
           <span className="product-badge">{product.category}</span>
-          <h1>{product.name}</h1>
+          <h1>{product.productName}</h1>
 
           <div className="product-meta">
             <span>
@@ -174,13 +174,13 @@ function ProductPageContent({ product: initialProduct }: { product: Product }) {
             <span>{product.stock} items in stock</span>
           </div>
 
-          <p className="product-description">{product.description}</p>
+          <p className="product-description">{product.desc}</p>
 
-          <ul className="product-features">
+          {/* <ul className="product-features">
             {product.features.map((feature) => (
               <li key={feature}>{feature}</li>
             ))}
-          </ul>
+          </ul> */}
 
           <div className="product-buy-card">
             <div className="product-price-row">
@@ -197,7 +197,7 @@ function ProductPageContent({ product: initialProduct }: { product: Product }) {
                     type="button"
                     className="btn-action"
                     onClick={() =>
-                      handleAddToCart(product.id.toString(), product.name)
+                      handleAddToCart(product.id.toString(), product.productName)
                     }
                   >
                     Buy Now
@@ -221,7 +221,7 @@ function ProductPageContent({ product: initialProduct }: { product: Product }) {
         <div className="product-reviews-header">
           <div>
             <h2>Customer comments</h2>
-            <p>Read recent feedback or leave a quick comment about {product.name}.</p>
+            <p>Read recent feedback or leave a quick comment about {product.productName}.</p>
           </div>
 
           <div className="product-review-summary">
