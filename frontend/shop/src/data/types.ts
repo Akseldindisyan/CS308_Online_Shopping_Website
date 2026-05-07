@@ -99,6 +99,7 @@ export interface ProductSearchParams {
   size?: number;
   sort?: string;
   inStock?: boolean;
+  category?: string;
 }
 
 export type Product = {

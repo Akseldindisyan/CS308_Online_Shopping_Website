@@ -40,7 +40,8 @@ function safeText(value: unknown, fallback = ""): string {
 }
 async function loadBackendData() {
   try {
-    const cards = await fetchAllProducts({ page: 0, size: 1000, sort: "id", inStock: false });
+    const cardsResponse = await fetchAllProducts({ page: 0, size: 1000, sort: "id", inStock: false });
+    const cards = cardsResponse.content;
     const detailed = await Promise.all(
       cards.map(async (card) => {
         try {

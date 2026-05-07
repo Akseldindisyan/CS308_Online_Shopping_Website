@@ -1,21 +1,41 @@
 import type { ProductCardDTO, ProductDetailedDTO, ProductSearchParams, UUID } from "../data/types";
 import { apiRequest } from "./client";
 
-type SearchResponseShape = ProductCardDTO[] | { content?: ProductCardDTO[] };
+export type PageResponse<T> = {
+  content: T[];
+  totalPages: number;
+  totalElements: number;
+  number: number;
+  size: number;
+};
 
-function normalizeSearchResponse(data: SearchResponseShape): ProductCardDTO[] {
+type SearchResponseShape = ProductCardDTO[] | { content?: ProductCardDTO[] } | PageResponse<ProductCardDTO>;
+
+function normalizeSearchResponse(data: SearchResponseShape): PageResponse<ProductCardDTO> {
   if (Array.isArray(data)) {
-    return data;
+    return {
+      content: data,
+      totalPages: 1,
+      totalElements: data.length,
+      number: 0,
+      size: data.length,
+    };
   }
   if (Array.isArray(data.content)) {
-    return data.content;
+    return {
+      content: data.content,
+      totalPages: "totalPages" in data ? (data.totalPages ?? 1) : 1,
+      totalElements: "totalElements" in data ? (data.totalElements ?? data.content.length) : data.content.length,
+      number: "number" in data ? (data.number ?? 0) : 0,
+      size: "size" in data ? (data.size ?? data.content.length) : data.content.length,
+    };
   }
-  return [];
+  return { content: [], totalPages: 0, totalElements: 0, number: 0, size: 0 };
 }
 
 export async function searchProducts(
   params: ProductSearchParams,
-): Promise<ProductCardDTO[]> {
+): Promise<PageResponse<ProductCardDTO>> {
   const query = new URLSearchParams({
     name: params.name,
     page: String(params.page ?? 0),
@@ -23,6 +43,9 @@ export async function searchProducts(
     sort: params.sort ?? "id",
     inStock: String(params.inStock ?? false),
   });
+  if (params.category) {
+    query.set("category", params.category);
+  }
   const response = await apiRequest<SearchResponseShape>(
     `/api/products/search?${query.toString()}`,
     { method: "GET" },
@@ -83,17 +106,25 @@ export async function fetchAllProducts(params?: {
   size?: number;
   sort?: string;
   inStock?: boolean;
-}): Promise<ProductCardDTO[]> {
+  category?: string;
+}): Promise<PageResponse<ProductCardDTO>> {
   const query = new URLSearchParams({
     page: String(params?.page ?? 0),
     size: String(params?.size ?? 10),
     sort: params?.sort ?? "id",
     inStock: String(params?.inStock ?? false),
   });
+  if (params?.category) {
+    query.set("category", params.category);
+  }
   const response = await apiRequest<SearchResponseShape>(
     `/api/products?${query.toString()}`,
     { method: "GET" },
   );
   return normalizeSearchResponse(response);
+}
+
+export async function fetchProductCategories(): Promise<string[]> {
+  return apiRequest<string[]>("/api/products/categories", { method: "GET" });
 }
 
