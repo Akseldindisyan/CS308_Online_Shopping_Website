@@ -13,6 +13,7 @@ import { getStoredUserId } from './api/auth'
 import type { ProductCardDTO, UUID } from './data/types'
 import { useToast } from './components/ToastProvider'
 import './App.css'
+import { useCart } from './hooks/useCart'
 
 const fallbackCategories = [
   'Laptops',
@@ -45,6 +46,7 @@ function AppContent() {
   const [currentPage, setCurrentPage] = useState(0)
   const [totalPages, setTotalPages] = useState(0)
   const { showToast } = useToast()
+  const { items: cartItems } = useCart()
 
   const refreshCartCount = async () => {
     try {
@@ -236,7 +238,22 @@ function AppContent() {
     })
   }
 
-  const handleAddToCart = async (productId: UUID, productName: string) => {
+  const handleAddToCart = async (
+    productId: UUID,
+    productName: string,
+    productStock: number,
+  ) => {
+    const currentInCart =
+      cartItems.find((item) => item.productId === productId)?.quantity ?? 0
+
+    if (currentInCart >= productStock) {
+      showToast(
+        `Cannot add more — only ${productStock} in stock and you already have ${currentInCart} in your cart`,
+        'error',
+      )
+      return
+    }
+
     setAddingToCart(productId)
     try {
       await addItemToCart(productId, 1)
@@ -434,7 +451,7 @@ function AppContent() {
                     )}
                     <span className="product-category">{product.category}</span>
                     <h2>{product.name}</h2>
-                    <p className="rating">Rating: {(product.rating) == 0 ? "No review" : product.rating  + " / 5"}</p>
+                    <p className="rating">Rating: {(product.rating) == 0 ? "No review" : product.rating + " / 5"}</p>
                     <p className="price">${product.price}</p>
                     {product.stock === 0 && (
                       <p className="out-of-stock">Out of stock</p>
@@ -447,9 +464,12 @@ function AppContent() {
                         type="button"
                         className="btn-action"
                         disabled={
-                          product.stock === 0 || addingToCart === product.id
+                          product.stock === 0 ||
+                          addingToCart === product.id ||
+                          (cartItems.find((item) => item.productId === product.id)?.quantity ?? 0) >=
+                          product.stock
                         }
-                        onClick={() => handleAddToCart(product.id, product.name)}
+                        onClick={() => handleAddToCart(product.id, product.name, product.stock)}
                       >
                         {addingToCart === product.id ? 'Adding…' : 'Add to Cart'}
                       </button>

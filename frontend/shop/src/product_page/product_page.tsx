@@ -9,6 +9,7 @@ import { useToast } from '../components/ToastProvider'
 import { useNavigate } from 'react-router-dom'
 import type { UUID } from "../data/types.ts";
 import { addItemToCart, getCartItemCount } from "../api/cart.ts";
+import { useCart } from '../hooks/useCart'
 
 
 type ProductReview = {
@@ -41,6 +42,7 @@ function ProductPageContent({ product: initialProduct }: { product: Product }) {
 
   const { showToast } = useToast()
   const navigate = useNavigate()
+  const { items: cartItems } = useCart()
 
   const formattedPrice = new Intl.NumberFormat('en-US', {
     style: 'currency',
@@ -52,6 +54,11 @@ function ProductPageContent({ product: initialProduct }: { product: Product }) {
 
   const totalReviewsLabel = `${reviews.length} ${reviews.length === 1 ? 'comment' : 'comments'}`
 
+  const productIdStr = product.id.toString()
+  const currentInCart =
+    cartItems.find((item) => item.productId === productIdStr)?.quantity ?? 0
+  const atStockLimit = currentInCart >= product.stock
+
   const refreshCartCount = useCallback(async () => {
     try {
       const count = await getCartItemCount()
@@ -60,7 +67,16 @@ function ProductPageContent({ product: initialProduct }: { product: Product }) {
       console.error('Failed to load cart count:', err)
     }
   }, [])
+
   const handleAddToCart = async (productId: UUID, productName: string) => {
+    if (currentInCart >= product.stock) {
+      showToast(
+        `Cannot add more — only ${product.stock} in stock and you already have ${currentInCart} in your cart`,
+        'error',
+      )
+      return
+    }
+
     setAddingToCart(productId)
     try {
       await addItemToCart(productId, 1)
@@ -191,26 +207,41 @@ function ProductPageContent({ product: initialProduct }: { product: Product }) {
             <p className="product-stock">Ready to ship today</p>
 
             <div className="product-buy-actions">
-              {
-                (product.stock === 0) ? (<button className="btn-action" disabled style={{ backgroundColor: 'grey', cursor: 'not-allowed' }}>Out of Stock</button>) : (
-                  <button
-                    type="button"
-                    className="btn-action"
-                    onClick={() =>
-                      handleAddToCart(product.id.toString(), product.productName)
-                    }
-                  >
-                    Buy Now
-                  </button>
-
-                )
-              }
-
+              {product.stock === 0 ? (
+                <button
+                  className="btn-action"
+                  disabled
+                  style={{ backgroundColor: 'grey', cursor: 'not-allowed' }}
+                >
+                  Out of Stock
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  className="btn-action"
+                  disabled={atStockLimit || addingToCart === productIdStr}
+                  onClick={() =>
+                    handleAddToCart(productIdStr, product.productName)
+                  }
+                >
+                  {atStockLimit
+                    ? 'Stock limit reached'
+                    : addingToCart === productIdStr
+                      ? 'Adding…'
+                      : 'Buy Now'}
+                </button>
+              )}
 
               <Link to="/" className="btn-secondary">
                 Continue shopping
               </Link>
             </div>
+
+            {atStockLimit && product.stock > 0 && (
+              <p className="product-status-message">
+                You already have {currentInCart} of {product.stock} available in your cart.
+              </p>
+            )}
 
             {statusMessage ? <p className="product-status-message">{statusMessage}</p> : null}
           </div>
@@ -353,4 +384,3 @@ function ProductPage() {
 }
 
 export default ProductPage
-
