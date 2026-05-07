@@ -1,6 +1,6 @@
-import { useState } from "react";
-import { invoices, products } from "../../data";
+import { useMemo, useState } from "react";
 import Topbar from "../components/Topbar";
+import { invoices, products } from "../../data";
 import {
     BarChart,
     Bar,
@@ -11,54 +11,56 @@ import {
     Legend,
     ResponsiveContainer,
 } from "recharts";
-
+type RevenueRow = {
+    date: string;
+    revenue: number;
+    units: number;
+};
+type ProductRevenueRow = {
+    name: string;
+    revenue: number;
+    units: number;
+};
 export default function Revenue() {
     const [startDate, setStartDate] = useState("");
     const [endDate, setEndDate] = useState("");
-
-    const filtered = invoices.filter(inv => {
-        if (startDate && inv.date < startDate) return false;
-        if (endDate && inv.date > endDate) return false;
-        return true;
-    });
-
-    const byDate = new Map<string, { revenue: number; cost: number; profit: number }>();
-    filtered.forEach(inv => {
-        const prod = products.find(p => p.id === inv.productId);
-        const invCost = inv.quantity * (prod?.cost ?? 0);
-        const entry = byDate.get(inv.date) ?? { revenue: 0, cost: 0, profit: 0 };
-        entry.revenue += inv.totalPrice;
-        entry.cost += invCost;
-        entry.profit += inv.totalPrice - invCost;
-        byDate.set(inv.date, entry);
-    });
-
-    const chartData = Array.from(byDate.entries())
-        .map(([date, vals]) => ({ date, ...vals }))
-        .sort((a, b) => a.date.localeCompare(b.date));
-
-    const totalRevenue = chartData.reduce((s, d) => s + d.revenue, 0);
-    const totalCost = chartData.reduce((s, d) => s + d.cost, 0);
-    const totalProfit = totalRevenue - totalCost;
-    const profitMargin = totalRevenue > 0 ? (totalProfit / totalRevenue * 100) : 0;
-
-    // Per-product profit
-    const byProduct = new Map<string, { name: string; revenue: number; cost: number; profit: number }>();
-    filtered.forEach(inv => {
-        const prod = products.find(p => p.id === inv.productId);
-        const invCost = inv.quantity * (prod?.cost ?? 0);
-        const key = String(inv.productId);
-        const entry = byProduct.get(key) ?? { name: prod?.name ?? String(inv.productId), revenue: 0, cost: 0, profit: 0 };
-        entry.revenue += inv.totalPrice;
-        entry.cost += invCost;
-        entry.profit += inv.totalPrice - invCost;
-        byProduct.set(key, entry);
-    });
-
-    const topProducts = Array.from(byProduct.values())
-        .sort((a, b) => b.profit - a.profit)
-        .slice(0, 5);
-
+    const filteredInvoices = useMemo(
+        () => invoices.filter((inv) =>
+            (!startDate || inv.date >= startDate) && (!endDate || inv.date <= endDate)
+        ),
+        [startDate, endDate],
+    );
+    const productLookup = useMemo(
+        () => new Map(products.map((product) => [product.id, product] as const)),
+        [],
+    );
+    const chartData: RevenueRow[] = useMemo(() => {
+        const byDate = new Map<string, RevenueRow>();
+        filteredInvoices.forEach((invoice) => {
+            const entry = byDate.get(invoice.date) ?? { date: invoice.date, revenue: 0, units: 0 };
+            entry.revenue += invoice.totalPrice;
+            entry.units += invoice.quantity;
+            byDate.set(invoice.date, entry);
+        });
+        return Array.from(byDate.values()).sort((a, b) => a.date.localeCompare(b.date));
+    }, [filteredInvoices]);
+    const totalRevenue = chartData.reduce((sum, row) => sum + row.revenue, 0);
+    const totalUnits = chartData.reduce((sum, row) => sum + row.units, 0);
+    const averageRevenuePerOrder = chartData.length > 0 ? totalRevenue / chartData.length : 0;
+    const topProducts: ProductRevenueRow[] = useMemo(() => {
+        const byProduct = new Map<string, ProductRevenueRow>();
+        filteredInvoices.forEach((invoice) => {
+            const product = productLookup.get(invoice.productId);
+            const key = product?.name ?? String(invoice.productId);
+            const entry = byProduct.get(key) ?? { name: key, revenue: 0, units: 0 };
+            entry.revenue += invoice.totalPrice;
+            entry.units += invoice.quantity;
+            byProduct.set(key, entry);
+        });
+        return Array.from(byProduct.values())
+            .sort((a, b) => b.revenue - a.revenue)
+            .slice(0, 5);
+    }, [filteredInvoices, productLookup]);
     const subtitleText =
         startDate && endDate
             ? `${startDate} – ${endDate}`
@@ -67,11 +69,10 @@ export default function Revenue() {
             : endDate
             ? `Until ${endDate}`
             : "All time";
-
     return (
         <>
             <Topbar
-                title="Revenue & Profit"
+                title="Revenue Overview"
                 subtitle={subtitleText}
                 actions={
                     <>
@@ -80,18 +81,21 @@ export default function Revenue() {
                             className="pm-input"
                             style={{ width: 160 }}
                             value={startDate}
-                            onChange={e => setStartDate(e.target.value)}
+                            onChange={(e) => setStartDate(e.target.value)}
                         />
                         <input
                             type="date"
                             className="pm-input"
                             style={{ width: 160 }}
                             value={endDate}
-                            onChange={e => setEndDate(e.target.value)}
+                            onChange={(e) => setEndDate(e.target.value)}
                         />
                         <button
                             className="pm-btn pm-btn-outline"
-                            onClick={() => { setStartDate(""); setEndDate(""); }}
+                            onClick={() => {
+                                setStartDate("");
+                                setEndDate("");
+                            }}
                         >
                             Clear
                         </button>
@@ -104,9 +108,7 @@ export default function Revenue() {
                     </>
                 }
             />
-
             <div className="pm-content">
-                {/* Stat grid */}
                 <div className="pm-stat-grid">
                     <div className="pm-stat">
                         <span className="pm-stat-label">Total Revenue</span>
@@ -115,38 +117,23 @@ export default function Revenue() {
                         </span>
                     </div>
                     <div className="pm-stat">
-                        <span className="pm-stat-label">Total Cost</span>
-                        <span className="pm-stat-val">₺{totalCost.toLocaleString()}</span>
+                        <span className="pm-stat-label">Units Sold</span>
+                        <span className="pm-stat-val">{totalUnits}</span>
                     </div>
                     <div className="pm-stat">
-                        <span className="pm-stat-label">Net Profit</span>
-                        <span
-                            className="pm-stat-val"
-                            style={{ color: totalProfit >= 0 ? "#22C55E" : "#F87171" }}
-                        >
-                            ₺{totalProfit.toLocaleString()}
-                        </span>
-                        <span className={`pm-stat-change ${totalProfit >= 0 ? "pm-up" : "pm-down"}`}>
-                            {totalProfit >= 0 ? "Profit" : "Loss"}
-                        </span>
+                        <span className="pm-stat-label">Average Revenue / Day</span>
+                        <span className="pm-stat-val">₺{averageRevenuePerOrder.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
                     </div>
                     <div className="pm-stat">
-                        <span className="pm-stat-label">Profit Margin</span>
-                        <span
-                            className="pm-stat-val"
-                            style={{ color: profitMargin > 0 ? "#22C55E" : undefined }}
-                        >
-                            {profitMargin.toFixed(1)}%
-                        </span>
+                        <span className="pm-stat-label">Days in Range</span>
+                        <span className="pm-stat-val">{chartData.length}</span>
                     </div>
                 </div>
-
-                {/* Chart panel */}
                 <div className="pm-panel">
-                    <div className="pm-panel-title">Revenue vs Cost vs Profit</div>
+                    <div className="pm-panel-title">Revenue vs Units Sold</div>
                     <div className="sm-chart-container">
                         <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                            <BarChart data={chartData} margin={{ top: 10, right: 20, left: 0, bottom: 0 }}>
                                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(248,250,252,0.08)" />
                                 <XAxis
                                     dataKey="date"
@@ -157,8 +144,14 @@ export default function Revenue() {
                                     }}
                                 />
                                 <YAxis
+                                    yAxisId="left"
                                     tick={{ fill: "rgba(248,250,252,0.55)", fontSize: 11 }}
                                     tickFormatter={(val: number) => `₺${val}`}
+                                />
+                                <YAxis
+                                    yAxisId="right"
+                                    orientation="right"
+                                    tick={{ fill: "rgba(248,250,252,0.55)", fontSize: 11 }}
                                 />
                                 <Tooltip
                                     contentStyle={{
@@ -168,16 +161,19 @@ export default function Revenue() {
                                         color: "#F8FAFC",
                                         fontSize: 13,
                                     }}
-                                    formatter={(value) => `₺${Number(value ?? 0).toLocaleString()}`}
+                                    formatter={(value, name) => {
+                                        if (name === "Revenue") {
+                                            return [`₺${Number(value ?? 0).toLocaleString()}`, name];
+                                        }
+                                        return [Number(value ?? 0).toLocaleString(), name];
+                                    }}
                                     labelFormatter={(label) => {
                                         const dateValue = typeof label === "string" || typeof label === "number"
                                             ? String(label)
                                             : "";
-
                                         if (!dateValue) {
                                             return "";
                                         }
-
                                         return new Date(dateValue).toLocaleDateString("en-US", {
                                             month: "long",
                                             day: "numeric",
@@ -186,17 +182,13 @@ export default function Revenue() {
                                     }}
                                 />
                                 <Legend wrapperStyle={{ color: "rgba(248,250,252,0.55)", fontSize: 12 }} />
-                                <Bar dataKey="revenue" name="Revenue" fill="#3B82F6" radius={[4, 4, 0, 0]} />
-                                <Bar dataKey="cost" name="Cost" fill="#F87171" radius={[4, 4, 0, 0]} />
-                                <Bar dataKey="profit" name="Profit" fill="#22C55E" radius={[4, 4, 0, 0]} />
+                                <Bar yAxisId="left" dataKey="revenue" name="Revenue" fill="#3B82F6" radius={[4, 4, 0, 0]} />
+                                <Bar yAxisId="right" dataKey="units" name="Units Sold" fill="#22C55E" radius={[4, 4, 0, 0]} />
                             </BarChart>
                         </ResponsiveContainer>
                     </div>
                 </div>
-
-                {/* Two-column grid */}
                 <div className="pm-grid-2">
-                    {/* Daily Breakdown */}
                     <div className="pm-col-main">
                         <div className="pm-panel">
                             <div className="pm-panel-title">Daily Breakdown</div>
@@ -206,21 +198,20 @@ export default function Revenue() {
                                         <tr>
                                             <th>Date</th>
                                             <th>Revenue</th>
-                                            <th>Cost</th>
-                                            <th>Profit</th>
-                                            <th>Margin %</th>
+                                            <th>Units Sold</th>
+                                            <th>Avg Revenue / Order</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         {chartData.length === 0 ? (
                                             <tr>
-                                                <td colSpan={5} style={{ textAlign: "center", opacity: 0.5 }}>
+                                                <td colSpan={4} style={{ textAlign: "center", opacity: 0.5 }}>
                                                     No data for selected range
                                                 </td>
                                             </tr>
                                         ) : (
-                                            chartData.map(row => {
-                                                const margin = row.revenue > 0 ? (row.profit / row.revenue * 100) : 0;
+                                            chartData.map((row) => {
+                                                const average = row.units > 0 ? row.revenue / row.units : 0;
                                                 return (
                                                     <tr key={row.date}>
                                                         <td>
@@ -231,11 +222,8 @@ export default function Revenue() {
                                                             })}
                                                         </td>
                                                         <td>₺{row.revenue.toLocaleString()}</td>
-                                                        <td>₺{row.cost.toLocaleString()}</td>
-                                                        <td style={{ color: row.profit >= 0 ? "#22C55E" : "#F87171" }}>
-                                                            ₺{row.profit.toLocaleString()}
-                                                        </td>
-                                                        <td>{margin.toFixed(1)}%</td>
+                                                        <td>{row.units}</td>
+                                                        <td>₺{average.toLocaleString(undefined, { maximumFractionDigits: 0 })}</td>
                                                     </tr>
                                                 );
                                             })
@@ -245,44 +233,35 @@ export default function Revenue() {
                             </div>
                         </div>
                     </div>
-
-                    {/* Top Profitable Products */}
                     <div className="pm-col-main">
                         <div className="pm-panel">
-                            <div className="pm-panel-title">Top Profitable Products</div>
+                            <div className="pm-panel-title">Top Selling Products</div>
                             <div className="pm-table-wrap">
                                 <table>
                                     <thead>
                                         <tr>
                                             <th>Product</th>
                                             <th>Revenue</th>
-                                            <th>Cost</th>
-                                            <th>Profit</th>
-                                            <th>Margin %</th>
+                                            <th>Units</th>
+                                            <th>Avg Revenue / Unit</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         {topProducts.length === 0 ? (
                                             <tr>
-                                                <td colSpan={5} style={{ textAlign: "center", opacity: 0.5 }}>
+                                                <td colSpan={4} style={{ textAlign: "center", opacity: 0.5 }}>
                                                     No data for selected range
                                                 </td>
                                             </tr>
                                         ) : (
-                                            topProducts.map(prod => {
-                                                const margin = prod.revenue > 0 ? (prod.profit / prod.revenue * 100) : 0;
-                                                const pillClass = margin >= 0 ? "pm-pill pm-pill-green" : "pm-pill pm-pill-red";
+                                            topProducts.map((prod) => {
+                                                const average = prod.units > 0 ? prod.revenue / prod.units : 0;
                                                 return (
                                                     <tr key={prod.name}>
                                                         <td>{prod.name}</td>
                                                         <td>₺{prod.revenue.toLocaleString()}</td>
-                                                        <td>₺{prod.cost.toLocaleString()}</td>
-                                                        <td>₺{prod.profit.toLocaleString()}</td>
-                                                        <td>
-                                                            <span className={pillClass}>
-                                                                {margin.toFixed(1)}%
-                                                            </span>
-                                                        </td>
+                                                        <td>{prod.units}</td>
+                                                        <td>₺{average.toLocaleString(undefined, { maximumFractionDigits: 0 })}</td>
                                                     </tr>
                                                 );
                                             })
