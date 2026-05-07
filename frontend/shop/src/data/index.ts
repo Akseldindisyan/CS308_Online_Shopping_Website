@@ -124,6 +124,7 @@ async function loadBackendData() {
         addressDetail: delivery.addressDetail ?? "",
         completed: delivery.completed,
         status: normalizeStatus(delivery.status, delivery.completed),
+        items: delivery.items,
       })),
     );
     const comments: Comment[] = reviews.map((review, index) => ({

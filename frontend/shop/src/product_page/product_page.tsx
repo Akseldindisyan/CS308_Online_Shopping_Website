@@ -194,7 +194,9 @@ function ProductPageContent({ product }: { product: Product }) {
             <p className="product-stock">Ready to ship today</p>
 
             <div className="product-buy-actions">
-              <button
+              {
+                (product.stock === 0) ? (<button className="btn-action" disabled style={{ backgroundColor: 'grey', cursor: 'not-allowed' }}>Out of Stock</button>) : (
+                  <button
                 type="button"
                 className="btn-action"
                 onClick={() =>
@@ -203,6 +205,10 @@ function ProductPageContent({ product }: { product: Product }) {
               >
                 Buy Now
               </button>
+
+                )
+              }
+              
 
               <Link to="/" className="btn-secondary">
                 Continue shopping
