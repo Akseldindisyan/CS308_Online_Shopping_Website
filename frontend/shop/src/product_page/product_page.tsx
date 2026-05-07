@@ -1,4 +1,4 @@
-import { useState,useEffect, type FormEvent } from 'react'
+import {useState, useEffect, type FormEvent, useCallback} from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { FaStar } from 'react-icons/fa'
 import './product_page.css'
@@ -7,6 +7,8 @@ import { getStoredAuthToken } from '../api/auth'
 import StarRating from './rating'
 import { useToast } from '../components/ToastProvider'
 import { useNavigate } from 'react-router-dom'
+import type {UUID} from "../data/types.ts";
+import {addItemToCart, getCartItemCount} from "../api/cart.ts";
 
 
 type ProductReview = {
@@ -34,6 +36,9 @@ function ProductPageContent({ product }: { product: Product }) {
   const [reviewMessageType, setReviewMessageType] = useState<'success' | 'error' | ''>('')
   const [reviews, setReviews] = useState<ProductReview[]>([])
   const [reviewForm, setReviewForm] = useState({ author: '', text: '', rating: 0, })
+  const [addingToCart, setAddingToCart] = useState<UUID | null>(null)
+  const [cartCount, setCartCount] = useState(0)
+
   const { showToast } = useToast()
   const navigate = useNavigate()
   
@@ -49,6 +54,27 @@ function ProductPageContent({ product }: { product: Product }) {
       : product.rating
 
   const totalReviewsLabel = `${reviews.length} ${reviews.length === 1 ? 'comment' : 'comments'}`
+
+  const refreshCartCount = useCallback(async () => {
+    try {
+      const count = await getCartItemCount()
+      setCartCount(count)
+    } catch (err) {
+      console.error('Failed to load cart count:', err)
+    }
+  }, [])
+  const handleAddToCart = async (productId: UUID, productName: string) => {
+    setAddingToCart(productId)
+    try {
+      await addItemToCart(productId, 1)
+      showToast(`${productName} added to cart`, 'success')
+      await refreshCartCount()
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : 'Failed to add to cart', 'error')
+    } finally {
+      setAddingToCart(null)
+    }
+  }
 
   const handleReviewSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -172,7 +198,7 @@ function ProductPageContent({ product }: { product: Product }) {
                 type="button"
                 className="btn-action"
                 onClick={() =>
-                  setStatusMessage(`${product.name} is ready for checkout in demo mode.`)
+                  handleAddToCart(product.id, product.name)
                 }
               >
                 Buy Now
