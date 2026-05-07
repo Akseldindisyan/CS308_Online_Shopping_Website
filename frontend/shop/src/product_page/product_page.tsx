@@ -1,4 +1,4 @@
-import {useState, useEffect, type FormEvent, useCallback} from 'react'
+import { useState, useEffect, type FormEvent, useCallback } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { FaStar } from 'react-icons/fa'
 import './product_page.css'
@@ -7,8 +7,8 @@ import { getStoredAuthToken } from '../api/auth'
 import StarRating from './rating'
 import { useToast } from '../components/ToastProvider'
 import { useNavigate } from 'react-router-dom'
-import type {UUID} from "../data/types.ts";
-import {addItemToCart, getCartItemCount} from "../api/cart.ts";
+import type { UUID } from "../data/types.ts";
+import { addItemToCart, getCartItemCount } from "../api/cart.ts";
 
 
 type ProductReview = {
@@ -19,16 +19,16 @@ type ProductReview = {
   createdAt: string
 }
 
-function ProductPageContent({ product }: { product: Product }) {
+function ProductPageContent({ product: initialProduct }: { product: Product }) {
+  const [product, setProduct] = useState<Product>(initialProduct)
   let url = "http://localhost:8080/api/review/product/"
   let id = product.id
 
   useEffect(() => {
-  fetch(url + id)
-  .then(res => res.json())
-  .then(data => setReviews(data))
+    fetch(url + id)
+      .then(res => res.json())
+      .then(data => setReviews(data))
   }, [])
-  console.log(products);
 
   const [selectedImage, setSelectedImage] = useState(product.image)
   const [statusMessage, setStatusMessage] = useState('')
@@ -41,17 +41,14 @@ function ProductPageContent({ product }: { product: Product }) {
 
   const { showToast } = useToast()
   const navigate = useNavigate()
-  
+
   const formattedPrice = new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency: 'USD',
     maximumFractionDigits: 0,
   }).format(product.price)
 
-  const averageRating =
-    reviews.length > 0
-      ? reviews.reduce((total, review) => total + review.rating, 0) / reviews.length
-      : product.rating
+  const averageRating = product.rating
 
   const totalReviewsLabel = `${reviews.length} ${reviews.length === 1 ? 'comment' : 'comments'}`
 
@@ -80,7 +77,6 @@ function ProductPageContent({ product }: { product: Product }) {
     event.preventDefault()
 
     const isLoggedIn = Boolean(getStoredAuthToken())
-    const username = reviewForm.author.trim()
     const comment = reviewForm.text.trim()
 
     if (!isLoggedIn) {
@@ -88,48 +84,49 @@ function ProductPageContent({ product }: { product: Product }) {
       return
     }
 
-    if (!comment || reviewForm.rating === 0) {
-      setReviewMessage('Please add your name, a comment, and a star rating before submitting.')
+    if (reviewForm.rating === 0) {
+      setReviewMessage('Please select a star rating before submitting.')
       setReviewMessageType('error')
       return
     }
 
-    let url = "http://localhost:8080/api/review/product/comment/"
-    let id = product.id
+    const url = "http://localhost:8080/api/review/product/comment/"
+    const id = product.id
     const token = localStorage.getItem('authToken')
     const today = new Date().toISOString().split('T')[0]
 
-    const newReview: ProductReview = {
-      id,
-      username,
-      comment,
-      rating: reviewForm.rating,
-      createdAt: new Date().toLocaleDateString('en-US', {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric',
-      }),
-    }
-
     fetch(url, {
       method: "POST",
-      headers: {
-        'Content-Type':'application/json'
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        token: token,
+        token,
         productId: id,
-        comment: reviewForm.text,
+        comment,
         rating: reviewForm.rating,
         commentDate: today
       })
     })
+      .then((res) => {
+        if (!res.ok) throw new Error('Failed to submit')
+        setReviewForm({ author: '', text: '', rating: 0 })
+        setReviewMessage(
+          comment.length === 0
+            ? 'Thanks! Your rating has been recorded.'
+            : 'Thanks! Your comment is awaiting approval and will appear once reviewed.'
+        )
+        setReviewMessageType('success')
 
-    //setReviews((currentReviews) => [newReview, ...currentReviews])
-    setReviewForm({ author: '', text: '', rating: 0})
-    setReviewMessage('Thanks! Your comment was added in demo mode.')
-    setReviewMessageType('success')
-    window.location.reload();
+        return Promise.all([
+          fetch(`http://localhost:8080/api/review/product/${id}`).then(r => r.json()),
+          fetch(`http://localhost:8080/api/products/${id}`).then(r => r.json()),
+        ])
+      })
+      .then((results) => {
+        if (!results) return
+        const [reviewsData, productData] = results
+        setReviews(reviewsData)
+        setProduct(productData)
+      })
   }
 
   return (
@@ -197,18 +194,18 @@ function ProductPageContent({ product }: { product: Product }) {
               {
                 (product.stock === 0) ? (<button className="btn-action" disabled style={{ backgroundColor: 'grey', cursor: 'not-allowed' }}>Out of Stock</button>) : (
                   <button
-                type="button"
-                className="btn-action"
-                onClick={() =>
-                  handleAddToCart(product.id, product.name)
-                }
-              >
-                Buy Now
-              </button>
+                    type="button"
+                    className="btn-action"
+                    onClick={() =>
+                      handleAddToCart(product.id.toString(), product.name)
+                    }
+                  >
+                    Buy Now
+                  </button>
 
                 )
               }
-              
+
 
               <Link to="/" className="btn-secondary">
                 Continue shopping
@@ -283,18 +280,18 @@ function ProductPageContent({ product }: { product: Product }) {
               <label className="product-form-field">
                 <span>Your comment</span>
                 <textarea
+
                   value={reviewForm.text}
                   onChange={(event) => {
                     setReviewForm((currentForm) => ({
                       ...currentForm,
-                      text: event.target.value, 
+                      text: event.target.value,
                     }))
                     setReviewMessage('')
                     setReviewMessageType('')
                   }}
                   rows={5}
-                  placeholder="Tell us what you liked or what could be better"
-                />
+                  placeholder="Optional — leave a comment (will appear after approval)" />
               </label>
 
               <div className="product-form-field">
@@ -332,9 +329,9 @@ function ProductPage() {
   let url = "http://localhost:8080/api/products/"
   let url_final = url + id
   useEffect(() => {
-          fetch(url_final)
-          .then(res => res.json())
-          .then(data => setProductInfo(data))
+    fetch(url_final)
+      .then(res => res.json())
+      .then(data => setProductInfo(data))
   }, [])
   console.log(productInfo)
 
