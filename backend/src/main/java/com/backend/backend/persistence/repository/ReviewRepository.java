@@ -49,7 +49,8 @@ public interface ReviewRepository extends JpaRepository<ReviewEntity, UUID> {
     List<ReviewEntity> findByApprovedAtGreaterThanEqual(LocalDate approvedAFixed );
 
 
-
+    List<ReviewEntity> findByProduct_IdAndApprovedByProductManTrue(UUID productId);
+    List<ReviewEntity> findByApprovedByProductManFalse();
 
 
 }

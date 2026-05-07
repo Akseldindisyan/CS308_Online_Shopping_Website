@@ -14,6 +14,7 @@ public record ReviewDTO(
         String comment,
         java.time.LocalDate createdAt,
         UUID product_id,
-        String product_name
+        String product_name,
+        boolean approved
 ) {
 }

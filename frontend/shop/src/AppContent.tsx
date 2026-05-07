@@ -7,7 +7,7 @@ import {
   getStoredGuestToken,
 } from './api/auth'
 import { fetchAllProducts, searchProducts } from './api/products'
-import { addItemToCart } from './api/cart'
+import { addItemToCart, getCartItemCount } from './api/cart'
 import { addToWishlist } from './api/wishlist'
 import { getStoredUserId } from './api/auth'
 import type { ProductCardDTO, UUID } from './data/types'
@@ -24,7 +24,9 @@ const categories = [
   'Camera',
 ]
 
+
 function AppContent() {
+  const [activeCategory, setActiveCategory] = useState<string | null>(null)
   const [searchText, setSearchText] = useState('')
   const [products, setProducts] = useState<ProductCardDTO[]>([])
   const [isSearching, setIsSearching] = useState(false)
@@ -35,7 +37,18 @@ function AppContent() {
   const [loading, setLoading] = useState(true)
   const [addingToCart, setAddingToCart] = useState<UUID | null>(null)
   const username = getStoredUsername()
+  const [cartCount, setCartCount] = useState(0)
   const { showToast } = useToast()
+
+
+  const refreshCartCount = useCallback(async () => {
+    try {
+      const count = await getCartItemCount()
+      setCartCount(count)
+    } catch (err) {
+      console.error('Failed to load cart count:', err)
+    }
+  }, [])
 
   const loadProducts = useCallback(async (
     queryText: string,
@@ -43,7 +56,7 @@ function AppContent() {
   ) => {
     const trimmedQuery = queryText.trim()
     const nextSort = options?.sort ?? sortBy
-    const nextInStock = options?.inStock ?? inStockOnly
+    const nextInStock = /*options?.inStock ??*/ inStockOnly
     const shouldSetLoadingState = options?.setLoadingState ?? true
 
     if (shouldSetLoadingState) {
@@ -53,24 +66,26 @@ function AppContent() {
     setSearchError('')
     try {
       if (trimmedQuery) {
-        const data = await searchProducts({
+        let data = await searchProducts({
           name: trimmedQuery,
           page: 0,
           size: 10,
           sort: nextSort,
           inStock: nextInStock,
         })
+        data = data.filter(product => !activeCategory || product.category === activeCategory)
         setProducts(data)
         setSearchActive(true)
         return
       }
 
-      const data = await fetchAllProducts({
+      let data = await fetchAllProducts({
         page: 0,
         size: 10,
         sort: nextSort,
         inStock: nextInStock,
       })
+      data = data.filter(product => !activeCategory || product.category === activeCategory)
       setProducts(data)
       setSearchActive(false)
     } catch (err) {
@@ -80,7 +95,7 @@ function AppContent() {
         setIsSearching(false)
       }
     }
-  }, [inStockOnly, sortBy])
+  }, [inStockOnly, sortBy,activeCategory])
 
   // Initial load — all products + ensure guest token exists
   useEffect(() => {
@@ -91,21 +106,20 @@ function AppContent() {
             console.error('Failed to create guest token:', err),
           )
         }
-        await loadProducts('', {
-          sort: 'id',
-          inStock: false,
-          setLoadingState: false,
-        })
+        await loadProducts('', { sort: 'id', inStock: false, setLoadingState: false })
+        await refreshCartCount()  // <-- add this
       } catch (err) {
-        setSearchError(
-          err instanceof Error ? err.message : 'Failed to load products',
-        )
+        setSearchError(err instanceof Error ? err.message : 'Failed to load products')
       } finally {
         setLoading(false)
       }
     }
     init()
-  }, [loadProducts])
+  }, [loadProducts, refreshCartCount])
+
+
+
+
 
   const handleSearchSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -141,11 +155,9 @@ function AppContent() {
     try {
       await addItemToCart(productId, 1)
       showToast(`${productName} added to cart`, 'success')
+      await refreshCartCount()
     } catch (err) {
-      showToast(
-        err instanceof Error ? err.message : 'Failed to add to cart',
-        'error',
-      )
+      showToast(err instanceof Error ? err.message : 'Failed to add to cart', 'error')
     } finally {
       setAddingToCart(null)
     }
@@ -214,8 +226,13 @@ function AppContent() {
                 <Link to="/orders" className="btn-secondary">My Orders</Link>
               </>
             )}
-            <Link to="/cart" className="btn-primary">
+            <Link to="/cart" className="btn-primary cart-link">
               My Cart
+              {cartCount > 0 && (
+                <span className="cart-badge" aria-label={`${cartCount} items in cart`}>
+                  {cartCount > 99 ? '99+' : cartCount}
+                </span>
+              )}
             </Link>
             {username && <span className="user-greeting">Hello, {username}!</span>}
           </div>
@@ -223,7 +240,7 @@ function AppContent() {
 
         <nav className="category-nav" aria-label="Product categories">
           {categories.map((category) => (
-            <a href="#" key={category}>
+            <a href="#" key={category} onClick={()=>{(activeCategory === category) ? setActiveCategory(null) : setActiveCategory(category)}}>
               {category}
             </a>
           ))}
@@ -313,7 +330,7 @@ function AppContent() {
                     )}
                     <span className="product-category">{product.category}</span>
                     <h2>{product.name}</h2>
-                    <p className="rating">Rating: {product.rating} / 5</p>
+                    <p className="rating">Rating: {(product.rating) == 0 ? "No review" : product.rating  + " / 5"}</p>
                     <p className="price">${product.price}</p>
                     {product.stock === 0 && (
                       <p className="out-of-stock">Out of stock</p>

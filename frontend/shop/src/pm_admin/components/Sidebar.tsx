@@ -124,7 +124,7 @@ export default function Sidebar() {
                     EP
                 </div>
                 <div>
-                    <div style={{ fontSize: 13 }}>Emre Pekcan</div>
+                    <div style={{ fontSize: 13 }}>Admin</div>
                     <div style={{ fontSize: 11, color: "var(--text-muted)" }}>Product Manager</div>
                 </div>
             </div>

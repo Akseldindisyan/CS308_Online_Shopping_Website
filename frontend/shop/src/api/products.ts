@@ -96,3 +96,4 @@ export async function fetchAllProducts(params?: {
   );
   return normalizeSearchResponse(response);
 }
+

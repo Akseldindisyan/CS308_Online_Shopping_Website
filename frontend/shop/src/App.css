@@ -104,7 +104,7 @@ body {
   white-space: nowrap;
 }
 
-.header-actions .btn-secondary  {
+.header-actions .btn-secondary {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -231,14 +231,10 @@ button:disabled {
   position: relative;
   --filter-width: 260px;
   --filter-gap: 16px;
-  --filter-left: max(
-    calc(-1 * (var(--filter-width) + var(--filter-gap))),
-    calc(var(--safe-edge) - ((100vw - var(--shell-width)) / 2))
-  );
-  --filter-overlap: max(
-    0px,
-    calc(var(--filter-left) + var(--filter-width) + var(--filter-gap))
-  );
+  --filter-left: max(calc(-1 * (var(--filter-width) + var(--filter-gap))),
+      calc(var(--safe-edge) - ((100vw - var(--shell-width)) / 2)));
+  --filter-overlap: max(0px,
+      calc(var(--filter-left) + var(--filter-width) + var(--filter-gap)));
 }
 
 .filter-sidebar {
@@ -346,6 +342,7 @@ button:disabled {
   display: flex;
   flex-direction: column;
   gap: 10px;
+  max-width: 300px;
 }
 
 .product-image {
@@ -451,4 +448,27 @@ button:disabled {
   .catalog-results {
     padding-left: 0;
   }
+}
+
+
+.cart-link {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.cart-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.4rem;
+  height: 1.4rem;
+  padding: 0 0.4rem;
+  border-radius: 999px;
+  background: #e63946;
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1;
 }
