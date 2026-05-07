@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, type FormEvent } from 'react'
+import { useState, useEffect, useRef, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 import {
   clearAuthToken,
@@ -6,7 +6,7 @@ import {
   createGuestToken,
   getStoredGuestToken,
 } from './api/auth'
-import { fetchAllProducts, searchProducts } from './api/products'
+import { fetchAllProducts, fetchProductCategories, searchProducts } from './api/products'
 import { addItemToCart, getCartItemCount } from './api/cart'
 import { addToWishlist } from './api/wishlist'
 import { getStoredUserId } from './api/auth'
@@ -14,7 +14,7 @@ import type { ProductCardDTO, UUID } from './data/types'
 import { useToast } from './components/ToastProvider'
 import './App.css'
 
-const categories = [
+const fallbackCategories = [
   'Laptops',
   'Phones',
   'Tablets',
@@ -26,6 +26,10 @@ const categories = [
 
 
 function AppContent() {
+  const requestIdRef = useRef(0)
+  const pageSize = 10
+
+  const [categories, setCategories] = useState<string[]>([])
   const [activeCategory, setActiveCategory] = useState<string | null>(null)
   const [searchText, setSearchText] = useState('')
   const [products, setProducts] = useState<ProductCardDTO[]>([])
@@ -38,26 +42,40 @@ function AppContent() {
   const [addingToCart, setAddingToCart] = useState<UUID | null>(null)
   const username = getStoredUsername()
   const [cartCount, setCartCount] = useState(0)
+  const [currentPage, setCurrentPage] = useState(0)
+  const [totalPages, setTotalPages] = useState(0)
   const { showToast } = useToast()
 
-
-  const refreshCartCount = useCallback(async () => {
+  const refreshCartCount = async () => {
     try {
       const count = await getCartItemCount()
       setCartCount(count)
     } catch (err) {
       console.error('Failed to load cart count:', err)
     }
-  }, [])
+  }
 
-  const loadProducts = useCallback(async (
-    queryText: string,
-    options?: { sort?: string; inStock?: boolean; setLoadingState?: boolean },
-  ) => {
+  const loadCategories = async () => {
+    try {
+      const remoteCategories = await fetchProductCategories()
+      setCategories(remoteCategories.length > 0 ? remoteCategories : fallbackCategories)
+    } catch {
+      setCategories(fallbackCategories)
+    }
+  }
+
+  const loadProducts = async (params: {
+    queryText: string
+    sort: string
+    inStock: boolean
+    category: string | null
+    page: number
+    setLoadingState?: boolean
+  }) => {
+    const requestId = ++requestIdRef.current
+    const { queryText, sort, inStock, category, page } = params
+    const shouldSetLoadingState = params.setLoadingState ?? true
     const trimmedQuery = queryText.trim()
-    const nextSort = options?.sort ?? sortBy
-    const nextInStock = /*options?.inStock ??*/ inStockOnly
-    const shouldSetLoadingState = options?.setLoadingState ?? true
 
     if (shouldSetLoadingState) {
       setIsSearching(true)
@@ -66,36 +84,43 @@ function AppContent() {
     setSearchError('')
     try {
       if (trimmedQuery) {
-        let data = await searchProducts({
+        const result = await searchProducts({
           name: trimmedQuery,
-          page: 0,
-          size: 10,
-          sort: nextSort,
-          inStock: nextInStock,
+          page,
+          size: pageSize,
+          sort,
+          inStock,
+          category: category ?? undefined,
         })
-        data = data.filter(product => !activeCategory || product.category === activeCategory)
-        setProducts(data)
+        if (requestId !== requestIdRef.current) return
+        setProducts(result.content)
+        setCurrentPage(result.number)
+        setTotalPages(result.totalPages)
         setSearchActive(true)
         return
       }
 
-      let data = await fetchAllProducts({
-        page: 0,
-        size: 10,
-        sort: nextSort,
-        inStock: nextInStock,
+      const result = await fetchAllProducts({
+        page,
+        size: pageSize,
+        sort,
+        inStock,
+        category: category ?? undefined,
       })
-      data = data.filter(product => !activeCategory || product.category === activeCategory)
-      setProducts(data)
+      if (requestId !== requestIdRef.current) return
+      setProducts(result.content)
+      setCurrentPage(result.number)
+      setTotalPages(result.totalPages)
       setSearchActive(false)
     } catch (err) {
+      if (requestId !== requestIdRef.current) return
       setSearchError(err instanceof Error ? err.message : 'Failed to load products')
     } finally {
-      if (shouldSetLoadingState) {
+      if (shouldSetLoadingState && requestId === requestIdRef.current) {
         setIsSearching(false)
       }
     }
-  }, [inStockOnly, sortBy,activeCategory])
+  }
 
   // Initial load — all products + ensure guest token exists
   useEffect(() => {
@@ -106,8 +131,18 @@ function AppContent() {
             console.error('Failed to create guest token:', err),
           )
         }
-        await loadProducts('', { sort: 'id', inStock: false, setLoadingState: false })
-        await refreshCartCount()  // <-- add this
+        await Promise.all([
+          loadCategories(),
+          loadProducts({
+            queryText: '',
+            sort: 'id',
+            inStock: false,
+            category: null,
+            page: 0,
+            setLoadingState: false,
+          }),
+          refreshCartCount(),
+        ])
       } catch (err) {
         setSearchError(err instanceof Error ? err.message : 'Failed to load products')
       } finally {
@@ -115,7 +150,7 @@ function AppContent() {
       }
     }
     init()
-  }, [loadProducts, refreshCartCount])
+  }, [])
 
 
 
@@ -123,30 +158,81 @@ function AppContent() {
 
   const handleSearchSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    await loadProducts(searchText)
+    await loadProducts({
+      queryText: searchText,
+      sort: sortBy,
+      inStock: inStockOnly,
+      category: activeCategory,
+      page: 0,
+    })
   }
 
   const handleResetSearch = async () => {
     setSearchText('')
-    await loadProducts('')
+    await loadProducts({
+      queryText: '',
+      sort: sortBy,
+      inStock: inStockOnly,
+      category: activeCategory,
+      page: 0,
+    })
   }
 
   const handleSortChange = async (nextSort: string) => {
     setSortBy(nextSort)
-    await loadProducts(searchActive ? searchText : '', { sort: nextSort })
+    await loadProducts({
+      queryText: searchActive ? searchText : '',
+      sort: nextSort,
+      inStock: inStockOnly,
+      category: activeCategory,
+      page: 0,
+    })
   }
 
   const handleInStockToggle = async (nextInStock: boolean) => {
     setInStockOnly(nextInStock)
-    await loadProducts(searchActive ? searchText : '', { inStock: nextInStock })
+    await loadProducts({
+      queryText: searchActive ? searchText : '',
+      sort: sortBy,
+      inStock: nextInStock,
+      category: activeCategory,
+      page: 0,
+    })
   }
 
   const handleResetFilters = async () => {
     setSortBy('id')
     setInStockOnly(false)
-    await loadProducts(searchActive ? searchText : '', {
+    setActiveCategory(null)
+    await loadProducts({
+      queryText: searchActive ? searchText : '',
       sort: 'id',
       inStock: false,
+      category: null,
+      page: 0,
+    })
+  }
+
+  const handleCategoryToggle = async (category: string | null) => {
+    const nextCategory = activeCategory === category ? null : category
+    setActiveCategory(nextCategory)
+    await loadProducts({
+      queryText: searchActive ? searchText : '',
+      sort: sortBy,
+      inStock: inStockOnly,
+      category: nextCategory,
+      page: 0,
+    })
+  }
+
+  const goToPage = async (page: number) => {
+    const clamped = Math.max(0, Math.min(page, Math.max(0, totalPages - 1)))
+    await loadProducts({
+      queryText: searchActive ? searchText : '',
+      sort: sortBy,
+      inStock: inStockOnly,
+      category: activeCategory,
+      page: clamped,
     })
   }
 
@@ -240,10 +326,28 @@ function AppContent() {
 
         <nav className="category-nav" aria-label="Product categories">
           {categories.map((category) => (
-            <a href="#" key={category} onClick={()=>{(activeCategory === category) ? setActiveCategory(null) : setActiveCategory(category)}}>
+            <a
+              href="#"
+              key={category}
+              className={activeCategory === category ? 'is-active' : ''}
+              onClick={(event) => {
+                event.preventDefault()
+                void handleCategoryToggle(category)
+              }}
+            >
               {category}
             </a>
           ))}
+          <a
+            href="#"
+            className={activeCategory === null ? 'is-active' : ''}
+            onClick={(event) => {
+              event.preventDefault()
+              void handleCategoryToggle(null)
+            }}
+          >
+            All
+          </a>
         </nav>
       </header>
 
@@ -360,6 +464,13 @@ function AppContent() {
                   </article>
                 ))}
               </section>
+            )}
+            {!loading && totalPages > 1 && (
+              <div className="pagination-controls" style={{ marginTop: 16 }}>
+                <button type="button" onClick={() => void goToPage(currentPage - 1)} disabled={currentPage <= 0}>Prev</button>
+                <span style={{ margin: '0 8px' }}>Page {currentPage + 1} of {totalPages}</span>
+                <button type="button" onClick={() => void goToPage(currentPage + 1)} disabled={currentPage >= totalPages - 1}>Next</button>
+              </div>
             )}
           </div>
         </section>

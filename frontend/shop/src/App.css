@@ -195,6 +195,11 @@ button:disabled {
   font-size: 0.88rem;
 }
 
+.category-nav a.is-active {
+  border-color: var(--focus);
+  background: #17274a;
+}
+
 .main-content {
   width: var(--shell-width);
   margin: 0 auto;
