@@ -413,6 +413,7 @@ function AppContent() {
                     <option value="price_desc">Price: high to low</option>
                     <option value="rating_desc">Highest rated</option>
                     <option value="rating_asc">Lowest rated</option>
+                    <option value="A_to_Z">Name A to Z</option>
                   </select>
                 </label>
               </fieldset>
