@@ -117,7 +117,7 @@ export type Product = {
   category: string;
   image_url: string;
   active: boolean;
-  warrant_status:string;
+  warranty_status:string;
 
   images: string[];
   features: string[];

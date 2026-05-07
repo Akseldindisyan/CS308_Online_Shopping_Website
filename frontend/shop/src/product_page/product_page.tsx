@@ -181,9 +181,11 @@ function ProductPageContent({ product: initialProduct }: { product: Product }) {
           <h1>{product.productName}</h1>
 
           <div className="product-meta">
-            <span>
+            <span style={{ display: (product.rating > 0) ? 'inherit' : 'none' }}>
+               
               <FaStar color="#ffc107" /> {product.rating} / 5 rating
             </span>
+            <span style={{ display: (product.rating <= 0) ? 'inherit' : 'none' }}>No ratings yet</span>
             <span>•</span>
             <span>{totalReviewsLabel}</span>
             <span>•</span>
@@ -191,7 +193,11 @@ function ProductPageContent({ product: initialProduct }: { product: Product }) {
           </div>
 
           <p className="product-description">{product.desc}</p>
-
+          <p className="product-description">Model: {product.model}</p>
+          <p className="product-description">Warranty Status: {product.warranty_status}</p>
+          <p className="product-description">Serial Number: {product.serialNumber}</p>
+          <p className="product-description">Distributor: {product.distInfo}</p>
+           <p className="product-description">Made in {product.country}</p>
           {/* <ul className="product-features">
             {product.features.map((feature) => (
               <li key={feature}>{feature}</li>

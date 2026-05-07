@@ -24,6 +24,7 @@ public class ProductMapper {
     public static ProductDetailedDTO toDetailedDTO(ProductEntity entity) {
         ProductDetailedDTO dto = new ProductDetailedDTO();
         dto.setId(entity.getId());
+        dto.setCountry(entity.getCountry());
         dto.setProductName(entity.getProductName());
         dto.setModel(entity.getModel());
         dto.setSerialNumber(entity.getSerialNumber());
