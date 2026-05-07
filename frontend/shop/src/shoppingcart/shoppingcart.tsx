@@ -71,8 +71,8 @@ function ShoppingCart() {
 
   const handleCheckout = () => {
     if (!isLoggedIn) {
-      showToast('Please log in to complete your purchase.', 'error')
-      navigate('/login')
+      //showToast('Please log in to complete your purchase.', 'error')
+      navigate('/login?redirect=cart') // Redirect to login with a redirect back to cart a
       return
     }
     if (!address.trim()) {
@@ -289,7 +289,7 @@ function ShoppingCart() {
             <button
               type="button"
               className="btn-action"
-              disabled={isCheckoutDisabled}
+              disabled={isCheckoutDisabled&&isLoggedIn}
               onClick={handleCheckout}
             >
               {mutating

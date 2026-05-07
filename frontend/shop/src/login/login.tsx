@@ -21,7 +21,7 @@ export default function Login({ initialType = "signIn" }: LoginProps) {
       setType(nextType);
     }
 
-    navigate(nextType === "signUp" ? "/register" : "/login");
+    //navigate(nextType === "signUp" ? "/register" : "/login");
   };
   const containerClass =
     "container " + (type === "signUp" ? "right-panel-active" : "");
