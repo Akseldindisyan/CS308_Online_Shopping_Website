@@ -68,6 +68,14 @@ public class ProductService {
                 predicates.add(cb.gt(root.<Integer>get("stock"), 0));
             }
 
+            // If no predicates were added, return a neutral conjunction instead of
+            // calling cb.and() with an empty array which can behave unexpectedly
+            // across JPA providers. cb.conjunction() represents a no-op predicate
+            // (always true) and is safe to use when no filtering is required.
+            if (predicates.isEmpty()) {
+                return cb.conjunction();
+            }
+
             return cb.and(predicates.toArray(Predicate[]::new));
         };
     }
