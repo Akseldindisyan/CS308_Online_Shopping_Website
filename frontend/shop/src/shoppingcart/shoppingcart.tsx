@@ -53,13 +53,19 @@ function ShoppingCart() {
     showToast(`${productName} removed from cart`, 'info')
   }
 
+  const hasStockIssue = items.some(
+    (item) => item.stock !== null && item.quantity > item.stock,
+  )
+
   const checkoutBlockReason = !isLoggedIn
     ? 'You need to log in before checking out.'
     : !address.trim()
       ? 'Please enter a delivery address to continue.'
-      : !cart?.canCheckout
-        ? 'Some items in your cart are unavailable or out of stock.'
-        : null
+      : hasStockIssue
+        ? 'Some items exceed available stock. Please adjust quantities.'
+        : !cart?.canCheckout
+          ? 'Some items in your cart are unavailable or out of stock.'
+          : null
 
   const isCheckoutDisabled = mutating || !!checkoutBlockReason
 
