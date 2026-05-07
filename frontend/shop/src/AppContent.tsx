@@ -108,7 +108,7 @@ function AppContent() {
         category: category ?? undefined,
       })
       if (requestId !== requestIdRef.current) return
-      setProducts(result.content)
+      setProducts(result.content.filter((p) => category === null || p.category === category))
       setCurrentPage(result.number)
       setTotalPages(result.totalPages)
       setSearchActive(false)
