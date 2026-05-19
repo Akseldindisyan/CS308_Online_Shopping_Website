@@ -7,6 +7,8 @@ import { apiRequest } from "./client";
 
 export const AUTH_TOKEN_STORAGE_KEY = "authToken";
 export const GUEST_TOKEN_STORAGE_KEY = "guestToken";
+const USER_NAME_KEY    = "userName";
+const USER_SURNAME_KEY = "userSurname";
 
 export async function login(
     payload: LoginRequestDTO,
@@ -28,12 +30,27 @@ export function storeAuthToken(token: string): void {
     localStorage.setItem(AUTH_TOKEN_STORAGE_KEY, token);
 }
 
+export function storeUserInfo(name: string, surname: string): void {
+    localStorage.setItem(USER_NAME_KEY, name);
+    localStorage.setItem(USER_SURNAME_KEY, surname);
+}
+
+export function getStoredName(): string | null {
+    return localStorage.getItem(USER_NAME_KEY);
+}
+
+export function getStoredSurname(): string | null {
+    return localStorage.getItem(USER_SURNAME_KEY);
+}
+
 export function getStoredAuthToken(): string | null {
     return localStorage.getItem(AUTH_TOKEN_STORAGE_KEY);
 }
 
 export function clearAuthToken(): void {
     localStorage.removeItem(AUTH_TOKEN_STORAGE_KEY);
+    localStorage.removeItem(USER_NAME_KEY);
+    localStorage.removeItem(USER_SURNAME_KEY);
 }
 
 export function storeGuestToken(token: string): void {

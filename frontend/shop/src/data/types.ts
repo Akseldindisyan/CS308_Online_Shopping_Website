@@ -14,6 +14,8 @@ export interface LoginRequestDTO {
 
 export interface LoginResponseDTO {
   token: string;
+  name: string;
+  surname: string;
 }
 
 // Register

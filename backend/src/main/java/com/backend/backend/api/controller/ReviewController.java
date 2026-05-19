@@ -78,12 +78,14 @@ public class ReviewController {
     }
 
     @PostMapping("/{reviewId}/approve")
+    @org.springframework.security.access.prepost.PreAuthorize("hasRole('PRODUCT_MANAGER')")
     public ResponseEntity<Void> approveReview(@PathVariable UUID reviewId) {
         reviewService.approveReview(reviewId);
         return ResponseEntity.ok().build();
     }
 
     @PostMapping("/{reviewId}/reject")
+    @org.springframework.security.access.prepost.PreAuthorize("hasRole('PRODUCT_MANAGER')")
     public ResponseEntity<Void> rejectReview(@PathVariable UUID reviewId) {
         reviewService.rejectReview(reviewId);
         return ResponseEntity.ok().build();

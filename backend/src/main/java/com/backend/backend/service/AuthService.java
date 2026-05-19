@@ -48,7 +48,11 @@ public class AuthService {
             AppUserPrincipal principal = (AppUserPrincipal) principalObj;
             String token = jwtService.generateToken(principal);
 
-            return new LoginResponseDTO(token);
+            UserEntity user = userRepository.findByUsername(principal.getUsername()).orElse(null);
+            String name    = user != null ? user.getName()    : "";
+            String surname = user != null ? user.getSurname() : "";
+
+            return new LoginResponseDTO(token, name, surname);
         } catch (AuthenticationException ex) {
             throw new BadRequestException("INVALID_CREDENTIALS", "Username or password is incorrect");
         }
@@ -74,7 +78,7 @@ public class AuthService {
 
         UserEntity savedUser = userRepository.save(newUser);
         String token = jwtService.generateToken(new AppUserPrincipal(savedUser));
-        return new LoginResponseDTO(token);
+        return new LoginResponseDTO(token, savedUser.getName(), savedUser.getSurname());
     }
 }
 

@@ -1,6 +1,6 @@
 import React from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import { login, storeAuthToken, mergeGuestCartIntoUserCart } from "../api/auth";
+import { login, storeAuthToken, storeUserInfo, mergeGuestCartIntoUserCart } from "../api/auth";
 
 function SignInForm() {
   const navigate = useNavigate();
@@ -40,6 +40,7 @@ function SignInForm() {
     try {
       const response = await login({ username, password });
       storeAuthToken(response.token);
+      storeUserInfo(response.name ?? "", response.surname ?? "");
       await mergeGuestCartIntoUserCart();
       setStatusMessage("Login successful. Redirecting...");
       setStatusType("success");

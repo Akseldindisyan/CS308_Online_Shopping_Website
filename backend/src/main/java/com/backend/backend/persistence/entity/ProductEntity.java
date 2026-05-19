@@ -64,7 +64,7 @@ public class ProductEntity {
     @Column(name = "warranty_status")
     private String warranty_status;
 
-    public ProductEntity(String productName, double rating, int stock, String model, String serialNumber, String desc, double price, String distInfo, String country, boolean active){
+    public ProductEntity(String productName, double rating, int stock, String model, String serialNumber, String desc, double price, String distInfo, String country, String category, String imageUrl, boolean active){
         this.productName = productName;
         this.rating = rating;
         this.stock = stock;
@@ -75,7 +75,7 @@ public class ProductEntity {
         this.distInfo = distInfo;
         this.country = country;
         this.category = category;
-        this.image_url = image_url;
+        this.image_url = imageUrl;
         this.active = active;
     }
 }

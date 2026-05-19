@@ -13,6 +13,26 @@ public class OrderService {
     public OrderService(InvoiceRepository invoiceRepository) {
         this.invoiceRepository = invoiceRepository;
     }
+    public List<InvoiceDTO> getAllOrders() {
+        return invoiceRepository.findAll().stream()
+            .map(invoice -> new InvoiceDTO(
+                invoice.getId(),
+                invoice.getCustomer().getId(),
+                invoice.getItems().stream()
+                    .map(item -> new InvoiceItemDTO(
+                        item.getProduct().getId(),
+                        item.getProduct().getProductName(),
+                        item.getQuantity(),
+                        item.getUnitPrice(),
+                        item.getTotalPrice()
+                    ))
+                    .collect(Collectors.toList()),
+                invoice.getTotalPrice(),
+                invoice.getDate() != null ? invoice.getDate().toString() : null
+            ))
+            .collect(Collectors.toList());
+    }
+
     public List<InvoiceDTO> getOrdersByUser(UUID userId) {
         return invoiceRepository.findByCustomerId(userId).stream()
             .map(invoice -> new InvoiceDTO(

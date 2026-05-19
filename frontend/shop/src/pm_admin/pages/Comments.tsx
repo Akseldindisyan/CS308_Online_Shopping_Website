@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import Topbar from "../components/Topbar";
+import { apiRequest } from "../../api/client";
 
 const stars = (n: number) => "★".repeat(n) + "☆".repeat(5 - n);
 
@@ -21,8 +22,7 @@ export default function Comments() {
   const loadPending = async () => {
     setLoading(true);
     try {
-      const res = await fetch("http://localhost:8080/api/review/pending");
-      const data = await res.json();
+      const data = await apiRequest<AdminReview[]>("/api/review/pending");
       setPending(data);
     } catch (e) {
       console.error(e);
@@ -34,12 +34,12 @@ export default function Comments() {
   useEffect(() => { loadPending(); }, []);
 
   const handleApprove = async (id: string) => {
-    await fetch(`http://localhost:8080/api/review/${id}/approve`, { method: "POST" });
+    await apiRequest<void>(`/api/review/${id}/approve`, { method: "POST" });
     setPending((prev) => prev.filter((r) => r.id !== id));
   };
 
   const handleReject = async (id: string) => {
-    await fetch(`http://localhost:8080/api/review/${id}/reject`, { method: "POST" });
+    await apiRequest<void>(`/api/review/${id}/reject`, { method: "POST" });
     setPending((prev) => prev.filter((r) => r.id !== id));
   };
 

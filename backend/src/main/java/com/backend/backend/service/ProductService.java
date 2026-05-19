@@ -51,9 +51,13 @@ public class ProductService {
         };
     }
 
-    private Specification<ProductEntity> buildProductSpecification(String searchTerm, boolean inStock) {
+    private Specification<ProductEntity> buildProductSpecification(String searchTerm, boolean inStock, boolean activeOnly, String category) {
         return (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
+
+            if (activeOnly) {
+                predicates.add(cb.isTrue(root.<Boolean>get("active")));
+            }
 
             if (searchTerm != null && !searchTerm.isBlank()) {
                 String normalized = searchTerm.trim().toLowerCase();
@@ -68,10 +72,10 @@ public class ProductService {
                 predicates.add(cb.gt(root.<Integer>get("stock"), 0));
             }
 
-            // If no predicates were added, return a neutral conjunction instead of
-            // calling cb.and() with an empty array which can behave unexpectedly
-            // across JPA providers. cb.conjunction() represents a no-op predicate
-            // (always true) and is safe to use when no filtering is required.
+            if (category != null && !category.isBlank()) {
+                predicates.add(cb.equal(root.<String>get("category"), category));
+            }
+
             if (predicates.isEmpty()) {
                 return cb.conjunction();
             }
@@ -80,9 +84,22 @@ public class ProductService {
         };
     }
 
-    private Page<ProductEntity> findProducts(String searchTerm, int page, int size, String sort, boolean inStock) {
+    private Specification<ProductEntity> buildProductSpecification(String searchTerm, boolean inStock) {
+        return buildProductSpecification(searchTerm, inStock, true, null);
+    }
+
+    private Page<ProductEntity> findProducts(String searchTerm, int page, int size, String sort, boolean inStock, String category) {
         Pageable pageable = PageRequest.of(page, size, resolveSort(sort));
-        return ProductRepo.findAll(buildProductSpecification(searchTerm, inStock), pageable);
+        return ProductRepo.findAll(buildProductSpecification(searchTerm, inStock, true, category), pageable);
+    }
+
+    private Page<ProductEntity> findProducts(String searchTerm, int page, int size, String sort, boolean inStock) {
+        return findProducts(searchTerm, page, size, sort, inStock, null);
+    }
+
+    private Page<ProductEntity> findAllProductsAdmin(String searchTerm, int page, int size, String sort, boolean inStock) {
+        Pageable pageable = PageRequest.of(page, size, resolveSort(sort));
+        return ProductRepo.findAll(buildProductSpecification(searchTerm, inStock, false, null), pageable);
     }
 
     public Page<ProductEntity> getAllOrderByPriceAsc(int page, int size){
@@ -110,7 +127,7 @@ public class ProductService {
         return ProductRepo.searchByProductNameLike(name, p);
     }
 
-    public Page<ProductEntity> searchProducts(String name, int page, int size, String sort, boolean inStock) {
+    public Page<ProductEntity> searchProducts(String name, int page, int size, String sort, boolean inStock, String category) {
         String normalizedName = name == null ? "" : name.trim();
         if (normalizedName.isEmpty()) {
             throw new BadRequestException("INVALID_SEARCH_QUERY", "Search query cannot be empty");
@@ -120,11 +137,11 @@ public class ProductService {
             throw new BadRequestException("INVALID_SEARCH_QUERY", "Search query is too long");
         }
 
-        return findProducts(normalizedName, page, size, sort, inStock);
+        return findProducts(normalizedName, page, size, sort, inStock, category);
     }
 
-    public Page<ProductEntity> getProducts(int page, int size, String sort, boolean inStock) {
-        return findProducts(null, page, size, sort, inStock);
+    public Page<ProductEntity> getProducts(int page, int size, String sort, boolean inStock, String category) {
+        return findProducts(null, page, size, sort, inStock, category);
     }
 
     public void UpdateStock(String name, int amount){
@@ -133,8 +150,36 @@ public class ProductService {
         ProductRepo.save(product);
     }
 
+    public ProductEntity createProduct(String productName, double price, int stock, String category,
+                                       String model, String serialNumber, String desc, String distInfo,
+                                       String country, String imageUrl, boolean active, String warrantyStatus) {
+        ProductEntity p = new ProductEntity(productName, 0.0, stock, model, serialNumber, desc, price, distInfo, country, category, imageUrl, active);
+        p.setWarranty_status(warrantyStatus);
+        return ProductRepo.save(p);
+    }
+
+    public void deleteProduct(UUID id) {
+        if (!ProductRepo.existsById(id)) {
+            throw new org.springframework.web.server.ResponseStatusException(
+                    org.springframework.http.HttpStatus.NOT_FOUND, "Product not found: " + id);
+        }
+        ProductRepo.deleteById(id);
+    }
+
+    public ProductEntity updateStock(UUID id, int stock) {
+        ProductEntity product = getProductById(id);
+        product.setStock(stock);
+        return ProductRepo.save(product);
+    }
+
+    public ProductEntity setActive(UUID id, boolean active) {
+        ProductEntity product = getProductById(id);
+        product.setActive(active);
+        return ProductRepo.save(product);
+    }
+
     public void CreateProduct(String productName, double rating, int stock, String model, String serialNumber, String desc, double price, String distInfo, String country, String category, boolean active){
-        ProductEntity newProduct = new ProductEntity(productName, rating, stock, model, serialNumber, desc, price, distInfo, country, active);
+        ProductEntity newProduct = new ProductEntity(productName, rating, stock, model, serialNumber, desc, price, distInfo, country, category, null, active);
         ProductRepo.save(newProduct);
     }
 
@@ -149,8 +194,8 @@ public class ProductService {
         return entities.map(ProductMapper::toCardDTO);
     }
 
-    public Page<ProductCardDTO> getProductCards(int page, String sort, int size, boolean inStock) {
-        return getProducts(page, size, sort, inStock).map(ProductMapper::toCardDTO);
+    public Page<ProductCardDTO> getProductCards(int page, String sort, int size, boolean inStock, String category) {
+        return getProducts(page, size, sort, inStock, category).map(ProductMapper::toCardDTO);
     }
 
     public Page<ProductCardDTO> searchProductCards(String name, int page, int size) {
@@ -167,8 +212,12 @@ public class ProductService {
                 .map(ProductMapper::toCardDTO);
     }
 
-    public Page<ProductCardDTO> searchProductCards(String name, int page, int size, String sort, boolean inStock) {
-        return searchProducts(name, page, size, sort, inStock).map(ProductMapper::toCardDTO);
+    public Page<ProductCardDTO> searchProductCards(String name, int page, int size, String sort, boolean inStock, String category) {
+        return searchProducts(name, page, size, sort, inStock, category).map(ProductMapper::toCardDTO);
+    }
+
+    public Page<ProductCardDTO> getAdminProductCards(int page, String sort, int size, boolean inStock) {
+        return findAllProductsAdmin(null, page, size, sort, inStock).map(ProductMapper::toCardDTO);
     }
 
     public ProductDetailedDTO getProductDetail(UUID id) {

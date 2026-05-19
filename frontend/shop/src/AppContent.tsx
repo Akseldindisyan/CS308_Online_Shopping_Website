@@ -6,7 +6,8 @@ import {
   createGuestToken,
   getStoredGuestToken,
 } from './api/auth'
-import { fetchAllProducts, fetchProductCategories, searchProducts } from './api/products'
+import { fetchAllProducts, searchProducts } from './api/products'
+import { getCategories } from './api/categories'
 import { addItemToCart, getCartItemCount } from './api/cart'
 import { addToWishlist } from './api/wishlist'
 import { getStoredUserId } from './api/auth'
@@ -15,15 +16,7 @@ import { useToast } from './components/ToastProvider'
 import './App.css'
 import { useCart } from './hooks/useCart'
 
-const fallbackCategories = [
-  'Laptops',
-  'Phones',
-  'Tablets',
-  'Headphones',
-  'Gaming',
-  'Accessories',
-  'Camera',
-]
+const fallbackCategories = ['Laptop', 'Phone', 'Tablet', 'Headphone', 'Camera', 'Printer', 'Accessories']
 
 
 function AppContent() {
@@ -59,8 +52,8 @@ function AppContent() {
 
   const loadCategories = async () => {
     try {
-      const remoteCategories = await fetchProductCategories()
-      setCategories(remoteCategories.length > 0 ? remoteCategories : fallbackCategories)
+      const cats = await getCategories()
+      setCategories(cats.length > 0 ? cats.map((c) => c.name) : fallbackCategories)
     } catch {
       setCategories(fallbackCategories)
     }
@@ -110,7 +103,7 @@ function AppContent() {
         category: category ?? undefined,
       })
       if (requestId !== requestIdRef.current) return
-      setProducts(result.content.filter((p) => category === null || p.category === category))
+      setProducts(result.content)
       setCurrentPage(result.number)
       setTotalPages(result.totalPages)
       setSearchActive(false)
