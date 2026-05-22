@@ -2,11 +2,17 @@ package com.backend.backend.api.controller;
 
 import com.backend.backend.api.dto.*;
 import com.backend.backend.api.mapper.ProductMapper;
+import com.backend.backend.persistence.entity.ProductEntity;
+import com.backend.backend.service.InvoiceEmailService;
 import com.backend.backend.service.ProductService;
 
+import com.backend.backend.service.UserService;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+
+import java.awt.*;
 import java.util.*;
+import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -21,6 +27,12 @@ public class ProductController {
 
     @Autowired
     private ProductService productService;
+
+    @Autowired
+    private UserService userService;
+
+    @Autowired
+    private InvoiceEmailService emailService;
 
     @GetMapping("/products")
     public List<ProductCardDTO> getAllProducts(
@@ -89,4 +101,28 @@ public class ProductController {
         var entity = productService.setActive(id, req.active());
         return ProductMapper.toCardDTO(entity);
     }
+
+    @PatchMapping("/products/{productID}/discount")
+    public void setDiscount(@PathVariable UUID productID, @RequestBody double discount) {
+        //Apply Discount
+        productService.ApplyDiscount(productID, discount);
+
+        //Find the users with that item in their wishlist
+        List<String> userList = userService.getUsersWithWishlistItem(productID);
+        System.out.println(userList.size());
+
+        //Send Mail
+        ProductEntity p = productService.getProductById(productID);
+        for(int i = 0; i < userList.size(); i++){
+            System.out.println(userList.get(i));
+            emailService.sendWishlistEmail(p, userList.get(i), discount);
+        }
+    }
+
+    @PatchMapping("/products/{productID}/discount/remove")
+    public void deleteDiscount(@PathVariable UUID productID, @RequestBody double discount) {
+        //Delete Discount
+        productService.deleteDiscount(productID, discount);
+    }
+
 }

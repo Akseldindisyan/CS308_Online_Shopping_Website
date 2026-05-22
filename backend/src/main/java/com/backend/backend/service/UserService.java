@@ -1,9 +1,11 @@
 package com.backend.backend.service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import com.backend.backend.persistence.entity.WishlistEntity;
 import org.apache.catalina.User;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -18,10 +20,12 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final WishlistService wishlistService;
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, WishlistService wishlistService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.wishlistService = wishlistService;
     }
 
     public List<UserEntity> getAllUsers() {
@@ -123,6 +127,25 @@ public class UserService {
     public UserEntity getUserByUsername(String username){
         return userRepository.findByUsername(username)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found: " + username));
+    }
+
+    public List<String> getUsersWithWishlistItem(UUID productID){
+
+        List<UserEntity> allUsers = userRepository.findAll();
+        List<String> wishList = new ArrayList<>();
+        List<WishlistEntity> temp = new ArrayList<>();
+        for(int i = 0; i < allUsers.size(); i++){
+             UserEntity temp_user = allUsers.get(i);
+             temp = wishlistService.getWishlistEntity(temp_user.getId());
+             for(int j = 0; j < temp.size(); j++){
+                 if(temp.get(j).getProductId().equals(productID)){
+                     wishList.add(temp_user.getEmail());
+                     break;
+                 }
+             }
+             temp.clear();
+        }
+        return wishList;
     }
 
 }

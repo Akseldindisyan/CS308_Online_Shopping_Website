@@ -18,4 +18,5 @@ public class ProductCardDTO {
     private Boolean active;
     private String imageUrl;
     private Double rating;
+    private Double discountRate;
 }

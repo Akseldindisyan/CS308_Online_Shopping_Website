@@ -55,7 +55,7 @@ async function loadBackendData() {
     const categoryIdByName = new Map<string, number>();
     const products: Product[] = cards.map((card, index) => {
       const detail = detailed[index];
-      const productId = index + 1;
+      const productId = card.id;
       const categoryName = safeText(card.category, detail?.category ?? "Uncategorized") || "Uncategorized";
       const categoryId = categoryIdByName.get(categoryName) ?? categoryIdByName.size + 1;
       categoryIdByName.set(categoryName, categoryId);
@@ -76,8 +76,8 @@ async function loadBackendData() {
         categoryId,
         active: card.active,
         cost: 0,
-        discountRate: 0,
-        discountedPrice: detail?.price ?? card.price,
+        discountRate: detail?.discountRate,
+        oldPrice: detail?.price ?? card.price,
       };
     });
     const categories = Array.from(categoryIdByName.entries())

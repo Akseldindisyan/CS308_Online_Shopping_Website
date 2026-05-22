@@ -144,6 +144,30 @@ public class ProductService {
         return findProducts(null, page, size, sort, inStock, category);
     }
 
+    public void ApplyDiscount(UUID id, double discount_rate){
+        if(discount_rate <= 0){
+            throw new RuntimeException("Invalid Discount Percentage");
+        }
+
+        ProductEntity entity = ProductRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Product not found: " + id));
+
+        double new_price = entity.getPrice() - (entity.getPrice() * (discount_rate / 100));
+        entity.setPrice(new_price);
+        entity.setDiscountRate(discount_rate);
+        ProductRepo.save(entity);
+    }
+
+    public void deleteDiscount(UUID id, double discount_rate){
+        ProductEntity entity = ProductRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Product not found: " + id));
+
+        double new_price = (entity.getPrice() / (1 - (discount_rate / 100)));
+        entity.setPrice(new_price);
+        entity.setDiscountRate(0);
+        ProductRepo.save(entity);
+    }
+
     public void UpdateStock(String name, int amount){
         ProductEntity product = ProductRepo.findByProductName(name);
         product.setStock(amount);

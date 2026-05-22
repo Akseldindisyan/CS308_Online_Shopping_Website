@@ -18,6 +18,7 @@ public class ProductMapper {
         dto.setCategory(entity.getCategory());
         dto.setImageUrl(entity.getImage_url());
         dto.setRating(entity.getRating());
+        dto.setDiscountRate(entity.getDiscountRate());
         return dto;
     }
 
@@ -36,6 +37,7 @@ public class ProductMapper {
         dto.setCategory(entity.getCategory());
         dto.setImage_url(entity.getImage_url());
         dto.setWarranty_status(entity.getWarranty_status());
+        dto.setDiscountRate(entity.getDiscountRate());
         return dto;
     }
 }

@@ -3,6 +3,7 @@ package com.backend.backend.service;
 import com.backend.backend.api.exception.EmailException;
 import com.backend.backend.persistence.entity.InvoiceEntity;
 import com.backend.backend.persistence.entity.InvoiceItemEntity;
+import com.backend.backend.persistence.entity.ProductEntity;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import com.itextpdf.text.*;
@@ -38,6 +39,21 @@ public class InvoiceEmailService {
             mailSender.send(message);
         } catch (MessagingException | DocumentException ex) {
             throw new EmailException("Failed to send invoice email");
+        }
+    }
+
+    public void sendWishlistEmail(ProductEntity p, String email, double discount){
+        try{
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+            helper.setTo(email);
+            helper.setSubject("Item in your wishlist is now on sale!");
+            String msg = String.format("%s product is now on %.2f%% sale!", p.getProductName(), discount);
+            helper.setText(msg, false);
+            mailSender.send(message);
+        }
+        catch (MessagingException e) {
+            throw new EmailException("Failed to send wishlist email");
         }
     }
 

@@ -64,6 +64,9 @@ public class ProductEntity {
     @Column(name = "warranty_status")
     private String warranty_status;
 
+    @Column(name = "discount_rate")
+    private double discountRate;
+
     public ProductEntity(String productName, double rating, int stock, String model, String serialNumber, String desc, double price, String distInfo, String country, String category, String imageUrl, boolean active){
         this.productName = productName;
         this.rating = rating;

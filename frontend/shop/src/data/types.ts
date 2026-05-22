@@ -92,6 +92,7 @@ export interface ProductDetailedDTO {
   distributorContact: string | null;
   distributorAddress: string | null;
   distributorEmail: string | null;
+  discountRate: number | null;
 }
 
 // Search query params for GET /api/products/search

@@ -43,7 +43,7 @@ public class ReviewServiceTest {
         UserEntity mockUser = new UserEntity("John", "Doe", "johndoe", "john@example.com", "pass", LocalDate.of(1990, 1, 1), UserEntity.Role.CUSTOMER, "Turkey", "Istanbul", "A", "1111");
         mockUser.setId(userId);
 
-        ProductEntity mockProduct = new ProductEntity("Laptop", 4.5, 50, "M1", "SN1", "Desc", 1200.0, "Dist", "USA", true);
+        ProductEntity mockProduct = new ProductEntity("Laptop", 4.5, 50, "M1", "SN1", "Desc", 1200.0, "Dist", "USA", "A", "", true);
         mockProduct.setId(UUID.randomUUID());
 
         ReviewEntity mockReview = new ReviewEntity(mockProduct, mockUser, 5.0, "Great product", true, LocalDate.now(), 0, LocalDate.now(), null);
@@ -67,7 +67,7 @@ public class ReviewServiceTest {
         UUID productId = UUID.randomUUID();
         UserEntity mockUser = new UserEntity("Jane", "Smith", "janesmith", "jane@example.com", "pass", LocalDate.of(1995, 1, 1), UserEntity.Role.CUSTOMER, "Turkey", "Istanbul", "A", "1111");
 
-        ProductEntity mockProduct = new ProductEntity("Smartphone", 4.7, 100, "M2", "SN2", "Desc", 800.0, "Dist", "China", true);
+        ProductEntity mockProduct = new ProductEntity("Smartphone", 4.7, 100, "M2", "SN2", "Desc", 800.0, "Dist", "China", "A", "", true);
         mockProduct.setId(productId);
 
         ReviewEntity mockReview = new ReviewEntity(mockProduct, mockUser, 4.0, "Good phone", true, LocalDate.now(), 0, LocalDate.now(), null);

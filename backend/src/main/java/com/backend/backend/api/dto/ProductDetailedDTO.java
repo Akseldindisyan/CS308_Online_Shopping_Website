@@ -28,4 +28,5 @@ public class ProductDetailedDTO {
     private String image_url;
     private boolean active;
     private String warranty_status;
+    private Double discountRate;
 }
