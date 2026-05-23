@@ -20,5 +20,5 @@ public class UserDTO {
     private String street;
     private String city;
     private String postal_code;
-    private int balance;
+    private double balance;
 }

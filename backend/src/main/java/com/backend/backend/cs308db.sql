@@ -19,6 +19,7 @@ CREATE TABLE IF NOT EXISTS user_entity (
     city VARCHAR(120),
     street VARCHAR(120),
     postal_code VARCHAR(20),
+    balance DOUBLE,
     role          VARCHAR(20)         NOT NULL DEFAULT 'CUSTOMER'
     CHECK (role IN ('CUSTOMER', 'SALES_MANAGER', 'PRODUCT_MANAGER'))
     );
