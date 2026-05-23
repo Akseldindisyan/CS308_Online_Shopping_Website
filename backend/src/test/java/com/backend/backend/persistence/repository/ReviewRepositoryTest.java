@@ -48,11 +48,11 @@ public class ReviewRepositoryTest {
         productRepository.saveAll(List.of(product1, product2, product3));
 
         //Users
-        UserEntity user1 = new UserEntity("John", "Doe", "johndoe88", "john.doe@example.com", "pass1234", LocalDate.of(1988, 5, 12), UserEntity.Role.CUSTOMER, "Turkey", "Istanbul", "A", "1111");
-        UserEntity user2 = new UserEntity("Jane", "Smith", "janesmith99", "jane.smith@example.com", "securepass", LocalDate.of(1999, 8, 24),  UserEntity.Role.CUSTOMER, "Turkey", "Istanbul", "A", "1111");
-        UserEntity user3 = new UserEntity("Alice", "Johnson", "alicej", "alice.j@example.com", "qwerty99", LocalDate.of(1995, 2, 10),  UserEntity.Role.CUSTOMER, "Turkey", "Istanbul", "A", "1111");
-        UserEntity user4 = new UserEntity("Bob", "Brown", "bobbrown", "bob.b@example.com", "admin123", LocalDate.of(1980, 11, 5),  UserEntity.Role.CUSTOMER, "Turkey", "Istanbul", "A", "1111");
-        UserEntity user5 = new UserEntity("Charlie", "Davis", "charlied", "charlie.d@example.com", "mypassword", LocalDate.of(2001, 7, 19), UserEntity.Role.CUSTOMER, "Turkey", "Istanbul", "A", "1111");
+        UserEntity user1 = new UserEntity("John", "Doe", "johndoe88", "john.doe@example.com", "pass1234", LocalDate.of(1988, 5, 12), UserEntity.Role.CUSTOMER, "Turkey", "Istanbul", "A", "1111", 1000);
+        UserEntity user2 = new UserEntity("Jane", "Smith", "janesmith99", "jane.smith@example.com", "securepass", LocalDate.of(1999, 8, 24),  UserEntity.Role.CUSTOMER, "Turkey", "Istanbul", "A", "1111", 1000);
+        UserEntity user3 = new UserEntity("Alice", "Johnson", "alicej", "alice.j@example.com", "qwerty99", LocalDate.of(1995, 2, 10),  UserEntity.Role.CUSTOMER, "Turkey", "Istanbul", "A", "1111", 1000);
+        UserEntity user4 = new UserEntity("Bob", "Brown", "bobbrown", "bob.b@example.com", "admin123", LocalDate.of(1980, 11, 5),  UserEntity.Role.CUSTOMER, "Turkey", "Istanbul", "A", "1111", 1000);
+        UserEntity user5 = new UserEntity("Charlie", "Davis", "charlied", "charlie.d@example.com", "mypassword", LocalDate.of(2001, 7, 19), UserEntity.Role.CUSTOMER, "Turkey", "Istanbul", "A", "1111", 1000);
 
         userRepository.saveAll(List.of(user1, user2, user3, user4, user5));
 

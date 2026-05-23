@@ -17,6 +17,7 @@ public class UserMapper {
         dto.setCity(entity.getCity());
         dto.setStreet(entity.getStreet());
         dto.setPostal_code(entity.getPostal_code());
+        dto.setBalance(entity.getBalance());
         return dto;
     }
 }

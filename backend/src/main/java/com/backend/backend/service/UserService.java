@@ -69,6 +69,7 @@ public class UserService {
         existingUser.setCity(updatedUser.getCity());
         existingUser.setStreet(updatedUser.getStreet());
         existingUser.setPostal_code(updatedUser.getPostal_code());
+        existingUser.setBalance(updatedUser.getBalance());
 
         if (updatedUser.getRole() != null) {
             existingUser.setRole(updatedUser.getRole());

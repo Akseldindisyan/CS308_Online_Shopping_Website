@@ -41,7 +41,7 @@ public class UserServiceTest {
                 "jane@example.com",
                 encoder.encode("pass1"),
                 LocalDate.of(1998, 4, 15),
-                UserEntity.Role.CUSTOMER, "Turkey", "Istanbul", "A", "11111"));
+                UserEntity.Role.CUSTOMER, "Turkey", "Istanbul", "A", "11111",1000));
     }
 
     @Test
@@ -53,7 +53,7 @@ public class UserServiceTest {
                 "john@example.com",
                 "pass2",
                 LocalDate.of(1995, 1, 1),
-                UserEntity.Role.SALES_MANAGER, "Turkey", "Istanbul", "A", "11111"));
+                UserEntity.Role.SALES_MANAGER, "Turkey", "Istanbul", "A", "11111",1000));
 
         assertTrue(userRepository.findById(created.getId()).isPresent());
         assertEquals("john", created.getUsername());
@@ -70,7 +70,7 @@ public class UserServiceTest {
                 "janet@example.com",
                 "newpass",
                 LocalDate.of(1998, 4, 15),
-                UserEntity.Role.PRODUCT_MANAGER, "Turkey", "Istanbul", "A", "11111");
+                UserEntity.Role.PRODUCT_MANAGER, "Turkey", "Istanbul", "A", "11111",1000);
 
         UserEntity updated = userService.updateUser(existing.getId(), updatePayload);
 
@@ -98,7 +98,7 @@ public class UserServiceTest {
                         "other@example.com",
                         "pass3",
                         LocalDate.of(1990, 2, 2),
-                        UserEntity.Role.CUSTOMER, "Turkey", "Istanbul", "A", "11111")));
+                        UserEntity.Role.CUSTOMER, "Turkey", "Istanbul", "A", "11111",1000)));
 
         assertEquals(409, ex.getStatusCode().value());
     }
