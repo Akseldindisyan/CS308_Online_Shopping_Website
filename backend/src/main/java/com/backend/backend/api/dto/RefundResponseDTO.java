@@ -11,9 +11,9 @@ import java.util.UUID;
 @NoArgsConstructor
 public class RefundResponseDTO {
     private UUID refundId;
-    private UUID customerId;
+    private String customerName;
     private UUID invoiceId;
-    private List<UUID> itemIds;
+    private List<InvoiceItemDTO> items;
     private String status;
     private Date date;
 }

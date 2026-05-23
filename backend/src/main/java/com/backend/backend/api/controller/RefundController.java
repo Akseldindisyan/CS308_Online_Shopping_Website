@@ -1,6 +1,7 @@
 package com.backend.backend.api.controller;
 
 import com.backend.backend.api.dto.CreateRefundRequestDTO;
+import com.backend.backend.api.dto.InvoiceItemDTO;
 import com.backend.backend.api.dto.RefundResponseDTO;
 import com.backend.backend.persistence.entity.InvoiceItemEntity;
 import com.backend.backend.persistence.entity.RefundRequestEntity;
@@ -52,16 +53,27 @@ public class RefundController {
     private RefundResponseDTO mapToResponseDTO(RefundRequestEntity entity) {
         RefundResponseDTO dto = new RefundResponseDTO();
         dto.setRefundId(entity.getId());
-        dto.setCustomerId(entity.getCustomer().getId());
         dto.setInvoiceId(entity.getInvoice().getId());
         dto.setStatus(entity.getStatus().name());
         dto.setDate(entity.getDate());
 
+        String customerFullName = entity.getCustomer().getName();
+        if (entity.getCustomer().getSurname() != null) {
+            customerFullName += " " + entity.getCustomer().getSurname();
+        }
+        dto.setCustomerName(customerFullName);
+
         if (entity.getItems() != null) {
-            List<UUID> itemIds = entity.getItems().stream()
-                    .map(InvoiceItemEntity::getId)
+            List<InvoiceItemDTO> items = entity.getItems().stream()
+                    .map(item -> new InvoiceItemDTO(
+                            item.getProduct().getId(),
+                            item.getProduct().getProductName(),
+                            item.getQuantity(),
+                            item.getUnitPrice(),
+                            item.getTotalPrice()
+                    ))
                     .collect(Collectors.toList());
-            dto.setItemIds(itemIds);
+            dto.setItems(items);
         }
 
         return dto;
