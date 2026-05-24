@@ -4,6 +4,8 @@ import { useCart } from '../hooks/useCart'
 import { useToast } from '../components/ToastProvider'
 import { useNavigate } from 'react-router-dom'
 import { getStoredAuthToken } from '../api/auth'
+import { getCurrentUser } from '../api/users'
+import type { UserDTO } from '../data/types'
 import './shoppingcart.css'
 
 const formatCurrency = (value: number) =>
@@ -23,12 +25,13 @@ function ShoppingCart() {
     mutating,
     removeItem,
     changeQuantity,
-    checkout,
   } = useCart()
   const { showToast } = useToast()
   const navigate = useNavigate()
 
-  const [address, setAddress] = useState('')
+  const [profile, setProfile] = useState<UserDTO | null>(null)
+  const [profileLoading, setProfileLoading] = useState(false)
+  const [profileError, setProfileError] = useState('')
 
   const isLoggedIn = Boolean(getStoredAuthToken())
 
@@ -37,6 +40,29 @@ function ShoppingCart() {
       showToast(error, 'error')
     }
   }, [error, showToast])
+
+  useEffect(() => {
+    if (!isLoggedIn) {
+      setProfile(null)
+      setProfileError('')
+      return
+    }
+
+    const loadProfile = async () => {
+      setProfileLoading(true)
+      setProfileError('')
+      try {
+        setProfile(await getCurrentUser())
+      } catch (err) {
+        const message = err instanceof Error ? err.message : 'Failed to load profile'
+        setProfileError(message)
+      } finally {
+        setProfileLoading(false)
+      }
+    }
+
+    void loadProfile()
+  }, [isLoggedIn])
 
   const itemCount = useMemo(
     () => items.reduce((total, item) => total + item.quantity, 0),
@@ -56,18 +82,28 @@ function ShoppingCart() {
   const hasStockIssue = items.some(
     (item) => item.stock !== null && item.quantity > item.stock,
   )
+  const isProfileIncomplete = isLoggedIn && (
+    !profile?.address?.trim() || !profile?.nat_id?.trim()
+  )
 
-  const checkoutBlockReason = !isLoggedIn
-    ? 'You need to log in before checking out.'
-    : !address.trim()
-      ? 'Please enter a delivery address to continue.'
-      : hasStockIssue
-        ? 'Some items exceed available stock. Please adjust quantities.'
-        : !cart?.canCheckout
-          ? 'Some items in your cart are unavailable or out of stock.'
-          : null
+  const checkoutBlockReason = (() => {
+    if (!isLoggedIn) return 'You need to log in before checking out.'
+    if (profileLoading) return 'Loading your profile information...'
+    if (profileError) return 'Could not verify your profile information.'
+    if (isProfileIncomplete) {
+      return 'Please update your address and national ID in your profile before checkout.'
+    }
+    if (hasStockIssue) return 'Some items exceed available stock. Please adjust quantities.'
+    if (!cart?.canCheckout) return 'Some items in your cart are unavailable or out of stock.'
+    return null
+  })()
 
-  const isCheckoutDisabled = mutating || !!checkoutBlockReason
+  const isCheckoutDisabled =
+    mutating ||
+    profileLoading ||
+    profileError !== '' ||
+    hasStockIssue ||
+    !cart?.canCheckout
 
   const handleCheckout = () => {
     if (!isLoggedIn) {
@@ -75,11 +111,12 @@ function ShoppingCart() {
       navigate('/login?redirect=cart') // Redirect to login with a redirect back to cart a
       return
     }
-    if (!address.trim()) {
-      showToast('Please enter a delivery address.', 'error')
+    if (!profile?.address?.trim() || !profile?.nat_id?.trim()) {
+      showToast('Please update your address and national ID before checkout.', 'error')
+      navigate('/profile?redirect=cart')
       return
     }
-    navigate('/checkout/payment', { state: { address: address.trim() } })
+    navigate('/checkout/payment', { state: { address: profile.address.trim() } })
   }
 
   if (loading) {
@@ -272,18 +309,27 @@ function ShoppingCart() {
             <strong>{formatCurrency(total)}</strong>
           </div>
 
-          <div className="cart-address-field">
-            <label htmlFor="delivery-address">
-              Delivery Address <span aria-hidden="true" style={{ color: '#e24b4a' }}>*</span>
-            </label>
-            <textarea
-              id="delivery-address"
-              value={address}
-              onChange={(e) => setAddress(e.target.value)}
-              placeholder="Enter your full delivery address…"
-              rows={3}
-            />
-          </div>
+          {isLoggedIn && (
+            <div className="cart-profile-summary">
+              <div>
+                <span>Delivery profile</span>
+                {profileLoading ? (
+                  <strong>Loading profile...</strong>
+                ) : (
+                  <strong>
+                    {profile?.address?.trim() || 'Address missing'}
+                  </strong>
+                )}
+              </div>
+              <div>
+                <span>National ID</span>
+                <strong>{profile?.nat_id?.trim() || 'Missing'}</strong>
+              </div>
+              <Link to="/profile?redirect=cart" className="btn-secondary">
+                Edit Profile
+              </Link>
+            </div>
+          )}
 
           <div className="cart-summary-actions">
             <button

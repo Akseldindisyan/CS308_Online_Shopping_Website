@@ -6,16 +6,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 import jakarta.persistence.*;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 
 @NoArgsConstructor
 @Getter
 @Setter
 @Entity
+@AllArgsConstructor
 public class UserEntity {
     public enum Role{
         CUSTOMER,
@@ -37,6 +35,9 @@ public class UserEntity {
     private String street;
     private String postal_code;
     private double balance;
+    private String nat_id;
+    private String address;
+    private String tax_id;
 
     @Enumerated(EnumType.STRING)
     private Role role = Role.CUSTOMER;

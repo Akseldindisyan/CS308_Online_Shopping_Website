@@ -10,6 +10,7 @@ import CheckoutSuccess from "./checkoutpage/CheckoutSuccess";
 import PaymentPage from "./payment_page/PaymentPage";
 import WishlistPage from "./wishlist/WishlistPage";
 import OrdersPage from "./orders/OrdersPage";
+import ProfilePage from "./profile/ProfilePage";
 
 export default function App() {
   return (
@@ -25,6 +26,7 @@ export default function App() {
       <Route path="/checkout/payment" element={<PaymentPage />} />
       <Route path="/wishlist" element={<WishlistPage />} />
       <Route path="/orders" element={<OrdersPage />} />
+      <Route path="/profile" element={<ProfilePage />} />
     </Routes>
   );
 }

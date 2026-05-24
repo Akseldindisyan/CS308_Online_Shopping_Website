@@ -21,7 +21,10 @@ CREATE TABLE IF NOT EXISTS user_entity (
     postal_code VARCHAR(20),
     balance DOUBLE,
     role          VARCHAR(20)         NOT NULL DEFAULT 'CUSTOMER'
-    CHECK (role IN ('CUSTOMER', 'SALES_MANAGER', 'PRODUCT_MANAGER'))
+    CHECK (role IN ('CUSTOMER', 'SALES_MANAGER', 'PRODUCT_MANAGER')),
+    tax_id VARCHAR(11),
+    address VARCHAR(255),
+    nat_id VARCHAR(11)
     );
 
 
