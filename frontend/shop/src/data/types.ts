@@ -27,6 +27,22 @@ export interface RegisterRequestDTO {
   password: string;
 }
 
+export interface UserDTO {
+  id: UUID;
+  name: string;
+  surname: string;
+  username: string;
+  email: string;
+  dateOfBirth: string | null;
+  country: string | null;
+  street: string | null;
+  city: string | null;
+  postal_code: string | null;
+  nat_id: string | null;
+  address: string | null;
+  tax_id: string | null;
+}
+
 // Product card
 export interface ProductCardDTO {
   id: UUID;

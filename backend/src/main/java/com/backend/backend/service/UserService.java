@@ -12,6 +12,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.backend.backend.api.dto.UserDTO;
 import com.backend.backend.persistence.entity.UserEntity;
 import com.backend.backend.persistence.repository.UserRepository;
 
@@ -76,6 +77,36 @@ public class UserService {
         if (updatedUser.getRole() != null) {
             existingUser.setRole(updatedUser.getRole());
         }
+
+        return userRepository.save(existingUser);
+    }
+
+    public UserEntity updateProfile(UUID id, UserDTO updatedProfile) {
+        UserEntity existingUser = getUserById(id);
+
+        if (updatedProfile.getName() != null) {
+            existingUser.setName(updatedProfile.getName());
+        }
+        if (updatedProfile.getSurname() != null) {
+            existingUser.setSurname(updatedProfile.getSurname());
+        }
+        if (updatedProfile.getEmail() != null) {
+            userRepository.findByEmail(updatedProfile.getEmail()).ifPresent(existing -> {
+                if (!existing.getId().equals(id)) {
+                    throw new ResponseStatusException(HttpStatus.CONFLICT, "Email already exists: " + updatedProfile.getEmail());
+                }
+            });
+            existingUser.setEmail(updatedProfile.getEmail());
+        }
+
+        existingUser.setDateOfBirth(updatedProfile.getDateOfBirth());
+        existingUser.setCountry(updatedProfile.getCountry());
+        existingUser.setCity(updatedProfile.getCity());
+        existingUser.setStreet(updatedProfile.getStreet());
+        existingUser.setPostal_code(updatedProfile.getPostal_code());
+        existingUser.setNat_id(updatedProfile.getNat_id());
+        existingUser.setAddress(updatedProfile.getAddress());
+        existingUser.setTax_id(updatedProfile.getTax_id());
 
         return userRepository.save(existingUser);
     }
@@ -152,5 +183,4 @@ public class UserService {
     }
 
 }
-
 

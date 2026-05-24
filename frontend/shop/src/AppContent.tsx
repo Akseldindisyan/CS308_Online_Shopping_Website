@@ -318,6 +318,7 @@ function AppContent() {
             )}
             {username && (
               <>
+                <Link to="/profile" className="btn-secondary">My Profile</Link>
                 <Link to="/wishlist" className="btn-secondary">My Wishlist</Link>
                 <Link to="/orders" className="btn-secondary">My Orders</Link>
               </>

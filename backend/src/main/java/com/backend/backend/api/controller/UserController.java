@@ -5,6 +5,7 @@ import java.util.UUID;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -15,7 +16,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.backend.backend.api.dto.UserDTO;
+import com.backend.backend.api.mapper.UserMapper;
 import com.backend.backend.persistence.entity.UserEntity;
+import com.backend.backend.security.AppUserPrincipal;
 import com.backend.backend.service.UserService;
 
 @RestController
@@ -26,6 +30,18 @@ public class UserController {
 
     public UserController(UserService userService) {
         this.userService = userService;
+    }
+
+    @GetMapping("/me")
+    public UserDTO getCurrentUser(@AuthenticationPrincipal AppUserPrincipal principal) {
+        return UserMapper.toDTO(userService.getUserById(principal.getUserId()));
+    }
+
+    @PutMapping("/me")
+    public UserDTO updateCurrentUser(
+            @AuthenticationPrincipal AppUserPrincipal principal,
+            @RequestBody UserDTO profile) {
+        return UserMapper.toDTO(userService.updateProfile(principal.getUserId(), profile));
     }
 
     @GetMapping
@@ -60,4 +76,3 @@ public class UserController {
         userService.deleteUser(id);
     }
 }
-
