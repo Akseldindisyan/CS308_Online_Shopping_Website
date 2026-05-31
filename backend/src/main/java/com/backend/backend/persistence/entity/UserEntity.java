@@ -34,6 +34,7 @@ public class UserEntity {
     private String city;
     private String street;
     private String postal_code;
+    private double balance;
     private String nat_id;
     private String address;
     private String tax_id;
@@ -41,7 +42,7 @@ public class UserEntity {
     @Enumerated(EnumType.STRING)
     private Role role = Role.CUSTOMER;
 
-    public UserEntity(String name, String surname, String username, String email, String password, LocalDate dateOfBirth, Role role, String country, String city, String street, String postal_code){
+    public UserEntity(String name, String surname, String username, String email, String password, LocalDate dateOfBirth, Role role, String country, String city, String street, String postal_code, double balance){
         this.name = name;
         this.surname = surname;
         this.username = username;
@@ -53,6 +54,7 @@ public class UserEntity {
         this.city = city;
         this.street = street;
         this.postal_code = postal_code;
+        this.balance = balance;
     }
 
 }

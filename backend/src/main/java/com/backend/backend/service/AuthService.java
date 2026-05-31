@@ -74,7 +74,7 @@ public class AuthService {
                 request.email(),
                 passwordEncoder.encode(request.password()),
                 request.dateOfBirth(),
-                UserEntity.Role.CUSTOMER, "Turkey", "Istanbul", "A", "11111");
+                UserEntity.Role.CUSTOMER, "Turkey", "Istanbul", "A", "11111", 1000);
 
         UserEntity savedUser = userRepository.save(newUser);
         String token = jwtService.generateToken(new AppUserPrincipal(savedUser));

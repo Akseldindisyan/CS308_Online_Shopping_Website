@@ -20,6 +20,7 @@ public class UserDTO {
     private String street;
     private String city;
     private String postal_code;
+    private double balance;
     private String nat_id;
     private String address;
     private String tax_id;

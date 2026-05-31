@@ -19,6 +19,7 @@ CREATE TABLE IF NOT EXISTS user_entity (
     city VARCHAR(120),
     street VARCHAR(120),
     postal_code VARCHAR(20),
+    balance DOUBLE,
     role          VARCHAR(20)         NOT NULL DEFAULT 'CUSTOMER'
     CHECK (role IN ('CUSTOMER', 'SALES_MANAGER', 'PRODUCT_MANAGER')),
     tax_id VARCHAR(11),
@@ -125,6 +126,21 @@ CREATE TABLE IF NOT EXISTS wishlist (
     product_id UUID NOT NULL REFERENCES product(product_id) ON DELETE CASCADE,
     PRIMARY KEY (user_id, product_id)
     );
+-- 10. refund logic
+CREATE TABLE IF NOT EXISTS refund_requests (
+                                               refund_id  UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id    UUID REFERENCES user_entity(id) ON DELETE SET NULL,
+    invoice_id UUID REFERENCES invoice(invoice_id) ON DELETE CASCADE,
+    status     VARCHAR(20) NOT NULL DEFAULT 'UNDECIDED'
+    CHECK (status IN ('UNDECIDED', 'ACCEPTED', 'REJECTED')),
+    date       TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+
+CREATE TABLE IF NOT EXISTS refund_request_items (
+                                                    refund_id       UUID NOT NULL REFERENCES refund_requests(refund_id) ON DELETE CASCADE,
+    invoice_item_id UUID NOT NULL REFERENCES invoice_item_entity(id) ON DELETE CASCADE,
+    PRIMARY KEY (refund_id, invoice_item_id)
+    );
 
 
 -- ============================================================
@@ -222,5 +238,21 @@ INSERT INTO wishlist (user_id, product_id) VALUES
     ('11000000-0000-0000-0000-000000000003', '6ad3ef9e-a5b8-4d12-a864-7f12dbc92bbf'),
     ('11000000-0000-0000-0000-000000000003', '44dbfe88-2803-406b-8aa2-a4effe3ee133')
 ON CONFLICT (user_id, product_id) DO NOTHING;
+
+-- ── Refunds ───────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS refund_requests (
+                                               refund_id  UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id    UUID REFERENCES user_entity(id) ON DELETE SET NULL,
+    invoice_id UUID REFERENCES invoice(invoice_id) ON DELETE CASCADE,
+    status     VARCHAR(20) NOT NULL DEFAULT 'UNDECIDED'
+    CHECK (status IN ('UNDECIDED', 'ACCEPTED', 'REJECTED')),
+    date       TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+
+CREATE TABLE IF NOT EXISTS refund_request_items (
+                                                    refund_id       UUID NOT NULL REFERENCES refund_requests(refund_id) ON DELETE CASCADE,
+    invoice_item_id UUID NOT NULL REFERENCES invoice_item_entity(id) ON DELETE CASCADE,
+    PRIMARY KEY (refund_id, invoice_item_id)
+    );
 
 
