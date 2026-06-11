@@ -111,4 +111,10 @@ public class RefundService {
         refund.setStatus(RefundStatus.REJECTED);
         refundRepository.save(refund);
     }
+
+    public RefundRequestEntity getRefund(UUID refundID){
+        RefundRequestEntity refund = refundRepository.findById(refundID)
+                .orElseThrow(() -> new RuntimeException("Refund not found"));
+        return refund;
+    }
 }
