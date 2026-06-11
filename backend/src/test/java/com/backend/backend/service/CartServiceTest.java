@@ -90,7 +90,7 @@ public class CartServiceTest {
 
     @Test
     void checkoutUserCart_decrementsStockAndClearsCart() throws Exception {
-        UserEntity user = new UserEntity("A", "B", "ab", "ab@example.com", "pw", null, UserEntity.Role.CUSTOMER, "Turkey", "Istanbul", "A", "11111", 1000);
+        UserEntity user = new UserEntity("A", "B", "ab", "ab@example.com", "pw", null, UserEntity.Role.CUSTOMER, "Turkey", "Istanbul", "A", "11111");
         UUID userId = UUID.randomUUID();
         setField(user, "id", userId);
 
@@ -113,7 +113,7 @@ public class CartServiceTest {
 
     @Test
     void checkoutUserCart_whenStockInsufficient_throwsConflict() throws Exception {
-        UserEntity user = new UserEntity("A", "B", "ab", "ab@example.com", "pw", null, UserEntity.Role.CUSTOMER, "Turkey", "Istanbul", "A", "11111", 1000);
+        UserEntity user = new UserEntity("A", "B", "ab", "ab@example.com", "pw", null, UserEntity.Role.CUSTOMER, "Turkey", "Istanbul", "A", "11111");
         UUID userId = UUID.randomUUID();
         setField(user, "id", userId);
 
@@ -135,7 +135,7 @@ public class CartServiceTest {
 
     @Test
     void mergeGuestCartIntoUserCart_mergesItemsAndDeletesGuestCart() throws Exception {
-        UserEntity user = new UserEntity("A", "B", "ab", "ab@example.com", "pw", null, UserEntity.Role.CUSTOMER, "Turkey", "Istanbul", "A", "11111", 1000);
+        UserEntity user = new UserEntity("A", "B", "ab", "ab@example.com", "pw", null, UserEntity.Role.CUSTOMER, "Turkey", "Istanbul", "A", "11111");
         UUID userId = UUID.randomUUID();
         setField(user, "id", userId);
 

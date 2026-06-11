@@ -89,6 +89,7 @@ public class BankingService {
     private InvoiceDTO toDTO(InvoiceEntity invoice, UUID userId) {
         List<InvoiceItemDTO> itemDTOs = invoice.getItems().stream()
                 .map(i -> new InvoiceItemDTO(
+                        i.getId(),
                         i.getProduct().getId(),
                         i.getProduct().getProductName(),
                         i.getQuantity(),

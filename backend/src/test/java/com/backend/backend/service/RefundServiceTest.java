@@ -51,7 +51,6 @@ public class RefundServiceTest {
 
         user = new UserEntity();
         user.setId(userId);
-        user.setBalance(100.0);
 
         invoice = new InvoiceEntity();
         invoice.setId(invoiceId);
@@ -88,17 +87,15 @@ public class RefundServiceTest {
     }
 
     @Test
-    void acceptRefundSuccessUpdatesBalanceAndTotal() {
+    void acceptRefundSuccessUpdatesInvoiceTotal() {
         when(refundRepository.findById(refundId)).thenReturn(Optional.of(refundRequest));
 
         refundService.acceptRefund(refundId);
 
-        assertEquals(150.0, user.getBalance());
         assertEquals(450.0, invoice.getTotalPrice());
         assertEquals(RefundStatus.ACCEPTED, refundRequest.getStatus());
 
         verify(invoiceItemRepository).deleteAllInBatch(anyList());
-        verify(userRepository).save(user);
         verify(invoiceRepository).save(invoice);
         verify(refundRepository).save(refundRequest);
     }

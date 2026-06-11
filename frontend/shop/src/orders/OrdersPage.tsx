@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { getStoredUserId } from '../api/auth'
 import { getOrders, type Order } from '../api/orders'
+import { getMyRefunds, requestRefund } from '../api/refunds'
+import { useToast } from '../components/ToastProvider'
 import '../App.css'
 
 export default function OrdersPage() {
@@ -9,15 +11,47 @@ export default function OrdersPage() {
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(Boolean(userId))
   const [error, setError] = useState('')
+  const [requestingRefundId, setRequestingRefundId] = useState<string | null>(null)
+  const [requestedRefundIds, setRequestedRefundIds] = useState<Set<string>>(new Set())
+  const { showToast } = useToast()
 
   useEffect(() => {
     if (!userId) return
 
-    getOrders(userId)
-      .then(setOrders)
+    Promise.all([getOrders(userId), getMyRefunds()])
+      .then(([loadedOrders, refunds]) => {
+        setOrders(loadedOrders)
+        setRequestedRefundIds(
+          new Set(
+            refunds
+              .filter((refund) => refund.status !== 'REJECTED')
+              .map((refund) => refund.invoiceId),
+          ),
+        )
+      })
       .catch(() => setError('Failed to load orders'))
       .finally(() => setLoading(false))
   }, [userId])
+
+  const handleRefundRequest = async (order: Order) => {
+    if (!window.confirm('Request a refund for every item in this order?')) return
+
+    setRequestingRefundId(order.invoiceId)
+    try {
+      await requestRefund(
+        order.invoiceId,
+        order.items.map((item) => item.invoiceItemId),
+      )
+      setRequestedRefundIds((current) => new Set(current).add(order.invoiceId))
+      showToast('Refund request submitted', 'success')
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to request refund'
+      setError(message)
+      showToast(message, 'error')
+    } finally {
+      setRequestingRefundId(null)
+    }
+  }
 
   if (!userId)
     return (
@@ -80,7 +114,7 @@ export default function OrdersPage() {
                 </thead>
                 <tbody>
                   {order.items.map((item) => (
-                    <tr key={item.productId} style={{ borderBottom: '1px solid #333' }}>
+                    <tr key={item.invoiceItemId} style={{ borderBottom: '1px solid #333' }}>
                       <td style={{ padding: '4px' }}>{item.productName}</td>
                       <td style={{ textAlign: 'right', padding: '4px' }}>{item.quantity}</td>
                       <td style={{ textAlign: 'right', padding: '4px' }}>
@@ -93,9 +127,32 @@ export default function OrdersPage() {
                   ))}
                 </tbody>
               </table>
-              <p style={{ textAlign: 'right', marginTop: '0.5rem' }}>
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  marginTop: '0.75rem',
+                }}
+              >
+                <button
+                  type="button"
+                  className="btn-secondary"
+                  disabled={
+                    requestingRefundId === order.invoiceId ||
+                    requestedRefundIds.has(order.invoiceId) ||
+                    order.items.length === 0
+                  }
+                  onClick={() => void handleRefundRequest(order)}
+                >
+                  {requestedRefundIds.has(order.invoiceId)
+                    ? 'Refund requested'
+                    : requestingRefundId === order.invoiceId
+                      ? 'Requesting...'
+                      : 'Request refund'}
+                </button>
                 <strong>Total: ${order.totalPrice}</strong>
-              </p>
+              </div>
             </div>
           ))}
         </div>
