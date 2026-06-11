@@ -20,6 +20,7 @@ public class OrderService {
                 invoice.getCustomer().getId(),
                 invoice.getItems().stream()
                     .map(item -> new InvoiceItemDTO(
+                        item.getId(),
                         item.getProduct().getId(),
                         item.getProduct().getProductName(),
                         item.getQuantity(),
@@ -40,6 +41,7 @@ public class OrderService {
                 invoice.getCustomer().getId(),
                 invoice.getItems().stream()
                     .map(item -> new InvoiceItemDTO(
+                        item.getId(),
                         item.getProduct().getId(),
                         item.getProduct().getProductName(),
                         item.getQuantity(),

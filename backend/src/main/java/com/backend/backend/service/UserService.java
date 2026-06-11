@@ -70,7 +70,6 @@ public class UserService {
         existingUser.setCity(updatedUser.getCity());
         existingUser.setStreet(updatedUser.getStreet());
         existingUser.setPostal_code(updatedUser.getPostal_code());
-        existingUser.setBalance(updatedUser.getBalance());
         existingUser.setNat_id(updatedUser.getNat_id());
         existingUser.setAddress(updatedUser.getAddress());
         existingUser.setTax_id(updatedUser.getTax_id());
@@ -184,4 +183,3 @@ public class UserService {
     }
 
 }
-

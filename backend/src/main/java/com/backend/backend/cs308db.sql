@@ -19,7 +19,6 @@ CREATE TABLE IF NOT EXISTS user_entity (
     city VARCHAR(120),
     street VARCHAR(120),
     postal_code VARCHAR(20),
-    balance DOUBLE PRECISION NOT NULL DEFAULT 1000,
     role          VARCHAR(20)         NOT NULL DEFAULT 'CUSTOMER'
     CHECK (role IN ('CUSTOMER', 'SALES_MANAGER', 'PRODUCT_MANAGER')),
     tax_id VARCHAR(11),
@@ -254,5 +253,4 @@ CREATE TABLE IF NOT EXISTS refund_request_items (
     invoice_item_id UUID NOT NULL REFERENCES invoice_item_entity(id) ON DELETE CASCADE,
     PRIMARY KEY (refund_id, invoice_item_id)
     );
-
 

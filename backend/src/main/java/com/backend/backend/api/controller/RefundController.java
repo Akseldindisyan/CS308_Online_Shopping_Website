@@ -9,8 +9,10 @@ import com.backend.backend.service.RefundService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import com.backend.backend.security.AppUserPrincipal;
 
 import java.util.List;
 import java.util.UUID;
@@ -27,13 +29,24 @@ public class RefundController {
     @PostMapping("/refunds")
     @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize("hasRole('CUSTOMER')")
-    public RefundResponseDTO createRefundRequest(@RequestBody CreateRefundRequestDTO requestDTO) {
+    public RefundResponseDTO createRefundRequest(
+            @AuthenticationPrincipal AppUserPrincipal principal,
+            @RequestBody CreateRefundRequestDTO requestDTO) {
         var entity = refundService.createRefundRequest(
-                requestDTO.getUserId(),
+                principal.getUserId(),
                 requestDTO.getInvoiceId(),
                 requestDTO.getItemIdsToRefund()
         );
         return mapToResponseDTO(entity);
+    }
+
+    @GetMapping("/refunds/mine")
+    @PreAuthorize("hasRole('CUSTOMER')")
+    public List<RefundResponseDTO> getMyRefundRequests(
+            @AuthenticationPrincipal AppUserPrincipal principal) {
+        return refundService.getRefundsByUser(principal.getUserId()).stream()
+                .map(this::mapToResponseDTO)
+                .toList();
     }
 
     @PatchMapping("/refunds/{refundId}/accept")
@@ -66,6 +79,7 @@ public class RefundController {
         if (entity.getItems() != null) {
             List<InvoiceItemDTO> items = entity.getItems().stream()
                     .map(item -> new InvoiceItemDTO(
+                            item.getId(),
                             item.getProduct().getId(),
                             item.getProduct().getProductName(),
                             item.getQuantity(),

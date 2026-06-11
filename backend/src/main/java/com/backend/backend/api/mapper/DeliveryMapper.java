@@ -13,6 +13,7 @@ public class DeliveryMapper {
 
         List<InvoiceItemDTO> items = invoice.getItems().stream()
                 .map(item -> new InvoiceItemDTO(
+                        item.getId(),
                         item.getProduct().getId(),
                         item.getProduct().getProductName(),
                         item.getQuantity(),
