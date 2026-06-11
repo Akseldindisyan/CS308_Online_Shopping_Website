@@ -5,7 +5,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
+import java.util.List;
 import java.util.UUID;
+import com.backend.backend.persistence.entity.RefundStatus;
 
 @Repository
 public interface RefundRequestRepository extends JpaRepository<RefundRequestEntity, UUID> {
@@ -15,4 +17,8 @@ public interface RefundRequestRepository extends JpaRepository<RefundRequestEnti
 
     // Used to save a new refund request or update an existing one's status
     RefundRequestEntity save(RefundRequestEntity entity);
+
+    List<RefundRequestEntity> findByCustomerId(UUID customerId);
+
+    boolean existsByStatusAndItemsId(RefundStatus status, UUID itemId);
 }

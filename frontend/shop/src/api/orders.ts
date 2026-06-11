@@ -2,6 +2,7 @@ import { apiRequest } from "./client";
 import type { UUID } from "../data/types";
 
 export interface OrderItem {
+  invoiceItemId: UUID;
   productId: UUID;
   productName: string;
   quantity: number;

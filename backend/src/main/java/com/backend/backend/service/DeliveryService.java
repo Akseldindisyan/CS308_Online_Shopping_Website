@@ -22,6 +22,7 @@ public class DeliveryService {
                 delivery.getCustomer().getId(),
                 delivery.getInvoice().getItems().stream()
                     .map(item -> new InvoiceItemDTO(
+                        item.getId(),
                         item.getProduct().getId(),
                         item.getProduct().getProductName(),
                         item.getQuantity(),
