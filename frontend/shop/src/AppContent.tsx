@@ -40,6 +40,8 @@ function AppContent() {
   const [totalPages, setTotalPages] = useState(0)
   const { showToast } = useToast()
   const { items: cartItems } = useCart()
+  const [accountMenuOpen, setAccountMenuOpen] = useState(false)
+  const accountMenuRef = useRef<HTMLDivElement>(null)
 
   const refreshCartCount = async () => {
     try {
@@ -147,6 +149,15 @@ function AppContent() {
     init()
   }, [])
 
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (accountMenuRef.current && !accountMenuRef.current.contains(e.target as Node)) {
+        setAccountMenuOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
 
 
 
@@ -317,11 +328,64 @@ function AppContent() {
               </Link>
             )}
             {username && (
-              <>
-                <Link to="/profile" className="btn-secondary">My Profile</Link>
-                <Link to="/wishlist" className="btn-secondary">My Wishlist</Link>
-                <Link to="/orders" className="btn-secondary">My Orders</Link>
-              </>
+              <div
+                ref={accountMenuRef}
+                style={{ position: 'relative' }}
+              >
+                <button
+                  type="button"
+                  className="btn-secondary"
+                  onClick={() => setAccountMenuOpen((prev) => !prev)}
+                  aria-expanded={accountMenuOpen}
+                  aria-haspopup="menu"
+                >
+                  My Account {accountMenuOpen ? '▲' : '▼'}
+                </button>
+
+                {accountMenuOpen && (
+                  <div
+                    role="menu"
+                    style={{
+                      position: 'absolute',
+                      top: 'calc(100% + 6px)',
+                      right: 0,
+                      background: 'var(--color-background-primary)',
+                      border: '0.5px solid var(--color-border-secondary)',
+                      borderRadius: 'var(--border-radius-md)',
+                      boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                      minWidth: '160px',
+                      zIndex: 100,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      overflow: 'hidden',
+                    }}
+                  >
+                    {[
+                      { to: '/profile', label: 'My Profile' },
+                      { to: '/wishlist', label: 'My Wishlist' },
+                      { to: '/orders', label: 'My Orders' },
+                    ].map(({ to, label }) => (
+                      <Link
+                        key={to}
+                        to={to}
+                        role="menuitem"
+                        className="btn-secondary"
+                        onClick={() => setAccountMenuOpen(false)}
+                        style={{
+                          display: 'block',
+                          borderRadius: 12,
+                          margin: '4px 8px',
+                          color: 'var(--text-secondary)',
+                          background: 'rgba(37, 99, 235, 1)',
+                          borderBottom: '0.5px solid var(--color-border-tertiary)',
+                        }}
+                      >
+                        {label}
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
             )}
             <Link to="/cart" className="btn-primary cart-link">
               My Cart
