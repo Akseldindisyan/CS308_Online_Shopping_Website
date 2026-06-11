@@ -98,7 +98,7 @@ export interface ProductDetailedDTO {
   category: string;
   price: number;
   rating: number;
-  image: string | null;
+  imageUrl: string | null;
   extraImages: string[] | null;
   description: string | null;
   features: string[] | null;
@@ -136,7 +136,7 @@ export type Product = {
   category: string;
   image_url: string;
   active: boolean;
-  warranty_status:string;
+  warranty_status: string;
 
   images: string[];
   features: string[];

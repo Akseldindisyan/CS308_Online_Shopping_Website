@@ -53,17 +53,19 @@ export async function searchProducts(
   return normalizeSearchResponse(response);
 }
 function detailedToCard(detailed: ProductDetailedDTO): ProductCardDTO {
+  const raw = detailed as unknown as Record<string, unknown>;
   return {
     id: detailed.id,
-    name: detailed.name,
+    name: (raw.productName as string) ?? detailed.name,
     category: detailed.category,
     price: detailed.price,
     stock: detailed.stock,
-    active: true,
-    imageUrl: detailed.image,
+    active: (raw.active as boolean) ?? true,
+    imageUrl: (raw.image_url as string | null) ?? detailed.imageUrl,
     rating: detailed.rating,
   };
 }
+
 
 const productCache = new Map<UUID, Promise<ProductCardDTO>>();
 
