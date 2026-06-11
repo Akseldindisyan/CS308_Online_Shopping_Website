@@ -19,5 +19,7 @@ public interface CartItemRepository extends JpaRepository<CartItemEntity, UUID> 
     Optional<CartItemEntity> findByCartAndProduct(CartEntity cart, ProductEntity product);
 
     void deleteByCart(CartEntity cart);
+
+    void deleteByProductId(UUID productId);
 }
 

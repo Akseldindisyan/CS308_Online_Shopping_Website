@@ -2,6 +2,9 @@ package com.backend.backend.service;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import com.backend.backend.persistence.repository.CartItemRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -25,9 +28,11 @@ import java.util.UUID;
 public class ProductService {
 
     private final ProductRepository ProductRepo;
+    private final CartItemRepository cartItemRepository;
 
-    public ProductService(ProductRepository ProductRepo){
+    public ProductService(ProductRepository ProductRepo, CartItemRepository cartItemRepository){
         this.ProductRepo = ProductRepo;
+        this.cartItemRepository = cartItemRepository;
     }
 
     public ProductEntity getProductById(UUID id){
@@ -182,11 +187,13 @@ public class ProductService {
         return ProductRepo.save(p);
     }
 
+    @Transactional
     public void deleteProduct(UUID id) {
         if (!ProductRepo.existsById(id)) {
             throw new org.springframework.web.server.ResponseStatusException(
                     org.springframework.http.HttpStatus.NOT_FOUND, "Product not found: " + id);
         }
+        cartItemRepository.deleteByProductId(id);
         ProductRepo.deleteById(id);
     }
 
