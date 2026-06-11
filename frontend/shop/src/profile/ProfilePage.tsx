@@ -6,6 +6,7 @@ import { useToast } from "../components/ToastProvider";
 import type { UserDTO } from "../data/types";
 import "./profile.css";
 
+let gbalance = 0;
 type ProfileForm = {
   name: string;
   surname: string;
@@ -19,6 +20,7 @@ type ProfileForm = {
   address: string;
   nat_id: string;
   tax_id: string;
+  balance: number;
 };
 
 const emptyForm: ProfileForm = {
@@ -37,6 +39,7 @@ const emptyForm: ProfileForm = {
 };
 
 function toForm(user: UserDTO): ProfileForm {
+  gbalance = user.balance ?? 0;
   return {
     name: user.name ?? "",
     surname: user.surname ?? "",
@@ -119,6 +122,7 @@ function ProfilePage() {
         address: form.address.trim(),
         nat_id: form.nat_id.trim(),
         tax_id: blankToNull(form.tax_id),
+        balance:gbalance
       });
       setForm(toForm(updated));
       storeUserInfo(updated.name ?? "", updated.surname ?? "");
