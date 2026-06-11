@@ -5,6 +5,7 @@ import com.backend.backend.api.dto.InvoiceItemDTO;
 import com.backend.backend.api.dto.RefundResponseDTO;
 import com.backend.backend.persistence.entity.InvoiceItemEntity;
 import com.backend.backend.persistence.entity.RefundRequestEntity;
+import com.backend.backend.service.InvoiceEmailService;
 import com.backend.backend.service.RefundService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -25,6 +26,9 @@ public class RefundController {
 
     @Autowired
     private RefundService refundService;
+
+    @Autowired
+    private InvoiceEmailService invoiceEmailService;
 
     @PostMapping("/refunds")
     @ResponseStatus(HttpStatus.CREATED)
@@ -54,6 +58,8 @@ public class RefundController {
     @PreAuthorize("hasRole('SALES_MANAGER')")
     public void acceptRefund(@PathVariable UUID refundId) {
         refundService.acceptRefund(refundId);
+        RefundRequestEntity refundEntity = refundService.getRefund(refundId);
+        invoiceEmailService.sendRefundEmail(refundEntity);
     }
 
     @PatchMapping("/refunds/{refundId}/reject")
