@@ -1,5 +1,6 @@
 package com.backend.backend.service;
 
+import com.backend.backend.api.exception.BadRequestException;
 import com.backend.backend.persistence.entity.*;
 import com.backend.backend.persistence.repository.InvoiceItemRepository;
 import com.backend.backend.persistence.repository.InvoiceRepository;
@@ -12,7 +13,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -56,6 +60,7 @@ public class RefundServiceTest {
         invoice.setId(invoiceId);
         invoice.setCustomer(user);
         invoice.setTotalPrice(500.0);
+        invoice.setDate(Date.from(Instant.now().minus(10, ChronoUnit.DAYS)));
 
         item = new InvoiceItemEntity();
         item.setId(itemId);
@@ -84,6 +89,21 @@ public class RefundServiceTest {
 
         assertEquals(RefundStatus.UNDECIDED, created.getStatus());
         verify(refundRepository).save(any(RefundRequestEntity.class));
+    }
+
+    @Test
+    void createRefundRequestRejectsInvoiceOlderThanThirtyDays() {
+        invoice.setDate(Date.from(Instant.now().minus(31, ChronoUnit.DAYS)));
+        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+        when(invoiceRepository.findById(invoiceId)).thenReturn(Optional.of(invoice));
+
+        BadRequestException exception = assertThrows(
+                BadRequestException.class,
+                () -> refundService.createRefundRequest(userId, invoiceId, List.of(itemId)));
+
+        assertEquals("REFUND_WINDOW_EXPIRED", exception.getCode());
+        verifyNoInteractions(invoiceItemRepository);
+        verify(refundRepository, never()).save(any());
     }
 
     @Test
