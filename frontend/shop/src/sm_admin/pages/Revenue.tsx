@@ -1,6 +1,6 @@
-import { useState } from "react";
-import { invoices, products } from "../../data";
+import { useEffect, useState } from "react";
 import Topbar from "../components/Topbar";
+import { getRevenueReport, type RevenueReport } from "../../api/sales";
 import {
     BarChart,
     Bar,
@@ -15,57 +15,34 @@ import {
 export default function Revenue() {
     const [startDate, setStartDate] = useState("");
     const [endDate, setEndDate] = useState("");
+    const [report, setReport] = useState<RevenueReport | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState("");
 
-    const filtered = invoices.filter(inv => {
-        if (startDate && inv.date < startDate) return false;
-        if (endDate && inv.date > endDate) return false;
-        return true;
-    });
+    useEffect(() => {
+        let cancelled = false;
+        setLoading(true);
+        setError("");
+        getRevenueReport(startDate || undefined, endDate || undefined)
+            .then((data) => { if (!cancelled) setReport(data); })
+            .catch((err) => {
+                if (!cancelled) setError(err instanceof Error ? err.message : "Failed to load revenue report");
+            })
+            .finally(() => { if (!cancelled) setLoading(false); });
+        return () => { cancelled = true; };
+    }, [startDate, endDate]);
 
-    const byDate = new Map<string, { revenue: number; cost: number; profit: number }>();
-    filtered.forEach(inv => {
-        const prod = products.find(p => p.id === inv.productId);
-        const invCost = inv.quantity * (prod?.cost ?? 0);
-        const entry = byDate.get(inv.date) ?? { revenue: 0, cost: 0, profit: 0 };
-        entry.revenue += inv.totalPrice;
-        entry.cost += invCost;
-        entry.profit += inv.totalPrice - invCost;
-        byDate.set(inv.date, entry);
-    });
-
-    const chartData = Array.from(byDate.entries())
-        .map(([date, vals]) => ({ date, ...vals }))
-        .sort((a, b) => a.date.localeCompare(b.date));
-
-    const totalRevenue = chartData.reduce((s, d) => s + d.revenue, 0);
-    const totalCost = chartData.reduce((s, d) => s + d.cost, 0);
-    const totalProfit = totalRevenue - totalCost;
-    const profitMargin = totalRevenue > 0 ? (totalProfit / totalRevenue * 100) : 0;
-
-    // Per-product profit
-    const byProduct = new Map<string, { name: string; revenue: number; cost: number; profit: number }>();
-    filtered.forEach(inv => {
-        const prod = products.find(p => p.id === inv.productId);
-        const invCost = inv.quantity * (prod?.cost ?? 0);
-        const key = String(inv.productId);
-        const entry = byProduct.get(key) ?? { name: prod?.name ?? String(inv.productId), revenue: 0, cost: 0, profit: 0 };
-        entry.revenue += inv.totalPrice;
-        entry.cost += invCost;
-        entry.profit += inv.totalPrice - invCost;
-        byProduct.set(key, entry);
-    });
-
-    const topProducts = Array.from(byProduct.values())
-        .sort((a, b) => b.profit - a.profit)
-        .slice(0, 5);
+    const chartData = report?.daily ?? [];
+    const topProducts = (report?.products ?? []).slice(0, 5);
+    const totalRevenue = report?.totalRevenue ?? 0;
+    const totalCost = report?.totalCost ?? 0;
+    const totalProfit = report?.totalProfit ?? 0;
+    const profitMargin = totalRevenue > 0 ? (totalProfit / totalRevenue) * 100 : 0;
 
     const subtitleText =
-        startDate && endDate
-            ? `${startDate} – ${endDate}`
-            : startDate
-            ? `From ${startDate}`
-            : endDate
-            ? `Until ${endDate}`
+        startDate && endDate ? `${startDate} – ${endDate}`
+            : startDate ? `From ${startDate}`
+            : endDate ? `Until ${endDate}`
             : "All time";
 
     return (
@@ -80,14 +57,14 @@ export default function Revenue() {
                             className="pm-input"
                             style={{ width: 160 }}
                             value={startDate}
-                            onChange={e => setStartDate(e.target.value)}
+                            onChange={(e) => setStartDate(e.target.value)}
                         />
                         <input
                             type="date"
                             className="pm-input"
                             style={{ width: 160 }}
                             value={endDate}
-                            onChange={e => setEndDate(e.target.value)}
+                            onChange={(e) => setEndDate(e.target.value)}
                         />
                         <button
                             className="pm-btn pm-btn-outline"
@@ -95,10 +72,7 @@ export default function Revenue() {
                         >
                             Clear
                         </button>
-                        <button
-                            className="pm-btn pm-btn-primary"
-                            onClick={() => window.print()}
-                        >
+                        <button className="pm-btn pm-btn-primary" onClick={() => window.print()}>
                             Export
                         </button>
                     </>
@@ -106,7 +80,9 @@ export default function Revenue() {
             />
 
             <div className="pm-content">
-                {/* Stat grid */}
+                {error && <p style={{ color: "#F87171" }}>{error}</p>}
+                {loading && <p style={{ color: "var(--text-muted)" }}>Loading…</p>}
+
                 <div className="pm-stat-grid">
                     <div className="pm-stat">
                         <span className="pm-stat-label">Total Revenue</span>
@@ -134,14 +110,13 @@ export default function Revenue() {
                         <span className="pm-stat-label">Profit Margin</span>
                         <span
                             className="pm-stat-val"
-                            style={{ color: profitMargin > 0 ? "#22C55E" : undefined }}
+                            style={{ color: profitMargin >= 0 ? "#22C55E" : "#F87171" }}
                         >
                             {profitMargin.toFixed(1)}%
                         </span>
                     </div>
                 </div>
 
-                {/* Chart panel */}
                 <div className="pm-panel">
                     <div className="pm-panel-title">Revenue vs Cost vs Profit</div>
                     <div className="sm-chart-container">
@@ -151,10 +126,9 @@ export default function Revenue() {
                                 <XAxis
                                     dataKey="date"
                                     tick={{ fill: "rgba(248,250,252,0.55)", fontSize: 11 }}
-                                    tickFormatter={(val: string) => {
-                                        const d = new Date(val);
-                                        return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
-                                    }}
+                                    tickFormatter={(val: string) =>
+                                        new Date(val).toLocaleDateString("en-US", { month: "short", day: "numeric" })
+                                    }
                                 />
                                 <YAxis
                                     tick={{ fill: "rgba(248,250,252,0.55)", fontSize: 11 }}
@@ -170,19 +144,10 @@ export default function Revenue() {
                                     }}
                                     formatter={(value) => `₺${Number(value ?? 0).toLocaleString()}`}
                                     labelFormatter={(label) => {
-                                        const dateValue = typeof label === "string" || typeof label === "number"
-                                            ? String(label)
+                                        const v = typeof label === "string" || typeof label === "number" ? String(label) : "";
+                                        return v
+                                            ? new Date(v).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })
                                             : "";
-
-                                        if (!dateValue) {
-                                            return "";
-                                        }
-
-                                        return new Date(dateValue).toLocaleDateString("en-US", {
-                                            month: "long",
-                                            day: "numeric",
-                                            year: "numeric",
-                                        });
                                     }}
                                 />
                                 <Legend wrapperStyle={{ color: "rgba(248,250,252,0.55)", fontSize: 12 }} />
@@ -194,9 +159,7 @@ export default function Revenue() {
                     </div>
                 </div>
 
-                {/* Two-column grid */}
                 <div className="pm-grid-2">
-                    {/* Daily Breakdown */}
                     <div className="pm-col-main">
                         <div className="pm-panel">
                             <div className="pm-panel-title">Daily Breakdown</div>
@@ -204,11 +167,7 @@ export default function Revenue() {
                                 <table>
                                     <thead>
                                         <tr>
-                                            <th>Date</th>
-                                            <th>Revenue</th>
-                                            <th>Cost</th>
-                                            <th>Profit</th>
-                                            <th>Margin %</th>
+                                            <th>Date</th><th>Revenue</th><th>Cost</th><th>Profit</th><th>Margin %</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -219,15 +178,13 @@ export default function Revenue() {
                                                 </td>
                                             </tr>
                                         ) : (
-                                            chartData.map(row => {
-                                                const margin = row.revenue > 0 ? (row.profit / row.revenue * 100) : 0;
+                                            chartData.map((row) => {
+                                                const margin = row.revenue > 0 ? (row.profit / row.revenue) * 100 : 0;
                                                 return (
                                                     <tr key={row.date}>
                                                         <td>
                                                             {new Date(row.date).toLocaleDateString("en-US", {
-                                                                month: "short",
-                                                                day: "numeric",
-                                                                year: "numeric",
+                                                                month: "short", day: "numeric", year: "numeric",
                                                             })}
                                                         </td>
                                                         <td>₺{row.revenue.toLocaleString()}</td>
@@ -246,7 +203,6 @@ export default function Revenue() {
                         </div>
                     </div>
 
-                    {/* Top Profitable Products */}
                     <div className="pm-col-main">
                         <div className="pm-panel">
                             <div className="pm-panel-title">Top Profitable Products</div>
@@ -254,11 +210,7 @@ export default function Revenue() {
                                 <table>
                                     <thead>
                                         <tr>
-                                            <th>Product</th>
-                                            <th>Revenue</th>
-                                            <th>Cost</th>
-                                            <th>Profit</th>
-                                            <th>Margin %</th>
+                                            <th>Product</th><th>Revenue</th><th>Cost</th><th>Profit</th><th>Margin %</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -269,20 +221,16 @@ export default function Revenue() {
                                                 </td>
                                             </tr>
                                         ) : (
-                                            topProducts.map(prod => {
-                                                const margin = prod.revenue > 0 ? (prod.profit / prod.revenue * 100) : 0;
-                                                const pillClass = margin >= 0 ? "pm-pill pm-pill-green" : "pm-pill pm-pill-red";
+                                            topProducts.map((prod) => {
+                                                const margin = prod.revenue > 0 ? (prod.profit / prod.revenue) * 100 : 0;
+                                                const pill = margin >= 0 ? "pm-pill pm-pill-green" : "pm-pill pm-pill-red";
                                                 return (
                                                     <tr key={prod.name}>
                                                         <td>{prod.name}</td>
                                                         <td>₺{prod.revenue.toLocaleString()}</td>
                                                         <td>₺{prod.cost.toLocaleString()}</td>
                                                         <td>₺{prod.profit.toLocaleString()}</td>
-                                                        <td>
-                                                            <span className={pillClass}>
-                                                                {margin.toFixed(1)}%
-                                                            </span>
-                                                        </td>
+                                                        <td><span className={pill}>{margin.toFixed(1)}%</span></td>
                                                     </tr>
                                                 );
                                             })
