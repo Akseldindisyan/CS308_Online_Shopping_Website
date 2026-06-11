@@ -1,5 +1,6 @@
 import type { JSX } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { getStoredName, getStoredSurname } from "../../api/auth";
 
 type NavItem = {
     path: string;
@@ -45,6 +46,11 @@ const sections: { title: string; items: NavItem[] }[] = [
 export default function Sidebar() {
     const navigate = useNavigate();
     const { pathname } = useLocation();
+
+    const name    = getStoredName()    ?? "";
+    const surname = getStoredSurname() ?? "";
+    const initials = (name.charAt(0) + surname.charAt(0)).toUpperCase() || "PM";
+    const fullName = name && surname ? `${name} ${surname}` : "Product Manager";
 
     return (
         <aside style={{
@@ -121,10 +127,10 @@ export default function Sidebar() {
             {/* User */}
             <div style={{ padding: 16, borderTop: "1px solid var(--border)", display: "flex", alignItems: "center", gap: 10 }}>
                 <div style={{ width: 32, height: 32, borderRadius: "50%", background: "var(--blue-dim)", border: "1px solid var(--blue)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 500, color: "var(--blue)", flexShrink: 0 }}>
-                    EP
+                    {initials}
                 </div>
                 <div>
-                    <div style={{ fontSize: 13 }}>Emre Pekcan</div>
+                    <div style={{ fontSize: 13 }}>{fullName}</div>
                     <div style={{ fontSize: 11, color: "var(--text-muted)" }}>Product Manager</div>
                 </div>
             </div>

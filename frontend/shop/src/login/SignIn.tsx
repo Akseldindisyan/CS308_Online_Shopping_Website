@@ -1,6 +1,6 @@
 import React from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { login, storeAuthToken, mergeGuestCartIntoUserCart } from "../api/auth";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { login, storeAuthToken, storeUserInfo, mergeGuestCartIntoUserCart } from "../api/auth";
 
 function SignInForm() {
   const navigate = useNavigate();
@@ -11,6 +11,7 @@ function SignInForm() {
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [statusMessage, setStatusMessage] = React.useState("");
   const [statusType, setStatusType] = React.useState<"success" | "error" | "">("");
+  const [searchParams] = useSearchParams();
 
   const handleChange = (evt: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = evt.target;
@@ -39,9 +40,16 @@ function SignInForm() {
     try {
       const response = await login({ username, password });
       storeAuthToken(response.token);
+      storeUserInfo(response.name ?? "", response.surname ?? "");
       await mergeGuestCartIntoUserCart();
       setStatusMessage("Login successful. Redirecting...");
       setStatusType("success");
+      const query = searchParams.get('redirect');
+      console.log(`Redirecting to: ${query}`);
+      if (query) {
+        navigate("/"+query);
+        return;
+      }
       navigate("/");
     } catch (error) {
       const message = error instanceof Error ? error.message : "Login failed.";

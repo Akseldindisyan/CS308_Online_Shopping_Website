@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import com.backend.backend.persistence.entity.UserEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -46,5 +47,9 @@ public class WishlistService {
     @Transactional
     public void removeFromWishlist(UUID userId, UUID productId) {
         wishlistRepo.deleteByUserIdAndProductId(userId, productId);
+    }
+
+    public List<WishlistEntity> getWishlistEntity(UUID userId){
+        return wishlistRepo.findAllByUserId(userId);
     }
 }

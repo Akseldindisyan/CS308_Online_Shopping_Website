@@ -40,9 +40,9 @@ public class ReviewRepositoryTest {
     void initializeMockupDatabase() {
         reviewRepository.deleteAll();
         //Products
-        ProductEntity product1 = new ProductEntity("Laptop A", 4.5, 50, "Model X", "SN12345", "High performance laptop", 1200.0, "Distributor A", "USA",true);
-        ProductEntity product2 = new ProductEntity("Smartphone", 4.7, 100, "Model Y", "SN54321", "Latest smartphone", 800.0, "Distributor B", "China",true);
-        ProductEntity product3 = new ProductEntity("Headphones", 4.2, 70, "Model H", "SN67890", "Noise-cancelling headphones", 200.0, "Distributor C", "Germany",true);
+        ProductEntity product1 = new ProductEntity("Laptop A", 4.5, 50, "Model X", "SN12345", "High performance laptop", 1200.0, "Distributor A", "USA", "A", "",true);
+        ProductEntity product2 = new ProductEntity("Smartphone", 4.7, 100, "Model Y", "SN54321", "Latest smartphone", 800.0, "Distributor B", "China", "A", "", true);
+        ProductEntity product3 = new ProductEntity("Headphones", 4.2, 70, "Model H", "SN67890", "Noise-cancelling headphones", 200.0, "Distributor C", "Germany", "A", "", true);
 
         //Save product Repository
         productRepository.saveAll(List.of(product1, product2, product3));
@@ -57,19 +57,19 @@ public class ReviewRepositoryTest {
         userRepository.saveAll(List.of(user1, user2, user3, user4, user5));
 
         List<ReviewEntity> mockReviews = List.of(
-                new ReviewEntity(product1, user1, 9, "Excellent quality, very satisfied with this purchase.", true,
+                new ReviewEntity(product1, user1, 4, "Excellent quality, very satisfied with this purchase.", true,
                         LocalDate.of(2023, 5, 10), 24, LocalDate.of(2023, 5, 12), LocalDate.of(2023, 5, 12)),
 
-                new ReviewEntity(product1, user2, 4, "It works, but the build quality feels a bit cheap.", true,
+                new ReviewEntity(product1, user2, 2, "It works, but the build quality feels a bit cheap.", true,
                         LocalDate.of(2023, 6, 15), 2, LocalDate.of(2023, 6, 20), LocalDate.of(2023, 6, 21)),
 
-                new ReviewEntity(product2, user3, 1, "Terrible. Broke on the first day. Do not buy.", false,
+                new ReviewEntity(product2, user3, 3, "Terrible. Broke on the first day. Do not buy.", false,
                         LocalDate.of(2023, 7, 1), 0, LocalDate.of(2023, 7, 2), null),
 
-                new ReviewEntity(product3, user4, 10, "Absolutely perfect. Exceeded all expectations.", true,
+                new ReviewEntity(product3, user4, 2, "Absolutely perfect. Exceeded all expectations.", true,
                         LocalDate.of(2023, 8, 12), 56, LocalDate.of(2023, 8, 14), LocalDate.of(2023, 8, 14)),
 
-                new ReviewEntity(product3, user5, 7, "Good product, but shipping was delayed.", true,
+                new ReviewEntity(product3, user5, 3, "Good product, but shipping was delayed.", true,
                         LocalDate.of(2023, 9, 5), 5, LocalDate.of(2023, 9, 10), LocalDate.of(2023, 9, 10))
         );
 
@@ -105,12 +105,12 @@ public class ReviewRepositoryTest {
 
     @Test
     void findByRatingTest() {
-        List<ReviewEntity> result = reviewRepository.findByRating(9);
+        List<ReviewEntity> result = reviewRepository.findByRating(4);
 
         assertEquals(1, result.size());
 
         assertEquals("Excellent quality, very satisfied with this purchase.", result.getFirst().getComment());
-        assertEquals(9,result.getFirst().getRating());
+        assertEquals(4,result.getFirst().getRating());
     }
 
     @Test

@@ -1,7 +1,10 @@
 package com.backend.backend.service;
 import com.backend.backend.api.dto.DeliveryDTO;
 import com.backend.backend.api.dto.InvoiceItemDTO;
+import com.backend.backend.api.mapper.DeliveryMapper;
+import com.backend.backend.persistence.entity.DeliveryEntity;
 import com.backend.backend.persistence.repository.DeliveryRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.UUID;
@@ -19,6 +22,7 @@ public class DeliveryService {
                 delivery.getCustomer().getId(),
                 delivery.getInvoice().getItems().stream()
                     .map(item -> new InvoiceItemDTO(
+                        item.getId(),
                         item.getProduct().getId(),
                         item.getProduct().getProductName(),
                         item.getQuantity(),
@@ -33,5 +37,23 @@ public class DeliveryService {
                 delivery.getStatus()
             ))
             .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public DeliveryDTO updateStatus(UUID deliveryId, String status) {
+        DeliveryEntity delivery = deliveryRepository.findById(deliveryId)
+                .orElseThrow(() -> new RuntimeException("Delivery not found: " + deliveryId));
+
+        delivery.setStatus(status);
+        delivery.setCompleted("completed".equals(status));
+
+        DeliveryEntity saved = deliveryRepository.save(delivery);
+        return DeliveryMapper.toDTO(saved);
+    }
+
+    public List<DeliveryDTO> getAllDeliveries() {
+        return deliveryRepository.findAll().stream()
+                .map(DeliveryMapper::toDTO)
+                .toList();
     }
 }

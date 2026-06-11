@@ -1,6 +1,6 @@
 import { useState } from "react";
 import Topbar from "../components/Topbar";
-import { products as initProducts, wishlist, type Product } from "../../data";
+import { products as initProducts, products, wishlist, type Product } from "../../data";
 
 export default function Pricing() {
     const [productList, setProductList] = useState<Product[]>(
@@ -30,6 +30,7 @@ export default function Pricing() {
     function openModal(product: Product) {
         setSelectedProduct(product);
         setDiscountInput(product.discountRate > 0 ? String(product.discountRate) : "");
+        console.log(product)
     }
 
     function closeModal() {
@@ -42,9 +43,20 @@ export default function Pricing() {
         const rate = Number(discountInput);
         if (isNaN(rate) || rate < 0 || rate >= 100) return;
 
-        const newPrice = parseFloat(
-            (selectedProduct.price * (1 - rate / 100)).toFixed(2)
-        );
+        const token = localStorage.getItem('authToken')
+        const id = selectedProduct.id
+        const url = "http://localhost:8080/api/products/" + id + "/discount"
+        
+        fetch(url, {
+            method: "PATCH",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+            },
+            body: JSON.stringify(rate)
+        })
+
+
         const watcherCount = wishlist.filter(
             w => w.productId === selectedProduct.id
         ).length;
@@ -52,7 +64,7 @@ export default function Pricing() {
         setProductList(prev =>
             prev.map(p =>
                 p.id === selectedProduct.id
-                    ? { ...p, discountRate: rate, discountedPrice: newPrice }
+                    ? { ...p, discountRate: rate }
                     : p
             )
         );
@@ -61,20 +73,33 @@ export default function Pricing() {
             ...prev,
         ]);
         closeModal();
+        window.location.reload();
+        
     }
 
     function removeDiscount(product: Product) {
-        setProductList(prev =>
-            prev.map(p =>
-                p.id === product.id
-                    ? { ...p, discountRate: 0, discountedPrice: p.price }
-                    : p
-            )
-        );
+        
         setNotifications(prev => [
             `✓ Removed discount from ${product.name}`,
             ...prev,
         ]);
+
+        const token = localStorage.getItem('authToken')
+        const id = product.id
+        const url = "http://localhost:8080/api/products/" + id + "/discount/remove"
+        console.log(selectedProduct)
+        
+        fetch(url, {
+            method: "PATCH",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+            },
+            body: JSON.stringify(product.discountRate)
+        })
+
+        window.location.reload();
+
     }
 
     // Live preview in modal
@@ -149,7 +174,12 @@ export default function Pricing() {
                                     <tr key={product.id}>
                                         <td className="pm-col-main">{product.name}</td>
                                         <td>{product.category}</td>
-                                        <td>₺{product.price.toLocaleString()}</td>
+                                        <td>₺{product.discountRate > 0 ? (
+                                                (product.price / (1 - (product.discountRate/100)))  
+                                                
+                                            ) : (
+                                                product.price
+                                            )}</td>
                                         <td>
                                             {product.discountRate > 0 ? (
                                                 <span className="sm-discount-badge">
@@ -165,10 +195,10 @@ export default function Pricing() {
                                             {product.discountRate > 0 ? (
                                                 <div className="sm-price-compare">
                                                     <span className="sm-price-original">
-                                                        ₺{product.price.toLocaleString()}
+                                                        ₺{(product.price / (1 - (product.discountRate/100)))}
                                                     </span>
                                                     <span className="sm-price-new">
-                                                        ₺{product.discountedPrice.toLocaleString()}
+                                                        ₺{product.price}
                                                     </span>
                                                 </div>
                                             ) : (
@@ -203,7 +233,8 @@ export default function Pricing() {
                                             )}
                                         </td>
                                     </tr>
-                                ))}
+                                ))
+                                }
                                 {filtered.length === 0 && (
                                     <tr>
                                         <td colSpan={7} style={{ textAlign: "center", color: "var(--pm-muted)" }}>

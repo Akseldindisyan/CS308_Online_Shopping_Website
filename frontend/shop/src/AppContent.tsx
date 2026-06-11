@@ -1,4 +1,4 @@
-import { useState, useEffect, type FormEvent } from 'react'
+import { useState, useEffect, useRef, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 import {
   clearAuthToken,
@@ -7,33 +7,117 @@ import {
   getStoredGuestToken,
 } from './api/auth'
 import { fetchAllProducts, searchProducts } from './api/products'
-import { addItemToCart } from './api/cart'
+import { getCategories } from './api/categories'
+import { addItemToCart, getCartItemCount } from './api/cart'
 import { addToWishlist } from './api/wishlist'
 import { getStoredUserId } from './api/auth'
 import type { ProductCardDTO, UUID } from './data/types'
 import { useToast } from './components/ToastProvider'
 import './App.css'
+import { useCart } from './hooks/useCart'
 
-const categories = [
-  'Laptops',
-  'Phones',
-  'Tablets',
-  'Headphones',
-  'Gaming',
-  'Accessories',
-  'Camera',
-]
+const fallbackCategories = ['Laptop', 'Phone', 'Tablet', 'Headphone', 'Camera', 'Printer', 'Accessories']
+
 
 function AppContent() {
+  const requestIdRef = useRef(0)
+  const pageSize = 10
+
+  const [categories, setCategories] = useState<string[]>([])
+  const [activeCategory, setActiveCategory] = useState<string | null>(null)
   const [searchText, setSearchText] = useState('')
   const [products, setProducts] = useState<ProductCardDTO[]>([])
   const [isSearching, setIsSearching] = useState(false)
   const [searchError, setSearchError] = useState('')
   const [searchActive, setSearchActive] = useState(false)
+  const [sortBy, setSortBy] = useState('id')
+  const [inStockOnly, setInStockOnly] = useState(false)
   const [loading, setLoading] = useState(true)
   const [addingToCart, setAddingToCart] = useState<UUID | null>(null)
   const username = getStoredUsername()
+  const [cartCount, setCartCount] = useState(0)
+  const [currentPage, setCurrentPage] = useState(0)
+  const [totalPages, setTotalPages] = useState(0)
   const { showToast } = useToast()
+  const { items: cartItems } = useCart()
+  const [accountMenuOpen, setAccountMenuOpen] = useState(false)
+  const accountMenuRef = useRef<HTMLDivElement>(null)
+
+  const refreshCartCount = async () => {
+    try {
+      const count = await getCartItemCount()
+      setCartCount(count)
+    } catch (err) {
+      console.error('Failed to load cart count:', err)
+    }
+  }
+
+  const loadCategories = async () => {
+    try {
+      const cats = await getCategories()
+      setCategories(cats.length > 0 ? cats.map((c) => c.name) : fallbackCategories)
+    } catch {
+      setCategories(fallbackCategories)
+    }
+  }
+
+  const loadProducts = async (params: {
+    queryText: string
+    sort: string
+    inStock: boolean
+    category: string | null
+    page: number
+    setLoadingState?: boolean
+  }) => {
+    const requestId = ++requestIdRef.current
+    const { queryText, sort, inStock, category, page } = params
+    const shouldSetLoadingState = params.setLoadingState ?? true
+    const trimmedQuery = queryText.trim()
+
+    if (shouldSetLoadingState) {
+      setIsSearching(true)
+    }
+
+    setSearchError('')
+    try {
+      if (trimmedQuery) {
+        const result = await searchProducts({
+          name: trimmedQuery,
+          page,
+          size: pageSize,
+          sort,
+          inStock,
+          category: category ?? undefined,
+        })
+        if (requestId !== requestIdRef.current) return
+        setProducts(result.content)
+        setCurrentPage(result.number)
+        setTotalPages(result.totalPages)
+        setSearchActive(true)
+        return
+      }
+
+      const result = await fetchAllProducts({
+        page,
+        size: pageSize,
+        sort,
+        inStock,
+        category: category ?? undefined,
+      })
+      if (requestId !== requestIdRef.current) return
+      setProducts(result.content)
+      setCurrentPage(result.number)
+      setTotalPages(result.totalPages)
+      setSearchActive(false)
+    } catch (err) {
+      if (requestId !== requestIdRef.current) return
+      setSearchError(err instanceof Error ? err.message : 'Failed to load products')
+    } finally {
+      if (shouldSetLoadingState && requestId === requestIdRef.current) {
+        setIsSearching(false)
+      }
+    }
+  }
 
   // Initial load — all products + ensure guest token exists
   useEffect(() => {
@@ -44,12 +128,20 @@ function AppContent() {
             console.error('Failed to create guest token:', err),
           )
         }
-        const data = await fetchAllProducts({ page: 0, size: 10 })
-        setProducts(data)
+        await Promise.all([
+          loadCategories(),
+          loadProducts({
+            queryText: '',
+            sort: 'id',
+            inStock: false,
+            category: null,
+            page: 0,
+            setLoadingState: false,
+          }),
+          refreshCartCount(),
+        ])
       } catch (err) {
-        setSearchError(
-          err instanceof Error ? err.message : 'Failed to load products',
-        )
+        setSearchError(err instanceof Error ? err.message : 'Failed to load products')
       } finally {
         setLoading(false)
       }
@@ -57,54 +149,122 @@ function AppContent() {
     init()
   }, [])
 
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (accountMenuRef.current && !accountMenuRef.current.contains(e.target as Node)) {
+        setAccountMenuOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
+
+
+
   const handleSearchSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    const name = searchText.trim()
-    setIsSearching(true)
-    setSearchError('')
-
-    try {
-      if (name) {
-        const data = await searchProducts({ name, page: 0 })
-        setProducts(data)
-        setSearchActive(true)
-      } else {
-        const data = await fetchAllProducts({ page: 0, size: 10 })
-        setProducts(data)
-        setSearchActive(false)
-      }
-    } catch (err) {
-      setSearchError(err instanceof Error ? err.message : 'Search failed')
-    } finally {
-      setIsSearching(false)
-    }
+    await loadProducts({
+      queryText: searchText,
+      sort: sortBy,
+      inStock: inStockOnly,
+      category: activeCategory,
+      page: 0,
+    })
   }
 
   const handleResetSearch = async () => {
     setSearchText('')
-    setSearchError('')
-    setSearchActive(false)
-    setIsSearching(true)
-    try {
-      const data = await fetchAllProducts({ page: 0, size: 10 })
-      setProducts(data)
-    } catch (err) {
-      setSearchError(err instanceof Error ? err.message : 'Failed to reload')
-    } finally {
-      setIsSearching(false)
-    }
+    await loadProducts({
+      queryText: '',
+      sort: sortBy,
+      inStock: inStockOnly,
+      category: activeCategory,
+      page: 0,
+    })
   }
 
-  const handleAddToCart = async (productId: UUID, productName: string) => {
+  const handleSortChange = async (nextSort: string) => {
+    setSortBy(nextSort)
+    await loadProducts({
+      queryText: searchActive ? searchText : '',
+      sort: nextSort,
+      inStock: inStockOnly,
+      category: activeCategory,
+      page: 0,
+    })
+  }
+
+  const handleInStockToggle = async (nextInStock: boolean) => {
+    setInStockOnly(nextInStock)
+    await loadProducts({
+      queryText: searchActive ? searchText : '',
+      sort: sortBy,
+      inStock: nextInStock,
+      category: activeCategory,
+      page: 0,
+    })
+  }
+
+  const handleResetFilters = async () => {
+    setSortBy('id')
+    setInStockOnly(false)
+    setActiveCategory(null)
+    await loadProducts({
+      queryText: searchActive ? searchText : '',
+      sort: 'id',
+      inStock: false,
+      category: null,
+      page: 0,
+    })
+  }
+
+  const handleCategoryToggle = async (category: string | null) => {
+    const nextCategory = activeCategory === category ? null : category
+    setActiveCategory(nextCategory)
+    await loadProducts({
+      queryText: searchActive ? searchText : '',
+      sort: sortBy,
+      inStock: inStockOnly,
+      category: nextCategory,
+      page: 0,
+    })
+  }
+
+  const goToPage = async (page: number) => {
+    const clamped = Math.max(0, Math.min(page, Math.max(0, totalPages - 1)))
+    await loadProducts({
+      queryText: searchActive ? searchText : '',
+      sort: sortBy,
+      inStock: inStockOnly,
+      category: activeCategory,
+      page: clamped,
+    })
+  }
+
+  const handleAddToCart = async (
+    productId: UUID,
+    productName: string,
+    productStock: number,
+  ) => {
+    const currentInCart =
+      cartItems.find((item) => item.productId === productId)?.quantity ?? 0
+
+    if (currentInCart >= productStock) {
+      showToast(
+        `Cannot add more — only ${productStock} in stock and you already have ${currentInCart} in your cart`,
+        'error',
+      )
+      return
+    }
+
     setAddingToCart(productId)
     try {
       await addItemToCart(productId, 1)
       showToast(`${productName} added to cart`, 'success')
+      await refreshCartCount()
     } catch (err) {
-      showToast(
-        err instanceof Error ? err.message : 'Failed to add to cart',
-        'error',
-      )
+      showToast(err instanceof Error ? err.message : 'Failed to add to cart', 'error')
     } finally {
       setAddingToCart(null)
     }
@@ -168,13 +328,72 @@ function AppContent() {
               </Link>
             )}
             {username && (
-              <>
-                <Link to="/wishlist" className="btn-secondary">My Wishlist</Link>
-                <Link to="/orders" className="btn-secondary">My Orders</Link>
-              </>
+              <div
+                ref={accountMenuRef}
+                style={{ position: 'relative' }}
+              >
+                <button
+                  type="button"
+                  className="btn-secondary"
+                  onClick={() => setAccountMenuOpen((prev) => !prev)}
+                  aria-expanded={accountMenuOpen}
+                  aria-haspopup="menu"
+                >
+                  My Account {accountMenuOpen ? '▲' : '▼'}
+                </button>
+
+                {accountMenuOpen && (
+                  <div
+                    role="menu"
+                    style={{
+                      position: 'absolute',
+                      top: 'calc(100% + 6px)',
+                      right: 0,
+                      background: 'var(--color-background-primary)',
+                      border: '0.5px solid var(--color-border-secondary)',
+                      borderRadius: 'var(--border-radius-md)',
+                      boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                      minWidth: '160px',
+                      zIndex: 100,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      overflow: 'hidden',
+                    }}
+                  >
+                    {[
+                      { to: '/profile', label: 'My Profile' },
+                      { to: '/wishlist', label: 'My Wishlist' },
+                      { to: '/orders', label: 'My Orders' },
+                    ].map(({ to, label }) => (
+                      <Link
+                        key={to}
+                        to={to}
+                        role="menuitem"
+                        className="btn-secondary"
+                        onClick={() => setAccountMenuOpen(false)}
+                        style={{
+                          display: 'block',
+                          borderRadius: 12,
+                          margin: '4px 8px',
+                          color: 'var(--text-secondary)',
+                          background: 'rgba(37, 99, 235, 1)',
+                          borderBottom: '0.5px solid var(--color-border-tertiary)',
+                        }}
+                      >
+                        {label}
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
             )}
-            <Link to="/cart" className="btn-primary">
+            <Link to="/cart" className="btn-primary cart-link">
               My Cart
+              {cartCount > 0 && (
+                <span className="cart-badge" aria-label={`${cartCount} items in cart`}>
+                  {cartCount > 99 ? '99+' : cartCount}
+                </span>
+              )}
             </Link>
             {username && <span className="user-greeting">Hello, {username}!</span>}
           </div>
@@ -182,10 +401,28 @@ function AppContent() {
 
         <nav className="category-nav" aria-label="Product categories">
           {categories.map((category) => (
-            <a href="#" key={category}>
+            <a
+              href="#"
+              key={category}
+              className={activeCategory === category ? 'is-active' : ''}
+              onClick={(event) => {
+                event.preventDefault()
+                void handleCategoryToggle(category)
+              }}
+            >
               {category}
             </a>
           ))}
+          <a
+            href="#"
+            className={activeCategory === null ? 'is-active' : ''}
+            onClick={(event) => {
+              event.preventDefault()
+              void handleCategoryToggle(null)
+            }}
+          >
+            All
+          </a>
         </nav>
       </header>
 
@@ -204,54 +441,118 @@ function AppContent() {
           {searchError && <p className="search-error">{searchError}</p>}
         </section>
 
-        {loading ? (
-          <p>Loading products…</p>
-        ) : products.length === 0 ? (
-          <p>No products found.</p>
-        ) : (
-          <section className="product-grid" aria-label="Technology products">
-            {products.map((product) => (
-              <article key={product.id} className="product-card">
-                {product.imageUrl && (
-                  <img
-                    src={product.imageUrl}
-                    alt={product.name}
-                    className="product-image"
+        <section className="catalog-layout" aria-label="Product catalog and filters">
+          <aside className="filter-sidebar" aria-label="Filters">
+            <div className="filter-card">
+              <div className="filter-header">
+                <h2>Filters</h2>
+                <button
+                  type="button"
+                  className="btn-secondary"
+                  disabled={isSearching || (sortBy === 'id' && !inStockOnly)}
+                  onClick={() => void handleResetFilters()}
+                >
+                  Clear
+                </button>
+              </div>
+
+              <fieldset className="filter-section">
+                <legend>Sort by</legend>
+                <label className="filter-option" htmlFor="sort-products">
+                  <span>Product order</span>
+                  <select
+                    id="sort-products"
+                    value={sortBy}
+                    onChange={(event) => void handleSortChange(event.target.value)}
+                    disabled={isSearching}
+                  >
+                    <option value="id">Default</option>
+                    <option value="price_asc">Price: low to high</option>
+                    <option value="price_desc">Price: high to low</option>
+                    <option value="rating_desc">Highest rated</option>
+                    <option value="rating_asc">Lowest rated</option>
+                    <option value="A_to_Z">Name A to Z</option>
+                  </select>
+                </label>
+              </fieldset>
+
+              <fieldset className="filter-section">
+                <legend>Availability</legend>
+                <label className="stock-filter" htmlFor="in-stock-only">
+                  <input
+                    id="in-stock-only"
+                    type="checkbox"
+                    checked={inStockOnly}
+                    onChange={(event) => void handleInStockToggle(event.target.checked)}
+                    disabled={isSearching}
                   />
-                )}
-                <span className="product-category">{product.category}</span>
-                <h2>{product.name}</h2>
-                <p className="rating">Rating: {product.rating} / 5</p>
-                <p className="price">${product.price}</p>
-                {product.stock === 0 && (
-                  <p className="out-of-stock">Out of stock</p>
-                )}
-                <div className="product-actions">
-                  <Link to={`/product/${product.id}`} className="btn-secondary">
-                    Details
-                  </Link>
-                  <button
-                    type="button"
-                    className="btn-action"
-                    disabled={
-                      product.stock === 0 || addingToCart === product.id
-                    }
-                    onClick={() => handleAddToCart(product.id, product.name)}
-                  >
-                    {addingToCart === product.id ? 'Adding…' : 'Add to Cart'}
-                  </button>
-                  <button
-                    type="button"
-                    className="btn-secondary"
-                    onClick={() => handleAddToWishlist(product.id)}
-                  >
-                    ♡ Wishlist
-                  </button>
-                </div>
-              </article>
-            ))}
-          </section>
-        )}
+                  <span>In stock only</span>
+                </label>
+              </fieldset>
+            </div>
+          </aside>
+
+          <div className="catalog-results">
+            {loading ? (
+              <p>Loading products…</p>
+            ) : products.length === 0 ? (
+              <p>No products found.</p>
+            ) : (
+              <section className="product-grid" aria-label="Technology products">
+                {products.map((product) => (
+                  <article key={product.id} className="product-card">
+                    {product.imageUrl && (
+                      <img
+                        src={product.imageUrl}
+                        alt={product.name}
+                        className="product-image"
+                      />
+                    )}
+                    <span className="product-category">{product.category}</span>
+                    <h2>{product.name}</h2>
+                    <p className="rating">Rating: {(product.rating) == 0 ? "No review" : product.rating + " / 5"}</p>
+                    <p className="price">${product.price}</p>
+                    {product.stock === 0 && (
+                      <p className="out-of-stock">Out of stock</p>
+                    )}
+                    <div className="product-actions">
+                      <Link to={`/product/${product.id}`} className="btn-secondary">
+                        Details
+                      </Link>
+                      <button
+                        type="button"
+                        className="btn-action"
+                        disabled={
+                          product.stock === 0 ||
+                          addingToCart === product.id ||
+                          (cartItems.find((item) => item.productId === product.id)?.quantity ?? 0) >=
+                          product.stock
+                        }
+                        onClick={() => handleAddToCart(product.id, product.name, product.stock)}
+                      >
+                        {addingToCart === product.id ? 'Adding…' : 'Add to Cart'}
+                      </button>
+                      <button
+                        type="button"
+                        className="btn-secondary"
+                        onClick={() => handleAddToWishlist(product.id)}
+                      >
+                        ♡ Wishlist
+                      </button>
+                    </div>
+                  </article>
+                ))}
+              </section>
+            )}
+            {!loading && totalPages > 1 && (
+              <div className="pagination-controls" style={{ marginTop: 16 }}>
+                <button type="button" onClick={() => void goToPage(currentPage - 1)} disabled={currentPage <= 0}>Prev</button>
+                <span style={{ margin: '0 8px' }}>Page {currentPage + 1} of {totalPages}</span>
+                <button type="button" onClick={() => void goToPage(currentPage + 1)} disabled={currentPage >= totalPages - 1}>Next</button>
+              </div>
+            )}
+          </div>
+        </section>
       </main>
 
       <footer className="footer">

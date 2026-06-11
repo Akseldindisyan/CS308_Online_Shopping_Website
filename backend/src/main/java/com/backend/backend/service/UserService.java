@@ -1,15 +1,18 @@
 package com.backend.backend.service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import com.backend.backend.persistence.entity.WishlistEntity;
 import org.apache.catalina.User;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.backend.backend.api.dto.UserDTO;
 import com.backend.backend.persistence.entity.UserEntity;
 import com.backend.backend.persistence.repository.UserRepository;
 
@@ -18,10 +21,12 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final WishlistService wishlistService;
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, WishlistService wishlistService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.wishlistService = wishlistService;
     }
 
     public List<UserEntity> getAllUsers() {
@@ -65,10 +70,43 @@ public class UserService {
         existingUser.setCity(updatedUser.getCity());
         existingUser.setStreet(updatedUser.getStreet());
         existingUser.setPostal_code(updatedUser.getPostal_code());
+        existingUser.setNat_id(updatedUser.getNat_id());
+        existingUser.setAddress(updatedUser.getAddress());
+        existingUser.setTax_id(updatedUser.getTax_id());
 
         if (updatedUser.getRole() != null) {
             existingUser.setRole(updatedUser.getRole());
         }
+
+        return userRepository.save(existingUser);
+    }
+
+    public UserEntity updateProfile(UUID id, UserDTO updatedProfile) {
+        UserEntity existingUser = getUserById(id);
+
+        if (updatedProfile.getName() != null) {
+            existingUser.setName(updatedProfile.getName());
+        }
+        if (updatedProfile.getSurname() != null) {
+            existingUser.setSurname(updatedProfile.getSurname());
+        }
+        if (updatedProfile.getEmail() != null) {
+            userRepository.findByEmail(updatedProfile.getEmail()).ifPresent(existing -> {
+                if (!existing.getId().equals(id)) {
+                    throw new ResponseStatusException(HttpStatus.CONFLICT, "Email already exists: " + updatedProfile.getEmail());
+                }
+            });
+            existingUser.setEmail(updatedProfile.getEmail());
+        }
+
+        existingUser.setDateOfBirth(updatedProfile.getDateOfBirth());
+        existingUser.setCountry(updatedProfile.getCountry());
+        existingUser.setCity(updatedProfile.getCity());
+        existingUser.setStreet(updatedProfile.getStreet());
+        existingUser.setPostal_code(updatedProfile.getPostal_code());
+        existingUser.setNat_id(updatedProfile.getNat_id());
+        existingUser.setAddress(updatedProfile.getAddress());
+        existingUser.setTax_id(updatedProfile.getTax_id());
 
         return userRepository.save(existingUser);
     }
@@ -125,6 +163,23 @@ public class UserService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found: " + username));
     }
 
+    public List<String> getUsersWithWishlistItem(UUID productID){
+
+        List<UserEntity> allUsers = userRepository.findAll();
+        List<String> wishList = new ArrayList<>();
+        List<WishlistEntity> temp = new ArrayList<>();
+        for(int i = 0; i < allUsers.size(); i++){
+             UserEntity temp_user = allUsers.get(i);
+             temp = wishlistService.getWishlistEntity(temp_user.getId());
+             for(int j = 0; j < temp.size(); j++){
+                 if(temp.get(j).getProductId().equals(productID)){
+                     wishList.add(temp_user.getEmail());
+                     break;
+                 }
+             }
+             temp.clear();
+        }
+        return wishList;
+    }
+
 }
-
-

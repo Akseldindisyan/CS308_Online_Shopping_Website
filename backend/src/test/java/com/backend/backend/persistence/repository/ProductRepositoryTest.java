@@ -16,7 +16,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
 
 
@@ -32,16 +34,16 @@ public class ProductRepositoryTest {
     //Funtions to automate testing
     @BeforeEach
     void initializeMockupDatabase() {
-        productRepository.save(new ProductEntity("Laptop A", 4.5, 50, "Model X", "SN12345", "High performance laptop", 1200.0, "Distributor A", "USA",true));
-        productRepository.save(new ProductEntity("Smartphone", 4.7, 100, "Model Y", "SN54321", "Latest smartphone", 800.0, "Distributor B", "China", true));
-        productRepository.save(new ProductEntity("Headphones", 4.2, 70, "Model H", "SN67890", "Noise-cancelling headphones", 200.0, "Distributor C", "Germany", true));
-        productRepository.save(new ProductEntity("Monitor", 4.6, 30, "Model M", "SN98765", "4K UHD monitor", 350.0, "Distributor D", "Japan", true));
-        productRepository.save(new ProductEntity("Keyboard", 4.1, 120, "Model K", "SN11223", "Mechanical keyboard", 100.0, "Distributor E", "USA", true));
-        productRepository.save(new ProductEntity("Mouse", 4.3, 150, "Model S", "SN44556", "Wireless mouse", 50.0, "Distributor F", "China", true));
-        productRepository.save(new ProductEntity("Printer", 4.0, 25, "Model P", "SN77889", "All-in-one printer", 250.0, "Distributor G", "Japan", true));
-        productRepository.save(new ProductEntity("Laptop B", 4.4, 60, "Model T", "SN99001", "10-inch tablet", 400.0, "Distributor H", "USA", true));
-        productRepository.save(new ProductEntity("Camera", 4.5, 40, "Model C", "SN22334", "Digital SLR camera", 900.0, "Distributor I", "Germany", true));
-        productRepository.save(new ProductEntity("Smartwatch", 4.2, 80, "Model W", "SN55667", "Fitness smartwatch", 150.0, "Distributor J", "China", true));
+        productRepository.save(new ProductEntity("Laptop A", 4.5, 50, "Model X", "SN12345", "High performance laptop", 1200.0, "Distributor A", "USA", "A", "",true));
+        productRepository.save(new ProductEntity("Smartphone", 4.7, 100, "Model Y", "SN54321", "Latest smartphone", 800.0, "Distributor B", "China", "A", "", true));
+        productRepository.save(new ProductEntity("Headphones", 4.2, 70, "Model H", "SN67890", "Noise-cancelling headphones", 200.0, "Distributor C", "Germany", "A", "", true));
+        productRepository.save(new ProductEntity("Monitor", 4.6, 30, "Model M", "SN98765", "4K UHD monitor", 350.0, "Distributor D", "Japan", "A", "", true));
+        productRepository.save(new ProductEntity("Keyboard", 4.1, 120, "Model K", "SN11223", "Mechanical keyboard", 100.0, "Distributor E", "USA", "A", "", true));
+        productRepository.save(new ProductEntity("Mouse", 4.3, 150, "Model S", "SN44556", "Wireless mouse", 50.0, "Distributor F", "China", "A", "", true));
+        productRepository.save(new ProductEntity("Printer", 4.0, 25, "Model P", "SN77889", "All-in-one printer", 250.0, "Distributor G", "Japan", "A", "", true));
+        productRepository.save(new ProductEntity("Laptop B", 4.4, 60, "Model T", "SN99001", "10-inch tablet", 400.0, "Distributor H", "USA", "A", "", true));
+        productRepository.save(new ProductEntity("Camera", 4.5, 40, "Model C", "SN22334", "Digital SLR camera", 900.0, "Distributor I", "Germany", "A", "", true));
+        productRepository.save(new ProductEntity("Smartwatch", 4.2, 80, "Model W", "SN55667", "Fitness smartwatch", 150.0, "Distributor J", "China", "A", "", true));
     }
 
     //Cleans the database
@@ -56,7 +58,7 @@ public class ProductRepositoryTest {
     void findUserByIdNotAvailableTest(){
         System.out.println("Try to find a product with non existing id");
         //Create a product and save it
-        ProductEntity productEntity = new ProductEntity("A", 5.0, 10, "A", "A", "A", 5.0, "A", "A",true);
+        ProductEntity productEntity = new ProductEntity("A", 5.0, 10, "A", "A", "A", 5.0, "A", "A", "A", "", true);
         productRepository.save(productEntity);
 
         //Extract its id for search in the database
@@ -71,7 +73,7 @@ public class ProductRepositoryTest {
     void findUserByIdRegularTest(){
         System.out.println("Try to find a produc with id");
         //Create a product and save it
-        ProductEntity productEntity = new ProductEntity("A", 5.0, 10, "A", "A", "A", 5.0, "A", "A",true);
+        ProductEntity productEntity = new ProductEntity("A", 5.0, 10, "A", "A", "A", 5.0, "A", "A", "A", "", true);
         productRepository.save(productEntity);
 
         //Extract its id for search in the database
@@ -179,6 +181,31 @@ public class ProductRepositoryTest {
         assertEquals(5, result.size());
         for (int i = 0; i < result.size() - 1; i++) {
             assertTrue(result.get(i).getRating() >= result.get(i + 1).getRating());
+        }
+    }
+
+    @Test
+    void findProductsInStockOrderedByPriceDescTest() {
+        System.out.println("Try to filter in-stock products and order them by price descending");
+
+        productRepository.save(new ProductEntity("Out of stock laptop", 4.9, 0, "Model O", "SN000", "No stock", 3000.0, "Distributor Z", "USA", "A", "", true));
+
+        Specification<ProductEntity> inStockSpec = (root, query, cb) -> {
+            query.distinct(true);
+            return cb.gt(root.<Integer>get("stock"), 0);
+        };
+
+        Page<ProductEntity> pageResult = productRepository.findAll(
+                inStockSpec,
+                PageRequest.of(0, 20, Sort.by(Sort.Direction.DESC, "price")));
+
+        List<ProductEntity> result = pageResult.getContent();
+
+        assertFalse(result.isEmpty());
+        assertTrue(result.stream().allMatch(product -> product.getStock() > 0));
+
+        for (int i = 0; i < result.size() - 1; i++) {
+            assertTrue(result.get(i).getPrice() >= result.get(i + 1).getPrice());
         }
     }
 

@@ -40,7 +40,16 @@ public class ReviewService {
         for (int i = 0; i < reviewEntities.size(); i++) {
             ReviewEntity tempReview = reviewEntities.get(i);
             if(tempReview.isApprovedByProductMan() == true) {
-                ReviewDTO temp = new ReviewDTO(tempReview.getRating(), tempReview.getId(), tempReview.getUser().getUsername(), tempReview.getComment(), tempReview.getCreatedAt(), tempReview.getProduct().getId(), tempReview.getProduct().getProductName());
+                ReviewDTO temp = new ReviewDTO(
+                        tempReview.getRating(),
+                        tempReview.getId(),
+                        tempReview.getUser().getUsername(),
+                        tempReview.getComment(),
+                        tempReview.getCreatedAt(),
+                        tempReview.getProduct().getId(),
+                        tempReview.getProduct().getProductName(),
+                        true
+                );
                 result.add(temp);
             }
         }
@@ -55,7 +64,16 @@ public class ReviewService {
         for (int i = 0; i < reviewEntities.size(); i++) {
             ReviewEntity tempReview = reviewEntities.get(i);
             if(tempReview.isApprovedByProductMan() == true) {
-                ReviewDTO temp = new ReviewDTO(tempReview.getRating(), tempReview.getId(), tempReview.getUser().getUsername(), tempReview.getComment(), tempReview.getCreatedAt(), tempReview.getProduct().getId(), tempReview.getProduct().getProductName());
+                ReviewDTO temp = new ReviewDTO(
+                        tempReview.getRating(),
+                        tempReview.getId(),
+                        tempReview.getUser().getUsername(),
+                        tempReview.getComment(),
+                        tempReview.getCreatedAt(),
+                        tempReview.getProduct().getId(),
+                        tempReview.getProduct().getProductName(),
+                        true
+                );
                 result.add(temp);
             }
         }
@@ -76,6 +94,56 @@ public class ReviewService {
     public void CreateReview(ProductEntity product, UserEntity user, double rating, String comment, boolean approvedByProductMan, LocalDate productBuyDate, int foundThisHelpful, LocalDate createdAt, LocalDate approvedAt) {
         ReviewEntity newReview = new ReviewEntity(product, user, rating, comment, approvedByProductMan, productBuyDate, foundThisHelpful, createdAt, approvedAt);
         reviewRepository.save(newReview);
+    }
+
+    public void updateRating(ProductEntity product){
+        List<ReviewEntity> reviews = reviewRepository.findByProduct(product);
+        ReviewEntity lastReview = reviews.getLast();
+        int len = reviews.size();
+        double currentRating = product.getRating();
+        double added_rating = lastReview.getRating();
+        double sum = currentRating * (len - 1);
+        double newRating = (sum + added_rating) / len;
+        double rounded = Math.round(newRating * 10.0) / 10.0;
+        product.setRating(rounded);
+        productRepository.save(product);
+    }
+    private ReviewDTO toDTO(ReviewEntity r) {
+        return new ReviewDTO(
+                r.getRating(),
+                r.getId(),
+                r.getUser().getUsername(),
+                r.getComment(),
+                r.getCreatedAt(),
+                r.getProduct().getId(),
+                r.getProduct().getProductName(),
+                r.isApprovedByProductMan()
+        );
+    }
+
+    public List<ReviewDTO> getApprovedProductReviewsWithComment(UUID productId) {
+        return reviewRepository.findByProduct_IdAndApprovedByProductManTrue(productId)
+                .stream()
+                .filter(r -> r.getComment() != null && !r.getComment().isBlank())
+                .map(this::toDTO)
+                .toList();
+    }
+
+    public List<ReviewDTO> getPendingReviews() {
+        return reviewRepository.findByApprovedByProductManFalse()
+                .stream()
+                .map(this::toDTO)
+                .toList();
+    }
+    public void approveReview(UUID reviewId) {
+        ReviewEntity r = reviewRepository.findById(reviewId)
+                .orElseThrow(() -> new RuntimeException("Review not found"));
+        r.setApprovedByProductMan(true);
+        r.setApprovedAt(LocalDate.now());
+        reviewRepository.save(r);
+    }
+    public void rejectReview(UUID reviewId) {
+        reviewRepository.deleteById(reviewId);
     }
 
 

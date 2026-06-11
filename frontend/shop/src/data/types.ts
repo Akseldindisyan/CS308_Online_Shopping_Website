@@ -14,6 +14,8 @@ export interface LoginRequestDTO {
 
 export interface LoginResponseDTO {
   token: string;
+  name: string;
+  surname: string;
 }
 
 // Register
@@ -23,6 +25,22 @@ export interface RegisterRequestDTO {
   surname: string;
   email: string;
   password: string;
+}
+
+export interface UserDTO {
+  id: UUID;
+  name: string;
+  surname: string;
+  username: string;
+  email: string;
+  dateOfBirth: string | null;
+  country: string | null;
+  street: string | null;
+  city: string | null;
+  postal_code: string | null;
+  nat_id: string | null;
+  address: string | null;
+  tax_id: string | null;
 }
 
 // Product card
@@ -80,7 +98,7 @@ export interface ProductDetailedDTO {
   category: string;
   price: number;
   rating: number;
-  image: string | null;
+  imageUrl: string | null;
   extraImages: string[] | null;
   description: string | null;
   features: string[] | null;
@@ -90,29 +108,40 @@ export interface ProductDetailedDTO {
   distributorContact: string | null;
   distributorAddress: string | null;
   distributorEmail: string | null;
+  discountRate: number | null;
 }
 
 // Search query params for GET /api/products/search
 export interface ProductSearchParams {
   name: string;
   page?: number;
+  size?: number;
+  sort?: string;
+  inStock?: boolean;
+  category?: string;
 }
 
 export type Product = {
   // From product_page (canonical base)
   id: number;
-  name: string;
-  category: string;
-  price: number;
+  productName: string;
   rating: number;
-  image: string;
-  images: string[];
-  description: string;
-  features: string[];
   stock: number;
+  model: string;
+  serialNumber: string;
+  desc: string;
+  price: number;
+  distInfo: string;
+  country: string;
+  category: string;
+  image_url: string;
+  active: boolean;
+  warranty_status: string;
+
+  images: string[];
+  features: string[];
   // From pm_admin
   categoryId: number;
-  active: boolean;
   // New for SM admin
   cost: number;
   discountRate: number;
@@ -128,19 +157,26 @@ export type Comment = {
   status: "pending" | "approved" | "rejected";
   date: string;
 };
-
-export type Delivery = {
-  deliveryId: string;
-  customerId: string;
-  productId: number;
+export interface DeliveryItem {
+  productId: UUID;
+  productName: string;
   quantity: number;
+  unitPrice: number;
+  totalPrice: number;
+}
+
+export type DeliveryStatus = "completed" | "in-transit" | "preparing" | "delayed";
+
+export interface Delivery {
+  deliveryId: UUID;
+  customerId: UUID;
+  items: DeliveryItem[];
   totalPrice: number;
   address: string;
   addressDetail: string;
   completed: boolean;
-  status: "completed" | "in-transit" | "preparing" | "delayed";
-};
-
+  status: DeliveryStatus;
+}
 export type Invoice = {
   invoiceId: string;
   customerId: string;
@@ -160,6 +196,7 @@ export type WishlistEntry = {
 
 
 export interface InvoiceItemDTO {
+  invoiceItemId: UUID
   productId: UUID
   productName: string
   quantity: number

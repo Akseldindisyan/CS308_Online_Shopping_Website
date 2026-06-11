@@ -3,11 +3,15 @@ package com.backend.backend.service;
 import com.backend.backend.api.exception.EmailException;
 import com.backend.backend.persistence.entity.InvoiceEntity;
 import com.backend.backend.persistence.entity.InvoiceItemEntity;
+import com.backend.backend.persistence.entity.ProductEntity;
+import com.backend.backend.persistence.entity.RefundRequestEntity;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import com.itextpdf.text.*;
 import com.itextpdf.text.pdf.*;
 import java.io.ByteArrayOutputStream;
+import java.util.List;
+import java.util.UUID;
 
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -18,7 +22,6 @@ import org.springframework.stereotype.Service;
 public class InvoiceEmailService {
 
     private final JavaMailSender mailSender;
-
 
     public InvoiceEmailService(JavaMailSender mailSender) {
         this.mailSender = mailSender;
@@ -38,6 +41,44 @@ public class InvoiceEmailService {
             mailSender.send(message);
         } catch (MessagingException | DocumentException ex) {
             throw new EmailException("Failed to send invoice email");
+        }
+    }
+
+    public void sendWishlistEmail(ProductEntity p, String email, double discount){
+        try{
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+            helper.setTo(email);
+            helper.setSubject("Item in your wishlist is now on sale!");
+            String msg = String.format("%s product is now on %.2f%% sale!", p.getProductName(), discount);
+            helper.setText(msg, false);
+            mailSender.send(message);
+        }
+        catch (MessagingException e) {
+            throw new EmailException("Failed to send wishlist email");
+        }
+    }
+
+    public void sendRefundEmail(RefundRequestEntity refund){
+        try{
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+            helper.setTo(refund.getCustomer().getEmail());
+            helper.setSubject("Your Refund is accepted!");
+
+            List<InvoiceItemEntity> items = refund.getItems();
+
+            String msg = "Your refund is accepted! Here are the products that are refunded: ";
+            String main_msg = "";
+            for(int i = 0; i < items.size(); i++){
+                String temp = String.format("Item Name: %s", items.get(i).getProduct().getProductName());
+                main_msg += temp;
+            }
+            helper.setText(msg + main_msg, false);
+            mailSender.send(message);
+        }
+        catch (MessagingException e) {
+            throw new EmailException("Failed to send wishlist email");
         }
     }
 

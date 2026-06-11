@@ -14,33 +14,30 @@ public class ProductMapper {
         dto.setName(entity.getProductName());
         dto.setPrice(entity.getPrice());
         dto.setStock(entity.getStock());
-        dto.setActive(entity.getStock() > 0);
+        dto.setActive(entity.isActive());
         dto.setCategory(entity.getCategory());
         dto.setImageUrl(entity.getImage_url());
         dto.setRating(entity.getRating());
+        dto.setDiscountRate(entity.getDiscountRate());
         return dto;
     }
 
     public static ProductDetailedDTO toDetailedDTO(ProductEntity entity) {
         ProductDetailedDTO dto = new ProductDetailedDTO();
         dto.setId(entity.getId());
-        dto.setName(entity.getProductName());
+        dto.setCountry(entity.getCountry());
+        dto.setProductName(entity.getProductName());
         dto.setModel(entity.getModel());
         dto.setSerialNumber(entity.getSerialNumber());
         dto.setPrice(entity.getPrice());
         dto.setRating(entity.getRating());
         dto.setStock(entity.getStock());
-        dto.setDescription(entity.getDesc());
-        dto.setDistributorName(entity.getDistInfo());
-
+        dto.setDesc(entity.getDesc());
+        dto.setDistInfo(entity.getDistInfo());
         dto.setCategory(entity.getCategory());
-        dto.setImage(entity.getImage_url());
-        dto.setExtraImages(Collections.emptyList());
-        dto.setFeatures(Collections.emptyList());
-        dto.setWarrantyStatus(null);
-        dto.setDistributorContact(null);
-        dto.setDistributorAddress(null);
-        dto.setDistributorEmail(null);
+        dto.setImage_url(entity.getImage_url());
+        dto.setWarranty_status(entity.getWarranty_status());
+        dto.setDiscountRate(entity.getDiscountRate());
         return dto;
     }
 }
