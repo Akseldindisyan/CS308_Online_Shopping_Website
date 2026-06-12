@@ -48,9 +48,6 @@ public class CartServiceTest {
     private ProductRepository productRepository;
 
     @Mock
-    private CartCreationService cartCreationService;
-
-    @Mock
     private UserService userService;
 
     @InjectMocks
@@ -179,3 +176,4 @@ public class CartServiceTest {
         field.set(target, value);
     }
 }
+
