@@ -4,14 +4,11 @@ import com.backend.backend.api.exception.EmailException;
 import com.backend.backend.persistence.entity.InvoiceEntity;
 import com.backend.backend.persistence.entity.InvoiceItemEntity;
 import com.backend.backend.persistence.entity.ProductEntity;
-import com.backend.backend.persistence.entity.RefundRequestEntity;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import com.itextpdf.text.*;
 import com.itextpdf.text.pdf.*;
 import java.io.ByteArrayOutputStream;
-import java.util.List;
-import java.util.UUID;
 
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -59,26 +56,16 @@ public class InvoiceEmailService {
         }
     }
 
-    public void sendRefundEmail(RefundRequestEntity refund){
-        try{
+    public void sendRefundEmail(RefundEmailDetails refund) {
+        try {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
-            helper.setTo(refund.getCustomer().getEmail());
-            helper.setSubject("Your Refund is accepted!");
-
-            List<InvoiceItemEntity> items = refund.getItems();
-
-            String msg = "Your refund is accepted! Here are the products that are refunded: ";
-            String main_msg = "";
-            for(int i = 0; i < items.size(); i++){
-                String temp = String.format("Item Name: %s", items.get(i).getProduct().getProductName());
-                main_msg += temp;
-            }
-            helper.setText(msg + main_msg, false);
+            helper.setTo(refund.customerEmail());
+            helper.setSubject("Refund Confirmed - Invoice #" + refund.invoiceId());
+            helper.setText(buildRefundHtml(refund), true);
             mailSender.send(message);
-        }
-        catch (MessagingException e) {
-            throw new EmailException("Failed to send wishlist email");
+        } catch (MessagingException e) {
+            throw new EmailException("Failed to send refund email");
         }
     }
 
@@ -179,6 +166,57 @@ public class InvoiceEmailService {
         <p>Best regards.</p>
         </body></html>
         """.formatted(invoice.getTotalPrice(), invoice.getDate()));
+
+        return sb.toString();
+    }
+
+    private String buildRefundHtml(RefundEmailDetails refund) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("""
+        <html><body>
+        <h2>Your refund has been accepted</h2>
+        <p>Dear <strong>%s %s</strong>,</p>
+        <p>The following products from invoice <strong>#%s</strong> have been refunded.</p>
+        <table border="1" cellpadding="8" cellspacing="0">
+            <tr>
+                <th>Product</th>
+                <th>Qty</th>
+                <th>Unit Price</th>
+                <th>Total</th>
+            </tr>
+        """.formatted(
+                refund.customerName(),
+                refund.customerSurname() == null ? "" : refund.customerSurname(),
+                refund.invoiceId()
+        ));
+
+        for (RefundEmailDetails.RefundedItem item : refund.items()) {
+            sb.append("""
+            <tr>
+                <td>%s</td>
+                <td>%d</td>
+                <td>$%.2f</td>
+                <td>$%.2f</td>
+            </tr>
+            """.formatted(
+                    item.productName(),
+                    item.quantity(),
+                    item.unitPrice(),
+                    item.totalPrice()
+            ));
+        }
+
+        sb.append("""
+            <tr>
+                <td colspan="3"><strong>Refund Total</strong></td>
+                <td><strong>$%.2f</strong></td>
+            </tr>
+        </table>
+        <p>Refund date: %s</p>
+        <br>
+        <p>Best regards.</p>
+        </body></html>
+        """.formatted(refund.refundAmount(), refund.date()));
 
         return sb.toString();
     }

@@ -67,6 +67,11 @@ public class RefundServiceTest {
 
         item = new InvoiceItemEntity();
         item.setId(itemId);
+        ProductEntity product = new ProductEntity();
+        product.setProductName("Refunded product");
+        item.setProduct(product);
+        item.setQuantity(1);
+        item.setUnitPrice(50.0);
         item.setTotalPrice(50.0);
         item.setInvoice(invoice);
 
@@ -136,10 +141,12 @@ public class RefundServiceTest {
     void acceptRefundSuccessUpdatesInvoiceTotal() {
         when(refundRepository.findById(refundId)).thenReturn(Optional.of(refundRequest));
 
-        refundService.acceptRefund(refundId);
+        RefundEmailDetails emailDetails = refundService.acceptRefund(refundId);
 
         assertEquals(450.0, invoice.getTotalPrice());
         assertEquals(RefundStatus.ACCEPTED, refundRequest.getStatus());
+        assertEquals(50.0, emailDetails.refundAmount());
+        assertEquals("Refunded product", emailDetails.items().getFirst().productName());
 
         verify(invoiceItemRepository).deleteAllInBatch(anyList());
         verify(invoiceRepository).save(invoice);

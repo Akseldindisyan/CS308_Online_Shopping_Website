@@ -7,6 +7,7 @@ import com.backend.backend.persistence.entity.InvoiceItemEntity;
 import com.backend.backend.persistence.entity.RefundRequestEntity;
 import com.backend.backend.persistence.entity.RefundStatus;
 import com.backend.backend.service.InvoiceEmailService;
+import com.backend.backend.service.RefundEmailDetails;
 import com.backend.backend.service.RefundService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -15,7 +16,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import com.backend.backend.security.AppUserPrincipal;
-import com.backend.backend.persistence.entity.RefundStatus;
 
 import java.util.List;
 import java.util.UUID;
@@ -67,9 +67,8 @@ public class RefundController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @PreAuthorize("hasRole('SALES_MANAGER')")
     public void acceptRefund(@PathVariable UUID refundId) {
-        refundService.acceptRefund(refundId);
-        RefundRequestEntity refundEntity = refundService.getRefund(refundId);
-        invoiceEmailService.sendRefundEmail(refundEntity);
+        RefundEmailDetails emailDetails = refundService.acceptRefund(refundId);
+        invoiceEmailService.sendRefundEmail(emailDetails);
     }
 
     @PatchMapping("/refunds/{refundId}/reject")

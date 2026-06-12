@@ -252,7 +252,7 @@ INSERT INTO user_entity (id, name, surname, username, email, password, date_of_b
     ('11000000-0000-0000-0000-000000000001', 'Ayşe',   'Kaya',   'ayse.kaya',   'ayse@example.com',    'hashed_pw_1', '1990-03-15', 'CUSTOMER', NULL),
     ('11000000-0000-0000-0000-000000000002', 'Mehmet', 'Demir',  'mehmet.d',    'mehmet@example.com',  'hashed_pw_2', '1985-07-22', 'CUSTOMER', NULL),
     ('11000000-0000-0000-0000-000000000003', 'Elif',   'Şahin',  'elif.sahin',  'elif@example.com',    'hashed_pw_3', '1995-11-05', 'CUSTOMER',     NULL),
-    ('11000000-0000-0000-0000-000000000020', 'Fixture', 'Customer','customer', 'fixture.customer@example.com', 'customer123', '1992-04-18', 'CUSTOMER', 'Fixture Mah. Test Cad. No:1, Istanbul'),
+    ('11000000-0000-0000-0000-000000000020', 'Fixture', 'Customer','customer', 'ilke.demirkir@sabanciuniv.edu', 'customer123', '1992-04-18', 'CUSTOMER', 'Fixture Mah. Test Cad. No:1, Istanbul'),
     ('11000000-0000-0000-0000-000000000010', 'Ali',    'Yıldız', 'ali.manager', 'ali.mgr@example.com', 'hashed_pw_4', '1980-01-10', 'SALES_MANAGER', NULL),
     ('11000000-0000-0000-0000-000000000011', 'Selin',  'Çelik',  'selin.pm',    'selin.pm@example.com','hashed_pw_5', '1988-06-30', 'PRODUCT_MANAGER', NULL)
 ON CONFLICT (id) DO NOTHING;

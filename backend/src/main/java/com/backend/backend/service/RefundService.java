@@ -113,7 +113,7 @@ public class RefundService {
     }
 
     @Transactional
-    public void acceptRefund(UUID refundId) {
+    public RefundEmailDetails acceptRefund(UUID refundId) {
         RefundRequestEntity refund = refundRepository.findById(refundId)
                 .orElseThrow(() -> new RuntimeException("Refund not found"));
 
@@ -130,6 +130,22 @@ public class RefundService {
         }
         refund.setRefundAmount(refundAmount);
 
+        RefundEmailDetails emailDetails = new RefundEmailDetails(
+                refund.getId(),
+                invoice.getId(),
+                refund.getCustomer().getEmail(),
+                refund.getCustomer().getName(),
+                refund.getCustomer().getSurname(),
+                refund.getDate(),
+                refundAmount,
+                itemsToRefund.stream()
+                        .map(item -> new RefundEmailDetails.RefundedItem(
+                                item.getProduct().getProductName(),
+                                item.getQuantity(),
+                                item.getUnitPrice(),
+                                item.getTotalPrice()))
+                        .toList());
+
         double currentTotal = invoice.getTotalPrice();
         invoice.setTotalPrice(currentTotal - refundAmount);
 
@@ -140,6 +156,8 @@ public class RefundService {
 
         invoiceRepository.save(invoice);
         refundRepository.save(refund);
+
+        return emailDetails;
     }
 
     @Transactional
