@@ -112,6 +112,7 @@ export default function Deliveries() {
                     <th>Delivery ID</th>
                     <th>Customer ID</th>
                     <th>Items</th>
+                    <th>Item IDs</th>
                     <th>Total Price</th>
                     <th>Delivery Address</th>
                     <th>Status</th>
@@ -127,6 +128,14 @@ export default function Deliveries() {
                         {d.items.map((it) => (
                           <div key={it.productId} style={{ fontSize: 13 }}>
                             {it.productName}{" "}
+                            <span style={{ color: "var(--text-dim)" }}>×{it.quantity}</span>
+                          </div>
+                        ))}
+                      </td>
+                      <td>
+                        {d.items.map((it) => (
+                          <div key={it.productId} style={{ fontSize: 13 }}>
+                            {it.productId}{" "}
                             <span style={{ color: "var(--text-dim)" }}>×{it.quantity}</span>
                           </div>
                         ))}

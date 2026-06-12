@@ -128,7 +128,6 @@ public class RefundService {
         for (InvoiceItemEntity item : itemsToRefund) {
             refundAmount += item.getTotalPrice();
         }
-        refund.setRefundAmount(refundAmount);
 
         RefundEmailDetails emailDetails = new RefundEmailDetails(
                 refund.getId(),

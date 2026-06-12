@@ -7,7 +7,6 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 import java.util.List;
 import java.util.UUID;
-import java.util.Date;
 import com.backend.backend.persistence.entity.RefundStatus;
 
 @Repository
@@ -22,8 +21,4 @@ public interface RefundRequestRepository extends JpaRepository<RefundRequestEnti
     List<RefundRequestEntity> findByCustomerId(UUID customerId);
 
     boolean existsByStatusAndItemsId(RefundStatus status, UUID itemId);
-
-    List<RefundRequestEntity> findByStatusAndDateBetween(RefundStatus status, Date start, Date end);
-
-    List<RefundRequestEntity> findByStatusOrderByDateDesc(RefundStatus status);
 }

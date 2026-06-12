@@ -5,7 +5,6 @@ import com.backend.backend.api.dto.InvoiceItemDTO;
 import com.backend.backend.api.dto.RefundResponseDTO;
 import com.backend.backend.persistence.entity.InvoiceItemEntity;
 import com.backend.backend.persistence.entity.RefundRequestEntity;
-import com.backend.backend.persistence.entity.RefundStatus;
 import com.backend.backend.service.InvoiceEmailService;
 import com.backend.backend.service.RefundEmailDetails;
 import com.backend.backend.service.RefundService;
@@ -51,14 +50,6 @@ public class RefundController {
     public List<RefundResponseDTO> getMyRefundRequests(
             @AuthenticationPrincipal AppUserPrincipal principal) {
         return refundService.getRefundsByUser(principal.getUserId()).stream()
-                .map(this::mapToResponseDTO)
-                .toList();
-    }
-
-    @GetMapping("/refunds/pending")
-    @PreAuthorize("hasRole('SALES_MANAGER')")
-    public List<RefundResponseDTO> getPendingRefunds() {
-        return refundService.getRefundsByStatus(RefundStatus.UNDECIDED).stream()
                 .map(this::mapToResponseDTO)
                 .toList();
     }

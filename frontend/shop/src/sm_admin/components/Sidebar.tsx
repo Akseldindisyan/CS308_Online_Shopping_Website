@@ -30,7 +30,6 @@ const sections: { title: string; items: NavItem[] }[] = [
             { path: `${BASE}/pricing`, label: "Pricing", icon: <IconTag /> },
             { path: `${BASE}/invoices`, label: "Invoices", icon: <IconDoc /> },
             { path: `${BASE}/revenue`, label: "Revenue", icon: <IconChart /> },
-            { path: `${BASE}/refunds`, label: "Refunds", icon: <IconRefund /> },
         ],
     },
 ];

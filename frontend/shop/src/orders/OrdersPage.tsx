@@ -151,11 +151,6 @@ export default function OrdersPage() {
     Promise.all([getOrders(userId), getDeliveries(userId), getMyRefunds()])
       .then(([loadedOrders, loadedDeliveries, refunds]) => {
         setOrders(loadedOrders)
-        const statusMap = new Map<string, string>()
-        refunds
-          .filter((refund) => refund.status !== 'REJECTED')
-          .forEach((refund) => statusMap.set(refund.invoiceId, refund.status))
-        setRefundStatusByInvoice(statusMap)
         setDeliveries(loadedDeliveries)
         setRequestedRefundItemIds(
           new Set(
