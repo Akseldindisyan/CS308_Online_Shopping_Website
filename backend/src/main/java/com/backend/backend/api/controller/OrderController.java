@@ -17,7 +17,7 @@ public class OrderController {
     }
 
     @GetMapping
-    @PreAuthorize("hasRole('PRODUCT_MANAGER')")
+    @PreAuthorize("hasRole('SALES_MANAGER')")
     public List<InvoiceDTO> getAllOrders() {
         return orderService.getAllOrders();
     }

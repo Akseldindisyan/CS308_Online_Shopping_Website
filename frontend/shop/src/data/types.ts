@@ -209,5 +209,7 @@ export interface InvoiceDTO {
   customerId: UUID;
   items: InvoiceItemDTO[];
   totalPrice: number;
-  date: string;
+  date: string | null;
+  status: string;
 }
+
