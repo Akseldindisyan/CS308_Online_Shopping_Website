@@ -3,21 +3,19 @@ import Topbar from "../components/Topbar";
 import type { Delivery, DeliveryStatus } from "../../data/types";
 import { getAllDeliveries, getDeliveries, updateDeliveryStatus } from "../../api/deliveries";
 
-const statusPill: Record<string, string> = {
-  completed: "pm-pill pm-pill-green",
-  "in-transit": "pm-pill pm-pill-blue",
-  preparing: "pm-pill pm-pill-amber",
-  delayed: "pm-pill pm-pill-red",
+const statusPill: Record<DeliveryStatus, string> = {
+  PENDING: "pm-pill pm-pill-amber",
+  IN_TRANSIT: "pm-pill pm-pill-blue",
+  COMPLETED: "pm-pill pm-pill-green",
 };
 
 const statusLabel: Record<DeliveryStatus, string> = {
-  completed: "Completed",
-  "in-transit": "In Transit",
-  preparing: "Preparing",
-  delayed: "Delayed",
+  PENDING: "Pending",
+  IN_TRANSIT: "In Transit",
+  COMPLETED: "Delivered",
 };
 
-const STATUS_OPTIONS: DeliveryStatus[] = ["preparing", "in-transit", "completed", "delayed"];
+const STATUS_OPTIONS: DeliveryStatus[] = ["PENDING", "IN_TRANSIT", "COMPLETED"];
 
 export default function Deliveries() {
   const [deliveries, setDeliveries] = useState<Delivery[]>([]);
@@ -69,13 +67,13 @@ export default function Deliveries() {
   };
 
   const pendingCount = deliveries.filter((d) => !d.completed).length;
-  const delayedCount = deliveries.filter((d) => d.status === "delayed").length;
+  const inTransitCount = deliveries.filter((d) => d.status === "IN_TRANSIT").length;
 
   return (
     <>
       <Topbar
         title="Deliveries"
-        subtitle={`${pendingCount} pending · ${delayedCount} delayed`}
+        subtitle={`${pendingCount} pending · ${inTransitCount} in transit`}
         actions={
           <div style={{ display: "flex", gap: 8 }}>
             {(["all", "pending", "completed"] as const).map((f) => (

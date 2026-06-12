@@ -17,9 +17,6 @@ const printInvoice = (inv: Invoice) => {
             th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid #e5e5e5; }
             th { font-size: 11px; text-transform: uppercase; color: #888; letter-spacing: 0.05em; }
             .total { font-size: 18px; font-weight: 600; margin-top: 24px; }
-            .status { display: inline-block; padding: 4px 12px; border-radius: 99px; font-size: 12px; font-weight: 500; }
-            .paid { background: #dcfce7; color: #16a34a; }
-            .unpaid { background: #fef2f2; color: #dc2626; }
             .footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid #e5e5e5; font-size: 12px; color: #888; }
         </style>
         </head>
@@ -37,7 +34,6 @@ const printInvoice = (inv: Invoice) => {
             </table>
             <div class="total">Total: ₺${inv.totalPrice.toLocaleString()}</div>
             <p>Customer: ${inv.customerId}</p>
-            <p>Status: <span class="status ${inv.paid ? "paid" : "unpaid"}">${inv.paid ? "Paid" : "Unpaid"}</span></p>
             <div class="footer">Teknosu Online Store — Generated on ${new Date().toLocaleDateString()}</div>
         </body></html>
     `);
@@ -55,8 +51,6 @@ export default function Invoices() {
         return true;
     });
 
-    const paidCount = filtered.filter((inv) => inv.paid).length;
-    const unpaidCount = filtered.filter((inv) => !inv.paid).length;
     const totalRevenue = filtered.reduce((sum, inv) => sum + inv.totalPrice, 0);
 
     return (
@@ -109,14 +103,6 @@ export default function Invoices() {
                         <span className="pm-stat-val">{filtered.length}</span>
                     </div>
                     <div className="pm-stat">
-                        <span className="pm-stat-label">Paid</span>
-                        <span className="pm-stat-val" style={{ color: "#16a34a" }}>{paidCount}</span>
-                    </div>
-                    <div className="pm-stat">
-                        <span className="pm-stat-label">Unpaid</span>
-                        <span className="pm-stat-val" style={{ color: "#F87171" }}>{unpaidCount}</span>
-                    </div>
-                    <div className="pm-stat">
                         <span className="pm-stat-label">Total Revenue</span>
                         <span className="pm-stat-val">₺{totalRevenue.toLocaleString()}</span>
                     </div>
@@ -135,7 +121,6 @@ export default function Invoices() {
                                     <th>Unit Price (₺)</th>
                                     <th>Total (₺)</th>
                                     <th>Date</th>
-                                    <th>Payment</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
@@ -156,11 +141,6 @@ export default function Invoices() {
                                             <td>₺{inv.unitPrice.toLocaleString()}</td>
                                             <td>₺{inv.totalPrice.toLocaleString()}</td>
                                             <td>{formattedDate}</td>
-                                            <td>
-                                                <span className={`pm-pill ${inv.paid ? "pm-pill-green" : "pm-pill-red"}`}>
-                                                    {inv.paid ? "Paid" : "Unpaid"}
-                                                </span>
-                                            </td>
                                             <td>
                                                 <button
                                                     className="pm-btn pm-btn-sm pm-btn-outline"

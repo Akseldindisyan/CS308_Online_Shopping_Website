@@ -26,7 +26,7 @@ public class DeliveryService {
                 .orElseThrow(() -> new RuntimeException("Delivery not found: " + deliveryId));
 
         delivery.setStatus(status);
-        delivery.setCompleted("completed".equals(status));
+        delivery.setCompleted("COMPLETED".equals(status));
 
         DeliveryEntity saved = deliveryRepository.save(delivery);
         return DeliveryMapper.toDTO(saved);

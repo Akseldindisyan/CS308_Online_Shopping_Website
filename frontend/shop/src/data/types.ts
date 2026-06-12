@@ -165,7 +165,7 @@ export interface DeliveryItem {
   totalPrice: number;
 }
 
-export type DeliveryStatus = "completed" | "in-transit" | "preparing" | "delayed";
+export type DeliveryStatus = "PENDING" | "IN_TRANSIT" | "COMPLETED";
 
 export interface Delivery {
   deliveryId: UUID;

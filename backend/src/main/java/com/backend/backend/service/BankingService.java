@@ -102,7 +102,8 @@ public class BankingService {
                 userId,
                 itemDTOs,
                 invoice.getTotalPrice(),
-                invoice.getDate().toString()
+                invoice.getDate().toString(),
+                "PENDING"
         );
     }
 
