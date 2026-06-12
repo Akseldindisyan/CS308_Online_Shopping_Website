@@ -197,6 +197,14 @@ public class ProductService {
         ProductRepo.deleteById(id);
     }
 
+    public void updatePrice(UUID id, double new_price){
+        ProductEntity entity = ProductRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Product not found: " + id));
+
+        entity.setPrice(new_price);
+        ProductRepo.save(entity);
+    }
+
     public ProductEntity updateStock(UUID id, int stock) {
         ProductEntity product = getProductById(id);
         product.setStock(stock);
@@ -257,5 +265,4 @@ public class ProductService {
         return ProductMapper.toDetailedDTO(entity);
     }
 
-    
 }
