@@ -1,5 +1,6 @@
 import type { JSX } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { clearAuthToken, getStoredName, getStoredSurname } from "../../api/auth";
 
 type NavItem = {
     path: string;
@@ -13,6 +14,7 @@ const IconGrid = () => <svg width="16" height="16" viewBox="0 0 16 16" fill="cur
 const IconTag = () => <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M1 3v5l7 7 5-5-7-7H1zm3 1a1 1 0 110 2 1 1 0 010-2z" /></svg>;
 const IconDoc = () => <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M4 1h6l4 4v10H4V1zm6 0v4h4M6 8h5M6 11h5M6 5h2" /></svg>;
 const IconChart = () => <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><path d="M1 14h14M3 10v4M7 6v8M11 8v6" /></svg>;
+const IconLogout = () => <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M6 2H3v12h3M10 5l3 3-3 3M13 8H6" /></svg>;
 
 const BASE = "/sm-admin";
 
@@ -34,6 +36,16 @@ const sections: { title: string; items: NavItem[] }[] = [
 export default function Sidebar() {
     const navigate = useNavigate();
     const { pathname } = useLocation();
+
+    const name = getStoredName() ?? "";
+    const surname = getStoredSurname() ?? "";
+    const initials = (name.charAt(0) + surname.charAt(0)).toUpperCase() || "SM";
+    const fullName = name && surname ? `${name} ${surname}` : "Sales Manager";
+
+    const handleLogout = () => {
+        clearAuthToken();
+        navigate("/login", { replace: true });
+    };
 
     return (
         <aside style={{
@@ -110,12 +122,32 @@ export default function Sidebar() {
             {/* User */}
             <div style={{ padding: 16, borderTop: "1px solid var(--border)", display: "flex", alignItems: "center", gap: 10 }}>
                 <div style={{ width: 32, height: 32, borderRadius: "50%", background: "var(--blue-dim)", border: "1px solid var(--blue)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 500, color: "var(--blue)", flexShrink: 0 }}>
-                    AY
+                    {initials}
                 </div>
-                <div>
-                    <div style={{ fontSize: 13 }}>Ayse Yilmaz</div>
+                <div style={{ minWidth: 0 }}>
+                    <div style={{ fontSize: 13 }}>{fullName}</div>
                     <div style={{ fontSize: 11, color: "var(--text-muted)" }}>Sales Manager</div>
                 </div>
+                <button
+                    type="button"
+                    onClick={handleLogout}
+                    aria-label="Log out"
+                    title="Log out"
+                    style={{
+                        marginLeft: "auto",
+                        padding: 8,
+                        borderRadius: 8,
+                        border: "1px solid var(--border)",
+                        background: "transparent",
+                        color: "var(--text-muted)",
+                        cursor: "pointer",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                    }}
+                >
+                    <IconLogout />
+                </button>
             </div>
         </aside>
     );

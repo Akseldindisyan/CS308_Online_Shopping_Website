@@ -1,9 +1,19 @@
 import { apiRequest } from "./client";
 import type { UUID } from "../data/types";
 
+export interface RefundItem {
+  invoiceItemId: UUID;
+  productId: UUID;
+  productName: string;
+  quantity: number;
+  unitPrice: number;
+  totalPrice: number;
+}
+
 export interface RefundResponse {
   refundId: UUID;
   invoiceId: UUID;
+  items: RefundItem[];
   status: string;
 }
 

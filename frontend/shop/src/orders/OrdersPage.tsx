@@ -132,8 +132,8 @@ export default function OrdersPage() {
   const [deliveries, setDeliveries] = useState<DeliveryDTO[]>([])
   const [loading, setLoading] = useState(Boolean(userId))
   const [error, setError] = useState('')
-  const [requestingRefundId, setRequestingRefundId] = useState<string | null>(null)
-  const [requestedRefundIds, setRequestedRefundIds] = useState<Set<string>>(new Set())
+  const [requestingRefundKey, setRequestingRefundKey] = useState<string | null>(null)
+  const [requestedRefundItemIds, setRequestedRefundItemIds] = useState<Set<string>>(new Set())
   const { showToast } = useToast()
 
   useEffect(() => {
@@ -143,11 +143,11 @@ export default function OrdersPage() {
       .then(([loadedOrders, loadedDeliveries, refunds]) => {
         setOrders(loadedOrders)
         setDeliveries(loadedDeliveries)
-        setRequestedRefundIds(
+        setRequestedRefundItemIds(
           new Set(
             refunds
               .filter((refund) => refund.status !== 'REJECTED')
-              .map((refund) => refund.invoiceId),
+              .flatMap((refund) => refund.items?.map((item) => item.invoiceItemId) ?? []),
           ),
         )
       })
@@ -160,23 +160,30 @@ export default function OrdersPage() {
     [deliveries],
   )
 
-  const handleRefundRequest = async (order: Order) => {
-    if (!window.confirm('Request a refund for every item in this order?')) return
+  const handleRefundRequest = async (
+    order: Order,
+    itemIds: string[],
+    confirmationMessage: string,
+  ) => {
+    if (itemIds.length === 0 || !window.confirm(confirmationMessage)) return
 
-    setRequestingRefundId(order.invoiceId)
+    const requestKey =
+      itemIds.length === 1 ? itemIds[0] : `order-${order.invoiceId}`
+    setRequestingRefundKey(requestKey)
     try {
-      await requestRefund(
-        order.invoiceId,
-        order.items.map((item) => item.invoiceItemId),
-      )
-      setRequestedRefundIds((current) => new Set(current).add(order.invoiceId))
+      await requestRefund(order.invoiceId, itemIds)
+      setRequestedRefundItemIds((current) => {
+        const updated = new Set(current)
+        itemIds.forEach((itemId) => updated.add(itemId))
+        return updated
+      })
       showToast('Refund request submitted', 'success')
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to request refund'
       setError(message)
       showToast(message, 'error')
     } finally {
-      setRequestingRefundId(null)
+      setRequestingRefundKey(null)
     }
   }
 
@@ -217,6 +224,9 @@ export default function OrdersPage() {
           {orders.map((order) => {
             const delivery = deliveryByInvoiceId.get(order.invoiceId)
             const normalized = normalizeStatus(delivery?.status ?? '')
+            const refundableItems = order.items.filter(
+              (item) => !requestedRefundItemIds.has(item.invoiceItemId),
+            )
             const statusText = delivery
               ? statusLabel[normalized] ?? delivery.status
               : 'Delivery status unavailable'
@@ -262,23 +272,55 @@ export default function OrdersPage() {
                       <th style={{ textAlign: 'right', padding: '4px' }}>Qty</th>
                       <th style={{ textAlign: 'right', padding: '4px' }}>Unit Price</th>
                       <th style={{ textAlign: 'right', padding: '4px' }}>Total</th>
+                      <th style={{ textAlign: 'right', padding: '4px' }}>Refund</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {order.items.map((item) => (
-                      <tr key={item.invoiceItemId} style={{ borderBottom: '1px solid #333' }}>
-                        <td style={{ padding: '4px' }}>{item.productName}</td>
-                        <td style={{ textAlign: 'right', padding: '4px' }}>
-                          {item.quantity}
-                        </td>
-                        <td style={{ textAlign: 'right', padding: '4px' }}>
-                          ${item.unitPrice}
-                        </td>
-                        <td style={{ textAlign: 'right', padding: '4px' }}>
-                          ${item.totalPrice}
-                        </td>
-                      </tr>
-                    ))}
+                    {order.items.map((item) => {
+                      const refundRequested = requestedRefundItemIds.has(
+                        item.invoiceItemId,
+                      )
+                      const requesting =
+                        requestingRefundKey === item.invoiceItemId
+
+                      return (
+                        <tr
+                          key={item.invoiceItemId}
+                          style={{ borderBottom: '1px solid #333' }}
+                        >
+                          <td style={{ padding: '4px' }}>{item.productName}</td>
+                          <td style={{ textAlign: 'right', padding: '4px' }}>
+                            {item.quantity}
+                          </td>
+                          <td style={{ textAlign: 'right', padding: '4px' }}>
+                            ${item.unitPrice}
+                          </td>
+                          <td style={{ textAlign: 'right', padding: '4px' }}>
+                            ${item.totalPrice}
+                          </td>
+                          <td style={{ textAlign: 'right', padding: '4px' }}>
+                            <button
+                              type="button"
+                              className="btn-secondary"
+                              disabled={refundRequested || requestingRefundKey !== null}
+                              onClick={() =>
+                                void handleRefundRequest(
+                                  order,
+                                  [item.invoiceItemId],
+                                  `Request a refund for ${item.productName}?`,
+                                )
+                              }
+                            >
+                              {refundRequested
+                                ? 'Requested'
+                                : requesting
+                                  ? 'Requesting...'
+                                  : 'Refund product'}
+                            </button>
+                          </td>
+                        </tr>
+                      )
+                    })}
                   </tbody>
                 </table>
                 <div
@@ -294,17 +336,26 @@ export default function OrdersPage() {
                     type="button"
                     className="btn-secondary"
                     disabled={
-                      requestingRefundId === order.invoiceId ||
-                      requestedRefundIds.has(order.invoiceId) ||
-                      order.items.length === 0
+                      requestingRefundKey !== null ||
+                      refundableItems.length === 0
                     }
-                    onClick={() => void handleRefundRequest(order)}
+                    onClick={() =>
+                      void handleRefundRequest(
+                        order,
+                        refundableItems.map((item) => item.invoiceItemId),
+                        refundableItems.length === order.items.length
+                          ? 'Request a refund for every item in this order?'
+                          : 'Request a refund for every remaining item in this order?',
+                      )
+                    }
                   >
-                    {requestedRefundIds.has(order.invoiceId)
+                    {refundableItems.length === 0
                       ? 'Refund requested'
-                      : requestingRefundId === order.invoiceId
+                      : requestingRefundKey === `order-${order.invoiceId}`
                         ? 'Requesting...'
-                        : 'Request refund'}
+                        : refundableItems.length === order.items.length
+                          ? 'Refund entire order'
+                          : 'Refund remaining items'}
                   </button>
                   <strong>Total: ${order.totalPrice}</strong>
                 </div>
