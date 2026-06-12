@@ -498,10 +498,31 @@ function AppContent() {
             ) : products.length === 0 ? (
               <p>No products found.</p>
             ) : (
-              <section className="product-grid" aria-label="Technology products">
-                {products.map((product) => (
-                  <article key={product.id} className="product-card">
-                    {product.imageUrl && (
+                <section className="product-grid" aria-label="Technology products">
+                  {products.map((product) => {
+                    const hasDiscount = product.discountRate && product.discountRate > 0
+
+                    const oldPrice = hasDiscount
+                        ? product.price / (1 - (product.discountRate / 100))
+                        : product.price
+
+                    const formattedCurrentPrice = new Intl.NumberFormat('en-US', {
+                      style: 'currency',
+                      currency: 'USD',
+                      maximumFractionDigits: 0,
+                    }).format(product.price)
+
+                    const formattedOldPrice = hasDiscount
+                        ? new Intl.NumberFormat('en-US', {
+                          style: 'currency',
+                          currency: 'USD',
+                          maximumFractionDigits: 0,
+                        }).format(oldPrice)
+                        : null
+
+                    return (
+                        <article key={product.id} className="product-card">
+                          {product.imageUrl && (
                       <img
                         src={product.imageUrl}
                         alt={product.name}
@@ -510,12 +531,23 @@ function AppContent() {
                     )}
                     <span className="product-category">{product.category}</span>
                     <h2>{product.name}</h2>
-                    <p className="rating">Rating: {(product.rating) == 0 ? "No review" : product.rating + " / 5"}</p>
-                    <p className="price">${product.price}</p>
-                    {product.stock === 0 && (
-                      <p className="out-of-stock">Out of stock</p>
-                    )}
-                    <div className="product-actions">
+                          <p className="rating">Rating: {(product.rating) == 0 ? "No review" : product.rating + " / 5"}</p>
+
+                          <div className="product-price-wrapper">
+                            {hasDiscount ? (
+                                <>
+                                  <span className="old-price">{formattedOldPrice}</span>
+                                  <span className="new-price">{formattedCurrentPrice}</span>
+                                </>
+                            ) : (
+                                <p className="price">{formattedCurrentPrice}</p>
+                            )}
+                          </div>
+
+                          {product.stock === 0 && (
+                              <p className="out-of-stock">Out of stock</p>
+                          )}
+                          <div className="product-actions">
                       <Link to={`/product/${product.id}`} className="btn-secondary">
                         Details
                       </Link>
@@ -540,9 +572,10 @@ function AppContent() {
                         ♡ Wishlist
                       </button>
                     </div>
-                  </article>
-                ))}
-              </section>
+                    </article>
+                )
+              })}
+            </section>
             )}
             {!loading && totalPages > 1 && (
               <div className="pagination-controls" style={{ marginTop: 16 }}>

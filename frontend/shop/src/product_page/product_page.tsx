@@ -44,11 +44,25 @@ function ProductPageContent({ product: initialProduct }: { product: Product }) {
   const navigate = useNavigate()
   const { items: cartItems } = useCart()
 
-  const formattedPrice = new Intl.NumberFormat('en-US', {
+  const hasDiscount = product.discountRate && product.discountRate > 0
+
+  const oldPrice = hasDiscount
+      ? product.price / (1 - (product.discountRate / 100))
+      : product.price
+
+  const formattedCurrentPrice = new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency: 'USD',
     maximumFractionDigits: 0,
   }).format(product.price)
+
+  const formattedOldPrice = hasDiscount
+      ? new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'USD',
+        maximumFractionDigits: 0,
+      }).format(oldPrice)
+      : null
 
   const averageRating = product.rating
 
@@ -206,7 +220,16 @@ function ProductPageContent({ product: initialProduct }: { product: Product }) {
 
           <div className="product-buy-card">
             <div className="product-price-row">
-              <p className="product-price">{formattedPrice}</p>
+              <div className="product-price-wrapper">
+                {hasDiscount ? (
+                    <>
+                      <span className="old-price">{formattedOldPrice}</span>
+                      <span className="new-price">{formattedCurrentPrice}</span>
+                    </>
+                ) : (
+                    <p className="product-price">{formattedCurrentPrice}</p>
+                )}
+              </div>
               <span>Free shipping</span>
             </div>
 
