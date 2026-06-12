@@ -43,6 +43,6 @@ public class RefundRequestEntity {
 
     @Temporal(TemporalType.TIMESTAMP)
     private Date date;
-    @Column(name = "refund_amount")
+    @Column(name = "refund_amount", nullable = false)
     private double refundAmount;
 }

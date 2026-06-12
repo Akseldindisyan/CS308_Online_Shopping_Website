@@ -132,8 +132,12 @@ CREATE TABLE IF NOT EXISTS refund_requests (
     invoice_id UUID REFERENCES invoice(invoice_id) ON DELETE CASCADE,
     status     VARCHAR(20) NOT NULL DEFAULT 'UNDECIDED'
     CHECK (status IN ('UNDECIDED', 'ACCEPTED', 'REJECTED')),
-    date       TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    date       TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    refund_amount DOUBLE PRECISION NOT NULL DEFAULT 0
     );
+
+ALTER TABLE refund_requests
+    ADD COLUMN IF NOT EXISTS refund_amount DOUBLE PRECISION NOT NULL DEFAULT 0;
 
 CREATE TABLE IF NOT EXISTS refund_request_items (
                                                     refund_id       UUID NOT NULL REFERENCES refund_requests(refund_id) ON DELETE CASCADE,
@@ -266,8 +270,12 @@ CREATE TABLE IF NOT EXISTS refund_requests (
     invoice_id UUID REFERENCES invoice(invoice_id) ON DELETE CASCADE,
     status     VARCHAR(20) NOT NULL DEFAULT 'UNDECIDED'
     CHECK (status IN ('UNDECIDED', 'ACCEPTED', 'REJECTED')),
-    date       TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    date       TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    refund_amount DOUBLE PRECISION NOT NULL DEFAULT 0
     );
+
+ALTER TABLE refund_requests
+    ADD COLUMN IF NOT EXISTS refund_amount DOUBLE PRECISION NOT NULL DEFAULT 0;
 
 CREATE TABLE IF NOT EXISTS refund_request_items (
                                                     refund_id       UUID NOT NULL REFERENCES refund_requests(refund_id) ON DELETE CASCADE,

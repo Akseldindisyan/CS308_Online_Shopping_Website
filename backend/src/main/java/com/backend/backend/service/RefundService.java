@@ -72,6 +72,10 @@ public class RefundService {
         refundRequest.setInvoice(invoice);
         refundRequest.setItems(items);
         refundRequest.setDate(new Date());
+        refundRequest.setRefundAmount(
+                items.stream()
+                        .mapToDouble(InvoiceItemEntity::getTotalPrice)
+                        .sum());
 
         return refundRepository.save(refundRequest);
     }

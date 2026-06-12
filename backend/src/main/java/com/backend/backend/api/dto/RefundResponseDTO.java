@@ -16,4 +16,5 @@ public class RefundResponseDTO {
     private List<InvoiceItemDTO> items;
     private String status;
     private Date date;
+    private double refundAmount;
 }
