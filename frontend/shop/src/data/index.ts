@@ -30,11 +30,9 @@ function buildUrlFriendlyImage(product: ProductDetailedDTO | ProductCardDTO): st
   return image ?? "";
 }
 function normalizeStatus(status: string, completed: boolean): Delivery["status"] {
-  const normalized = status.toLowerCase();
-  if (completed || normalized.includes("deliver")) return "completed";
-  if (normalized.includes("delay")) return "delayed";
-  if (normalized.includes("transit")) return "in-transit";
-  return "preparing";
+  if (completed) return "COMPLETED";
+  if (status === "IN_TRANSIT") return "IN_TRANSIT";
+  return "PENDING";
 }
 function safeText(value: unknown, fallback = ""): string {
   return typeof value === "string" && value.trim() ? value : fallback;

@@ -8,5 +8,6 @@ public record InvoiceDTO(
         UUID customerId,
         List<InvoiceItemDTO> items,
         Double totalPrice,
-        String date
+        String date,
+        String status
 ) {}

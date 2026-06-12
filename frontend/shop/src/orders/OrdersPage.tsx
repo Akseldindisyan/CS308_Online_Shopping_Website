@@ -7,46 +7,39 @@ import { getMyRefunds, requestRefund } from '../api/refunds'
 import { useToast } from '../components/ToastProvider'
 import '../App.css'
 
-const statusSteps = ['preparing', 'in-transit', 'completed'] as const
+const statusSteps = ['PENDING', 'IN_TRANSIT', 'COMPLETED'] as const
 type StepStatus = (typeof statusSteps)[number]
 
-const statusLabel: Record<string, string> = {
-  preparing: 'Processing',
-  'in-transit': 'In Transit',
-  completed: 'Delivered',
-  delayed: 'Delayed',
+const statusLabel: Record<StepStatus, string> = {
+  PENDING: 'Pending',
+  IN_TRANSIT: 'In Transit',
+  COMPLETED: 'Delivered',
 }
 
 const stepColor: Record<StepStatus, string> = {
-  preparing: '#f59e0b',
-  'in-transit': '#3b82f6',
-  completed: '#22c55e',
+  PENDING: '#f59e0b',
+  IN_TRANSIT: '#3b82f6',
+  COMPLETED: '#22c55e',
 }
 
-const statusColor: Record<string, string> = {
-  preparing: '#f59e0b',
-  'in-transit': '#3b82f6',
-  completed: '#22c55e',
-  delayed: '#ef4444',
-}
+function normalizeStatus(status: string | null | undefined): StepStatus {
+  const normalized = (status ?? '').trim().toUpperCase().replace(/[\s-]+/g, '_')
 
-function normalizeStatus(raw: string | null | undefined): string {
-  const normalized = (raw ?? '').toLowerCase().trim().replace(/[_\s]+/g, '-')
+  if (normalized === 'IN_TRANSIT' || normalized === 'SHIPPED') {
+    return 'IN_TRANSIT'
+  }
+  if (normalized === 'COMPLETED' || normalized === 'DELIVERED') {
+    return 'COMPLETED'
+  }
 
-  if (normalized.includes('transit') || normalized.includes('ship')) return 'in-transit'
-  if (normalized.includes('complete') || normalized.includes('deliver')) return 'completed'
-  if (normalized.includes('delay')) return 'delayed'
-  if (normalized.includes('prepar') || normalized.includes('process')) return 'preparing'
-
-  return normalized
+  return 'PENDING'
 }
 
 function StatusBar({ status }: { status: string }) {
   const normalized = normalizeStatus(status)
-  const currentIndex = statusSteps.indexOf(normalized as StepStatus)
-  const activeIndex = currentIndex >= 0 ? currentIndex : 0
-  const progressPercent = (activeIndex / (statusSteps.length - 1)) * 100
-  const progressColor = statusColor[normalized] ?? stepColor.preparing
+  const currentIndex = statusSteps.indexOf(normalized)
+  const progressPercent = (currentIndex / (statusSteps.length - 1)) * 100
+  const progressColor = stepColor[normalized]
 
   return (
     <div style={{ margin: '0.75rem 0' }}>
@@ -115,7 +108,7 @@ function StatusBar({ status }: { status: string }) {
                     whiteSpace: 'nowrap',
                   }}
                 >
-                  {statusLabel[step] ?? step}
+                  {statusLabel[step]}
                 </div>
               </div>
             )
@@ -223,13 +216,12 @@ export default function OrdersPage() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
           {orders.map((order) => {
             const delivery = deliveryByInvoiceId.get(order.invoiceId)
-            const normalized = normalizeStatus(delivery?.status ?? '')
+            const normalized = normalizeStatus(delivery?.status ?? order.status)
             const refundableItems = order.items.filter(
               (item) => !requestedRefundItemIds.has(item.invoiceItemId),
             )
-            const statusText = delivery
-              ? statusLabel[normalized] ?? delivery.status
-              : 'Delivery status unavailable'
+            const currentStatusColor = stepColor[normalized]
+            const statusText = statusLabel[normalized]
 
             return (
               <div
@@ -245,12 +237,7 @@ export default function OrdersPage() {
                   }}
                 >
                   <strong>Order #{order.invoiceId.slice(0, 8)}</strong>
-                  <span
-                    style={{
-                      color: delivery ? statusColor[normalized] ?? '#9ca3af' : '#9ca3af',
-                      fontWeight: 'bold',
-                    }}
-                  >
+                  <span style={{ color: currentStatusColor, fontWeight: 'bold' }}>
                     {statusText}
                   </span>
                 </div>
@@ -259,7 +246,7 @@ export default function OrdersPage() {
                     {order.date}
                   </p>
                 )}
-                {delivery && <StatusBar status={delivery.status} />}
+                <StatusBar status={normalized} />
                 {delivery?.address && (
                   <p style={{ fontSize: 13, color: '#9ca3af', marginBottom: '0.5rem' }}>
                     Address: {delivery.address}

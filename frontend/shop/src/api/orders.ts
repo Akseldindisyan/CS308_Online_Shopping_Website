@@ -16,6 +16,7 @@ export interface Order {
   items: OrderItem[];
   totalPrice: number;
   date: string | null;
+  status: string;
 }
 
 export async function getOrders(userId: UUID): Promise<Order[]> {
