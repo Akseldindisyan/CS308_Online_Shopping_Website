@@ -29,16 +29,19 @@ public class CartService {
     private final CartItemRepository cartItemRepository;
     private final UserRepository userRepository;
     private final ProductRepository productRepository;
+    private final CartCreationService cartCreationService;
 
     public CartService(
             CartRepository cartRepository,
             CartItemRepository cartItemRepository,
             UserRepository userRepository,
-            ProductRepository productRepository) {
+            ProductRepository productRepository,
+            CartCreationService cartCreationService) {
         this.cartRepository = cartRepository;
         this.cartItemRepository = cartItemRepository;
         this.userRepository = userRepository;
         this.productRepository = productRepository;
+        this.cartCreationService = cartCreationService;
     }
 
     public CartDTO getUserCart(UUID userId) {
@@ -186,19 +189,13 @@ public class CartService {
     }
 
     private CartEntity getOrCreateUserCart(UserEntity user) {
-        return cartRepository.findByUserAndCheckedOutFalse(user).orElseGet(() -> {
-            CartEntity cart = new CartEntity();
-            cart.setUser(user);
-            return cartRepository.save(cart);
-        });
+        return cartRepository.findByUserAndCheckedOutFalse(user)
+                .orElseGet(() -> cartCreationService.getOrCreateUserCart(user));
     }
 
     private CartEntity getOrCreateGuestCart(String guestToken) {
-        return cartRepository.findByGuestTokenAndCheckedOutFalse(guestToken).orElseGet(() -> {
-            CartEntity cart = new CartEntity();
-            cart.setGuestToken(guestToken);
-            return cartRepository.save(cart);
-        });
+        return cartRepository.findByGuestTokenAndCheckedOutFalse(guestToken)
+                .orElseGet(() -> cartCreationService.getOrCreateGuestCart(guestToken));
     }
 
     private UserEntity getExistingUser(UUID userId) {

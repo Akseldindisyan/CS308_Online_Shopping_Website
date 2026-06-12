@@ -124,6 +124,7 @@ public class RefundService {
         for (InvoiceItemEntity item : itemsToRefund) {
             refundAmount += item.getTotalPrice();
         }
+        refund.setRefundAmount(refundAmount);
 
         double currentTotal = invoice.getTotalPrice();
         invoice.setTotalPrice(currentTotal - refundAmount);
@@ -154,5 +155,9 @@ public class RefundService {
         RefundRequestEntity refund = refundRepository.findById(refundID)
                 .orElseThrow(() -> new RuntimeException("Refund not found"));
         return refund;
+    }
+
+    public List<RefundRequestEntity> getRefundsByStatus(RefundStatus status) {
+        return refundRepository.findByStatusOrderByDateDesc(status);
     }
 }

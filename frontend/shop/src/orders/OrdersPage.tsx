@@ -138,6 +138,8 @@ export default function OrdersPage() {
   const [deliveries, setDeliveries] = useState<DeliveryDTO[]>([])
   const [loading, setLoading] = useState(Boolean(userId))
   const [error, setError] = useState('')
+  const [requestingRefundId, setRequestingRefundId] = useState<string | null>(null)
+  const [refundStatusByInvoice, setRefundStatusByInvoice] = useState<Map<string, string>>(new Map())
   const [requestingRefundKey, setRequestingRefundKey] = useState<string | null>(null)
   const [cancellingOrderId, setCancellingOrderId] = useState<string | null>(null)
   const [requestedRefundItemIds, setRequestedRefundItemIds] = useState<Set<string>>(new Set())
@@ -149,6 +151,11 @@ export default function OrdersPage() {
     Promise.all([getOrders(userId), getDeliveries(userId), getMyRefunds()])
       .then(([loadedOrders, loadedDeliveries, refunds]) => {
         setOrders(loadedOrders)
+        const statusMap = new Map<string, string>()
+        refunds
+          .filter((refund) => refund.status !== 'REJECTED')
+          .forEach((refund) => statusMap.set(refund.invoiceId, refund.status))
+        setRefundStatusByInvoice(statusMap)
         setDeliveries(loadedDeliveries)
         setRequestedRefundItemIds(
           new Set(
@@ -184,7 +191,8 @@ export default function OrdersPage() {
         itemIds.forEach((itemId) => updated.add(itemId))
         return updated
       })
-      showToast('Refund request submitted', 'success')
+        setRefundStatusByInvoice((current) => new Map(current).set(order.invoiceId, 'UNDECIDED'))
+        showToast('Refund request submitted', 'success')
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to request refund'
       setError(message)
@@ -347,11 +355,13 @@ export default function OrdersPage() {
                                   )
                                 }
                               >
-                                {refundRequested
-                                  ? 'Requested'
-                                  : requesting
-                                    ? 'Requesting...'
-                                    : 'Refund product'}
+                                  {refundStatusByInvoice.get(order.invoiceId) === 'ACCEPTED'
+                                      ? 'Refunded'
+                                      : refundStatusByInvoice.get(order.invoiceId) === 'UNDECIDED'
+                                          ? 'Refund requested'
+                                          : requestingRefundId === order.invoiceId
+                                              ? 'Requesting...'
+                                              : 'Request refund'}
                               </button>
                             </td>
                           )}
