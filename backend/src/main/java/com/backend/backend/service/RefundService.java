@@ -6,6 +6,7 @@ import com.backend.backend.persistence.entity.InvoiceItemEntity;
 import com.backend.backend.persistence.entity.RefundRequestEntity;
 import com.backend.backend.persistence.entity.RefundStatus;
 import com.backend.backend.persistence.entity.UserEntity;
+import com.backend.backend.persistence.repository.DeliveryRepository;
 import com.backend.backend.persistence.repository.InvoiceItemRepository;
 import com.backend.backend.persistence.repository.InvoiceRepository;
 import com.backend.backend.persistence.repository.RefundRequestRepository;
@@ -31,6 +32,7 @@ public class RefundService {
     private final UserRepository userRepository;
     private final InvoiceRepository invoiceRepository;
     private final InvoiceItemRepository invoiceItemRepository;
+    private final DeliveryRepository deliveryRepository;
 
     @Transactional
     public RefundRequestEntity createRefundRequest(UUID userId, UUID invoiceId, List<UUID> itemIdsToRefund) {
@@ -48,6 +50,7 @@ public class RefundService {
             throw new RuntimeException("Unauthorized: Invoice does not belong to this user.");
         }
 
+        validateDelivered(invoice);
         validateRefundWindow(invoice);
 
         List<InvoiceItemEntity> items = invoiceItemRepository.findAllById(itemIdsToRefund);
@@ -71,6 +74,18 @@ public class RefundService {
         refundRequest.setDate(new Date());
 
         return refundRepository.save(refundRequest);
+    }
+
+    private void validateDelivered(InvoiceEntity invoice) {
+        String status = deliveryRepository.findByInvoice_Id(invoice.getId())
+                .map(delivery -> delivery.getStatus())
+                .orElse("");
+
+        if (!"DELIVERED".equalsIgnoreCase(status) && !"COMPLETED".equalsIgnoreCase(status)) {
+            throw new BadRequestException(
+                    "REFUND_REQUIRES_DELIVERY",
+                    "Orders can only be refunded after delivery; cancel this order instead");
+        }
     }
 
     private void validateRefundWindow(InvoiceEntity invoice) {

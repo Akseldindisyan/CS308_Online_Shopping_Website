@@ -22,3 +22,9 @@ export interface Order {
 export async function getOrders(userId: UUID): Promise<Order[]> {
   return apiRequest<Order[]>(`/api/orders/${userId}`);
 }
+
+export async function cancelOrder(invoiceId: UUID): Promise<void> {
+  await apiRequest<void>(`/api/orders/${invoiceId}/cancel`, {
+    method: "PATCH",
+  });
+}

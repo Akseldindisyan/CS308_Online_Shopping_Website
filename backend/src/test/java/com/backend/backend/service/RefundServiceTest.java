@@ -6,6 +6,7 @@ import com.backend.backend.persistence.repository.InvoiceItemRepository;
 import com.backend.backend.persistence.repository.InvoiceRepository;
 import com.backend.backend.persistence.repository.RefundRequestRepository;
 import com.backend.backend.persistence.repository.UserRepository;
+import com.backend.backend.persistence.repository.DeliveryRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -36,6 +37,8 @@ public class RefundServiceTest {
     private InvoiceRepository invoiceRepository;
     @Mock
     private InvoiceItemRepository invoiceItemRepository;
+    @Mock
+    private DeliveryRepository deliveryRepository;
 
     @InjectMocks
     private RefundService refundService;
@@ -82,6 +85,9 @@ public class RefundServiceTest {
     void createRefundRequestSuccess() {
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
         when(invoiceRepository.findById(invoiceId)).thenReturn(Optional.of(invoice));
+        DeliveryEntity delivery = new DeliveryEntity();
+        delivery.setStatus("DELIVERED");
+        when(deliveryRepository.findByInvoice_Id(invoiceId)).thenReturn(Optional.of(delivery));
         when(invoiceItemRepository.findAllById(List.of(itemId))).thenReturn(List.of(item));
         when(refundRepository.save(any(RefundRequestEntity.class))).thenReturn(refundRequest);
 
@@ -96,12 +102,32 @@ public class RefundServiceTest {
         invoice.setDate(Date.from(Instant.now().minus(31, ChronoUnit.DAYS)));
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
         when(invoiceRepository.findById(invoiceId)).thenReturn(Optional.of(invoice));
+        DeliveryEntity delivery = new DeliveryEntity();
+        delivery.setStatus("DELIVERED");
+        when(deliveryRepository.findByInvoice_Id(invoiceId)).thenReturn(Optional.of(delivery));
 
         BadRequestException exception = assertThrows(
                 BadRequestException.class,
                 () -> refundService.createRefundRequest(userId, invoiceId, List.of(itemId)));
 
         assertEquals("REFUND_WINDOW_EXPIRED", exception.getCode());
+        verifyNoInteractions(invoiceItemRepository);
+        verify(refundRepository, never()).save(any());
+    }
+
+    @Test
+    void createRefundRequestRejectsUndeliveredOrder() {
+        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+        when(invoiceRepository.findById(invoiceId)).thenReturn(Optional.of(invoice));
+        DeliveryEntity delivery = new DeliveryEntity();
+        delivery.setStatus("IN_TRANSIT");
+        when(deliveryRepository.findByInvoice_Id(invoiceId)).thenReturn(Optional.of(delivery));
+
+        BadRequestException exception = assertThrows(
+                BadRequestException.class,
+                () -> refundService.createRefundRequest(userId, invoiceId, List.of(itemId)));
+
+        assertEquals("REFUND_REQUIRES_DELIVERY", exception.getCode());
         verifyNoInteractions(invoiceItemRepository);
         verify(refundRepository, never()).save(any());
     }

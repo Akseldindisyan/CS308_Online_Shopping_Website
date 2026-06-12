@@ -2,29 +2,35 @@ import { useState, useEffect, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { getStoredUserId } from '../api/auth'
 import { getDeliveries, type DeliveryDTO } from '../api/delivery'
-import { getOrders, type Order } from '../api/orders'
+import { cancelOrder, getOrders, type Order } from '../api/orders'
 import { getMyRefunds, requestRefund } from '../api/refunds'
 import { useToast } from '../components/ToastProvider'
 import '../App.css'
 
 const statusSteps = ['PENDING', 'IN_TRANSIT', 'COMPLETED'] as const
 type StepStatus = (typeof statusSteps)[number]
+type OrderStatus = StepStatus | 'CANCELLED'
 
-const statusLabel: Record<StepStatus, string> = {
+const statusLabel: Record<OrderStatus, string> = {
   PENDING: 'Pending',
   IN_TRANSIT: 'In Transit',
   COMPLETED: 'Delivered',
+  CANCELLED: 'Cancelled',
 }
 
-const stepColor: Record<StepStatus, string> = {
+const stepColor: Record<OrderStatus, string> = {
   PENDING: '#f59e0b',
   IN_TRANSIT: '#3b82f6',
   COMPLETED: '#22c55e',
+  CANCELLED: '#ef4444',
 }
 
-function normalizeStatus(status: string | null | undefined): StepStatus {
+function normalizeStatus(status: string | null | undefined): OrderStatus {
   const normalized = (status ?? '').trim().toUpperCase().replace(/[\s-]+/g, '_')
 
+  if (normalized === 'CANCELLED' || normalized === 'CANCELED') {
+    return 'CANCELLED'
+  }
   if (normalized === 'IN_TRANSIT' || normalized === 'SHIPPED') {
     return 'IN_TRANSIT'
   }
@@ -37,8 +43,11 @@ function normalizeStatus(status: string | null | undefined): StepStatus {
 
 function StatusBar({ status }: { status: string }) {
   const normalized = normalizeStatus(status)
-  const currentIndex = statusSteps.indexOf(normalized)
-  const progressPercent = (currentIndex / (statusSteps.length - 1)) * 100
+  const cancelled = normalized === 'CANCELLED'
+  const currentIndex = cancelled ? statusSteps.length - 1 : statusSteps.indexOf(normalized)
+  const progressPercent = cancelled
+    ? 100
+    : (currentIndex / (statusSteps.length - 1)) * 100
   const progressColor = stepColor[normalized]
 
   return (
@@ -67,8 +76,12 @@ function StatusBar({ status }: { status: string }) {
         </div>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           {statusSteps.map((step, index) => {
-            const isCompleted = index <= currentIndex && currentIndex >= 0
-            const circleColor = isCompleted ? stepColor[step] : '#374151'
+            const isCompleted = cancelled || (index <= currentIndex && currentIndex >= 0)
+            const circleColor = cancelled
+              ? stepColor.CANCELLED
+              : isCompleted
+                ? stepColor[step]
+                : '#374151'
 
             return (
               <div
@@ -99,7 +112,7 @@ function StatusBar({ status }: { status: string }) {
                     transition: 'background 0.3s',
                   }}
                 >
-                  {isCompleted ? '✓' : index + 1}
+                  {cancelled ? '×' : isCompleted ? '✓' : index + 1}
                 </div>
                 <div
                   style={{
@@ -126,6 +139,7 @@ export default function OrdersPage() {
   const [loading, setLoading] = useState(Boolean(userId))
   const [error, setError] = useState('')
   const [requestingRefundKey, setRequestingRefundKey] = useState<string | null>(null)
+  const [cancellingOrderId, setCancellingOrderId] = useState<string | null>(null)
   const [requestedRefundItemIds, setRequestedRefundItemIds] = useState<Set<string>>(new Set())
   const { showToast } = useToast()
 
@@ -180,6 +194,36 @@ export default function OrdersPage() {
     }
   }
 
+  const handleCancelOrder = async (order: Order) => {
+    if (!window.confirm('Cancel this entire order?')) return
+
+    setCancellingOrderId(order.invoiceId)
+    try {
+      await cancelOrder(order.invoiceId)
+      setOrders((current) =>
+        current.map((candidate) =>
+          candidate.invoiceId === order.invoiceId
+            ? { ...candidate, status: 'CANCELLED' }
+            : candidate,
+        ),
+      )
+      setDeliveries((current) =>
+        current.map((delivery) =>
+          delivery.invoiceId === order.invoiceId
+            ? { ...delivery, status: 'CANCELLED', completed: false }
+            : delivery,
+        ),
+      )
+      showToast('Order cancelled successfully', 'success')
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to cancel order'
+      setError(message)
+      showToast(message, 'error')
+    } finally {
+      setCancellingOrderId(null)
+    }
+  }
+
   if (!userId)
     return (
       <div className="page">
@@ -217,6 +261,8 @@ export default function OrdersPage() {
           {orders.map((order) => {
             const delivery = deliveryByInvoiceId.get(order.invoiceId)
             const normalized = normalizeStatus(delivery?.status ?? order.status)
+            const delivered = normalized === 'COMPLETED'
+            const cancelled = normalized === 'CANCELLED'
             const refundableItems = order.items.filter(
               (item) => !requestedRefundItemIds.has(item.invoiceItemId),
             )
@@ -259,7 +305,9 @@ export default function OrdersPage() {
                       <th style={{ textAlign: 'right', padding: '4px' }}>Qty</th>
                       <th style={{ textAlign: 'right', padding: '4px' }}>Unit Price</th>
                       <th style={{ textAlign: 'right', padding: '4px' }}>Total</th>
-                      <th style={{ textAlign: 'right', padding: '4px' }}>Refund</th>
+                      {delivered && (
+                        <th style={{ textAlign: 'right', padding: '4px' }}>Refund</th>
+                      )}
                     </tr>
                   </thead>
                   <tbody>
@@ -285,26 +333,28 @@ export default function OrdersPage() {
                           <td style={{ textAlign: 'right', padding: '4px' }}>
                             ${item.totalPrice}
                           </td>
-                          <td style={{ textAlign: 'right', padding: '4px' }}>
-                            <button
-                              type="button"
-                              className="btn-secondary"
-                              disabled={refundRequested || requestingRefundKey !== null}
-                              onClick={() =>
-                                void handleRefundRequest(
-                                  order,
-                                  [item.invoiceItemId],
-                                  `Request a refund for ${item.productName}?`,
-                                )
-                              }
-                            >
-                              {refundRequested
-                                ? 'Requested'
-                                : requesting
-                                  ? 'Requesting...'
-                                  : 'Refund product'}
-                            </button>
-                          </td>
+                          {delivered && (
+                            <td style={{ textAlign: 'right', padding: '4px' }}>
+                              <button
+                                type="button"
+                                className="btn-secondary"
+                                disabled={refundRequested || requestingRefundKey !== null}
+                                onClick={() =>
+                                  void handleRefundRequest(
+                                    order,
+                                    [item.invoiceItemId],
+                                    `Request a refund for ${item.productName}?`,
+                                  )
+                                }
+                              >
+                                {refundRequested
+                                  ? 'Requested'
+                                  : requesting
+                                    ? 'Requesting...'
+                                    : 'Refund product'}
+                              </button>
+                            </td>
+                          )}
                         </tr>
                       )
                     })}
@@ -319,31 +369,49 @@ export default function OrdersPage() {
                     gap: '1rem',
                   }}
                 >
-                  <button
-                    type="button"
-                    className="btn-secondary"
-                    disabled={
-                      requestingRefundKey !== null ||
-                      refundableItems.length === 0
-                    }
-                    onClick={() =>
-                      void handleRefundRequest(
-                        order,
-                        refundableItems.map((item) => item.invoiceItemId),
-                        refundableItems.length === order.items.length
-                          ? 'Request a refund for every item in this order?'
-                          : 'Request a refund for every remaining item in this order?',
-                      )
-                    }
-                  >
-                    {refundableItems.length === 0
-                      ? 'Refund requested'
-                      : requestingRefundKey === `order-${order.invoiceId}`
-                        ? 'Requesting...'
-                        : refundableItems.length === order.items.length
-                          ? 'Refund entire order'
-                          : 'Refund remaining items'}
-                  </button>
+                  {delivered ? (
+                    <button
+                      type="button"
+                      className="btn-secondary"
+                      disabled={
+                        requestingRefundKey !== null ||
+                        refundableItems.length === 0
+                      }
+                      onClick={() =>
+                        void handleRefundRequest(
+                          order,
+                          refundableItems.map((item) => item.invoiceItemId),
+                          refundableItems.length === order.items.length
+                            ? 'Request a refund for every item in this order?'
+                            : 'Request a refund for every remaining item in this order?',
+                        )
+                      }
+                    >
+                      {refundableItems.length === 0
+                        ? 'Refund requested'
+                        : requestingRefundKey === `order-${order.invoiceId}`
+                          ? 'Requesting...'
+                          : refundableItems.length === order.items.length
+                            ? 'Refund entire order'
+                            : 'Refund remaining items'}
+                    </button>
+                  ) : cancelled ? (
+                    <button type="button" className="btn-secondary" disabled>
+                      Order cancelled
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      className="btn-secondary"
+                      disabled={cancellingOrderId !== null}
+                      onClick={() => void handleCancelOrder(order)}
+                      style={{ color: '#ef4444', borderColor: '#ef4444' }}
+                    >
+                      {cancellingOrderId === order.invoiceId
+                        ? 'Cancelling...'
+                        : 'Cancel order'}
+                    </button>
+                  )}
                   <strong>Total: ${order.totalPrice}</strong>
                 </div>
               </div>
