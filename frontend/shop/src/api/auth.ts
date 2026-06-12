@@ -118,6 +118,23 @@ export function getStoredUserId(): string | null {
     return typeof userId === "string" && userId.trim() ? userId : null;
 }
 
+export type UserRole = "CUSTOMER" | "PRODUCT_MANAGER" | "SALES_MANAGER";
+
+export function getUserRoleFromToken(token: string): UserRole | null {
+    const payload = readTokenPayload(token);
+    const role = payload?.role;
+
+    if (
+        role === "CUSTOMER" ||
+        role === "PRODUCT_MANAGER" ||
+        role === "SALES_MANAGER"
+    ) {
+        return role;
+    }
+
+    return null;
+}
+
 export async function mergeGuestCartIntoUserCart(): Promise<void> {
     const guestToken = getStoredGuestToken();
     const userId = getStoredUserId();

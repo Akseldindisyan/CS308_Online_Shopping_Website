@@ -1,6 +1,12 @@
 import React from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import { login, storeAuthToken, storeUserInfo, mergeGuestCartIntoUserCart } from "../api/auth";
+import {
+  getUserRoleFromToken,
+  login,
+  mergeGuestCartIntoUserCart,
+  storeAuthToken,
+  storeUserInfo,
+} from "../api/auth";
 
 function SignInForm() {
   const navigate = useNavigate();
@@ -44,6 +50,17 @@ function SignInForm() {
       await mergeGuestCartIntoUserCart();
       setStatusMessage("Login successful. Redirecting...");
       setStatusType("success");
+
+      const role = getUserRoleFromToken(response.token);
+      if (role === "PRODUCT_MANAGER") {
+        navigate("/pm-admin", { replace: true });
+        return;
+      }
+      if (role === "SALES_MANAGER") {
+        navigate("/sm-admin", { replace: true });
+        return;
+      }
+
       const query = searchParams.get('redirect');
       console.log(`Redirecting to: ${query}`);
       if (query) {

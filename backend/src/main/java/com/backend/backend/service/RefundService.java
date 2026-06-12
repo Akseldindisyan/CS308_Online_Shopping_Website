@@ -1,5 +1,6 @@
 package com.backend.backend.service;
 
+import com.backend.backend.api.exception.BadRequestException;
 import com.backend.backend.persistence.entity.InvoiceEntity;
 import com.backend.backend.persistence.entity.InvoiceItemEntity;
 import com.backend.backend.persistence.entity.RefundRequestEntity;
@@ -13,14 +14,18 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.List;
 import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 public class RefundService {
+
+    private static final Duration REFUND_WINDOW = Duration.ofDays(30);
 
     private final RefundRequestRepository refundRepository;
     private final UserRepository userRepository;
@@ -43,6 +48,8 @@ public class RefundService {
             throw new RuntimeException("Unauthorized: Invoice does not belong to this user.");
         }
 
+        validateRefundWindow(invoice);
+
         List<InvoiceItemEntity> items = invoiceItemRepository.findAllById(itemIdsToRefund);
         if (items.size() != new HashSet<>(itemIdsToRefund).size()) {
             throw new IllegalArgumentException("One or more invoice items were not found");
@@ -64,6 +71,22 @@ public class RefundService {
         refundRequest.setDate(new Date());
 
         return refundRepository.save(refundRequest);
+    }
+
+    private void validateRefundWindow(InvoiceEntity invoice) {
+        Date purchaseDate = invoice.getDate();
+        if (purchaseDate == null) {
+            throw new BadRequestException(
+                    "REFUND_DATE_UNAVAILABLE",
+                    "The purchase date is unavailable for this order");
+        }
+
+        Instant refundDeadline = purchaseDate.toInstant().plus(REFUND_WINDOW);
+        if (Instant.now().isAfter(refundDeadline)) {
+            throw new BadRequestException(
+                    "REFUND_WINDOW_EXPIRED",
+                    "Refund requests cannot be created more than 30 days after purchase");
+        }
     }
 
     public List<RefundRequestEntity> getRefundsByUser(UUID userId) {

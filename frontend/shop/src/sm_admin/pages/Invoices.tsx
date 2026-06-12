@@ -47,7 +47,8 @@ const printInvoice = (inv: SalesInvoice) => {
                 <thead><tr><th>Product</th><th>Quantity</th><th>Unit Price</th><th>Total</th></tr></thead>
                 <tbody>${rows}</tbody>
             </table>
-            <div class="total">Grand Total: ₺${inv.totalPrice.toLocaleString()}</div>
+            <div class="total">Total: ₺${inv.totalPrice.toLocaleString()}</div>
+            <p>Customer: ${inv.customerId}</p>
             <div class="footer">Teknosu Online Store — Generated on ${new Date().toLocaleDateString()}</div>
         </body></html>
     `);

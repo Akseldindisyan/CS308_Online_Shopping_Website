@@ -1,5 +1,5 @@
-
-
+DROP SCHEMA public CASCADE;
+CREATE SCHEMA public;
 -- 0. category
 CREATE TABLE IF NOT EXISTS category (
     id   UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -162,7 +162,7 @@ INSERT INTO user_entity (id, name, surname, username, email, password, date_of_b
     ('11000000-0000-0000-0000-000000000001', 'Ayşe',   'Kaya',   'ayse.kaya',   'ayse@example.com',    'hashed_pw_1', '1990-03-15', 'CUSTOMER'),
     ('11000000-0000-0000-0000-000000000002', 'Mehmet', 'Demir',  'mehmet.d',    'mehmet@example.com',  'hashed_pw_2', '1985-07-22', 'CUSTOMER'),
     ('11000000-0000-0000-0000-000000000003', 'Elif',   'Şahin',  'elif.sahin',  'elif@example.com',    'hashed_pw_3', '1995-11-05', 'CUSTOMER'),
-    ('11000000-0000-0000-0000-000000000020', 'Fixture', 'Customer','fixture.customer', 'fixture.customer@example.com', 'customer123', '1992-04-18', 'CUSTOMER'),
+    ('11000000-0000-0000-0000-000000000020', 'Fixture', 'Customer','customer', 'fixture.customer@example.com', 'customer123', '1992-04-18', 'CUSTOMER'),
     ('11000000-0000-0000-0000-000000000010', 'Ali',    'Yıldız', 'ali.manager', 'ali.mgr@example.com', 'hashed_pw_4', '1980-01-10', 'SALES_MANAGER'),
     ('11000000-0000-0000-0000-000000000011', 'Selin',  'Çelik',  'selin.pm',    'selin.pm@example.com','hashed_pw_5', '1988-06-30', 'PRODUCT_MANAGER')
 ON CONFLICT (id) DO NOTHING;
@@ -182,13 +182,13 @@ INSERT INTO public.product (product_id, country_of_origin, description, distribu
     ('bff7591d-de8a-4d22-86f2-0a230b8ba15d', 'Germany', 'Noise-cancelling headphones','Distributor C', 'Model H', 200,  'Headphones', 0, 'SN67890', 70,  'Headphone',   'https://images.unsplash.com/photo-1618366712010-f4ae9c647dcb?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8aGVhZHBob25lfGVufDB8fDB8fHww', 'active', TRUE, 0),
     ('33000000-0000-0000-0000-000000000003', 'Japan',   'Best headphone',              'Distributor A', 'Model B', 8499, 'Headphone B',0, 'SN56789', 80,  'Headphone',   'https://images.unsplash.com/photo-1618366712010-f4ae9c647dcb?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8aGVhZHBob25lfGVufDB8fDB8fHww', 'active', TRUE, 0),
     ('33000000-0000-0000-0000-000000000005', 'China',   'Curved Monitor',             'Distributor A',  'Model B', 18750,'Monitor B',  0, 'SN56789', 35,  'Accessories', 'https://images.unsplash.com/photo-1666771410140-0573b232426e?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTB8fE1vbml0b3J8ZW58MHx8MHx8fDA%3D', 'active', TRUE, 0),
-    ('33000000-0000-0000-0000-00000000000a', 'Turkey',  'Out-of-stock fixture product',             'Fixture Distributor', 'Model A', 100, 'Product A', 0, 'FIXTURE-A', 0,  'Accessories', NULL, 'active', TRUE, 0),
-    ('33000000-0000-0000-0000-00000000000b', 'Turkey',  'Single-item-stock fixture product',         'Fixture Distributor', 'Model B', 200, 'Product B', 0, 'FIXTURE-B', 1,  'Accessories', NULL, 'active', TRUE, 0),
-    ('33000000-0000-0000-0000-00000000000c', 'Turkey',  'Multi-item-stock fixture product',          'Fixture Distributor', 'Model C', 300, 'Product C', 0, 'FIXTURE-C', 10, 'Accessories', NULL, 'active', TRUE, 0),
-    ('33000000-0000-0000-0000-00000000000e', 'Turkey',  'Purchased more than one month ago',         'Fixture Distributor', 'Model E', 400, 'Product E', 0, 'FIXTURE-E', 10, 'Accessories', NULL, 'active', TRUE, 0),
-    ('33000000-0000-0000-0000-00000000000f', 'Turkey',  'Purchased less than one month ago',         'Fixture Distributor', 'Model F', 500, 'Product F', 0, 'FIXTURE-F', 10, 'Accessories', NULL, 'active', TRUE, 0),
-    ('33000000-0000-0000-0000-000000000010', 'Turkey',  'Recently purchased processing product',     'Fixture Distributor', 'Model G', 600, 'Product G', 0, 'FIXTURE-G', 10, 'Accessories', NULL, 'active', TRUE, 0),
-    ('33000000-0000-0000-0000-000000000011', 'Turkey',  'Recently purchased in-transit product',     'Fixture Distributor', 'Model H', 700, 'Product H', 0, 'FIXTURE-H', 10, 'Accessories', NULL, 'active', TRUE, 0)
+    ('33000000-0000-0000-0000-00000000000a', 'Turkey',  'Out-of-stock fixture product',             'Fixture Distributor', 'Model A', 100, 'Product A', 0, 'FIXTURE-A', 0,  'Accessories', 'https://reimg-teknosa-cloud-prod.mncdn.com/mnresize/600/600/productimage/100000054863/100000054863_0_MC/107249459.jpg', 'active', TRUE, 0),
+    ('33000000-0000-0000-0000-00000000000b', 'Turkey',  'Single-item-stock fixture product',         'Fixture Distributor', 'Model B', 200, 'Product B', 0, 'FIXTURE-B', 1,  'Accessories', 'https://reimg-teknosa-cloud-prod.mncdn.com/mnresize/600/600/productimage/100000058776/100000058776_0_MC/117159602.jpg', 'active', TRUE, 0),
+    ('33000000-0000-0000-0000-00000000000c', 'Turkey',  'Multi-item-stock fixture product',          'Fixture Distributor', 'Model C', 300, 'Product C', 0, 'FIXTURE-C', 10, 'Accessories', 'https://reimg-teknosa-cloud-prod.mncdn.com/mnresize/600/600/productimage/145062155/145062155_0_MC/81113301.jpg', 'active', TRUE, 0),
+    ('33000000-0000-0000-0000-00000000000e', 'Turkey',  'Purchased more than one month ago',         'Fixture Distributor', 'Model E', 400, 'Product E', 0, 'FIXTURE-E', 10, 'Accessories', 'https://reimg-teknosa-cloud-prod.mncdn.com/mnresize/600/600/productimage/786294646/786294646_0_MC/63431f49b6214bb599e988791b8bdd43.jpg', 'active', TRUE, 0),
+    ('33000000-0000-0000-0000-00000000000f', 'Turkey',  'Purchased less than one month ago',         'Fixture Distributor', 'Model F', 500, 'Product F', 0, 'FIXTURE-F', 10, 'Accessories', 'https://reimg-teknosa-cloud-prod.mncdn.com/mnresize/600/600/productimage/100000054846/100000054846_0_MC/113803996.jpg', 'active', TRUE, 0),
+    ('33000000-0000-0000-0000-000000000010', 'Turkey',  'Recently purchased processing product',     'Fixture Distributor', 'Model G', 600, 'Product G', 0, 'FIXTURE-G', 10, 'Accessories', 'https://reimg-teknosa-cloud-prod.mncdn.com/mnresize/600/600/productimage/780292949/780292949_0_MC/ea0c46afb80f4f1eba05f5f8b0e7dea2.jpg', 'active', TRUE, 0),
+    ('33000000-0000-0000-0000-000000000011', 'Turkey',  'Recently purchased in-transit product',     'Fixture Distributor', 'Model H', 700, 'Product H', 0, 'FIXTURE-H', 10, 'Accessories', 'https://reimg-teknosa-cloud-prod.mncdn.com/mnresize/600/600/productimage/125078434/125078434_0_MC/60698827.jpg', 'active', TRUE, 0)
 ON CONFLICT (product_id) DO NOTHING;
 
 -- Product D is intentionally not seeded. It is reserved for creation by a product manager.
@@ -219,13 +219,13 @@ ON CONFLICT (review_id) DO NOTHING;
 
 -- ── Invoices ─────────────────────────────────────────────────
 INSERT INTO invoice (invoice_id, user_id, totalamount, tax_rate, created_at, status) VALUES
-    ('66000000-0000-0000-0000-000000000001', '11000000-0000-0000-0000-000000000002', 54999.00, 0.18, '2025-01-10 14:30:00', 'PAID'),
-    ('66000000-0000-0000-0000-000000000002', '11000000-0000-0000-0000-000000000001', 19297.00, 0.18, '2025-02-05 09:15:00', 'PAID'),
+    ('66000000-0000-0000-0000-000000000001', '11000000-0000-0000-0000-000000000002', 54999.00, 0.18, '2025-01-10 14:30:00', 'PENDING'),
+    ('66000000-0000-0000-0000-000000000002', '11000000-0000-0000-0000-000000000001', 19297.00, 0.18, '2025-02-05 09:15:00', 'PENDING'),
     ('66000000-0000-0000-0000-000000000003', '11000000-0000-0000-0000-000000000003',  8499.00, 0.18, '2025-03-20 16:00:00', 'PENDING'),
-    ('66000000-0000-0000-0000-00000000000e', '11000000-0000-0000-0000-000000000020',   400.00, 0.18, CURRENT_TIMESTAMP - INTERVAL '45 days', 'PAID'),
-    ('66000000-0000-0000-0000-00000000000f', '11000000-0000-0000-0000-000000000020',   500.00, 0.18, CURRENT_TIMESTAMP - INTERVAL '15 days', 'PAID'),
-    ('66000000-0000-0000-0000-000000000010', '11000000-0000-0000-0000-000000000020',   600.00, 0.18, CURRENT_TIMESTAMP - INTERVAL '2 days',  'PAID'),
-    ('66000000-0000-0000-0000-000000000011', '11000000-0000-0000-0000-000000000020',   700.00, 0.18, CURRENT_TIMESTAMP - INTERVAL '1 day',   'PAID')
+    ('66000000-0000-0000-0000-00000000000e', '11000000-0000-0000-0000-000000000020',   400.00, 0.18, CURRENT_TIMESTAMP - INTERVAL '45 days', 'PENDING'),
+    ('66000000-0000-0000-0000-00000000000f', '11000000-0000-0000-0000-000000000020',   500.00, 0.18, CURRENT_TIMESTAMP - INTERVAL '15 days', 'PENDING'),
+    ('66000000-0000-0000-0000-000000000010', '11000000-0000-0000-0000-000000000020',   600.00, 0.18, CURRENT_TIMESTAMP - INTERVAL '2 days',  'PENDING'),
+    ('66000000-0000-0000-0000-000000000011', '11000000-0000-0000-0000-000000000020',   700.00, 0.18, CURRENT_TIMESTAMP - INTERVAL '1 day',   'PENDING')
 ON CONFLICT (invoice_id) DO NOTHING;
 
 -- ── Invoice Items ────────────────────────────────────────────
@@ -242,12 +242,12 @@ ON CONFLICT (id) DO NOTHING;
 
 -- ── Deliveries ───────────────────────────────────────────────
 INSERT INTO delivery_entity (id, invoice_id, customer_id, address, completed, status, created_at) VALUES
-    ('88000000-0000-0000-0000-000000000001', '66000000-0000-0000-0000-000000000001', '11000000-0000-0000-0000-000000000002', 'Atatürk Mah. Cumhuriyet Cad. No:12, 34000 İstanbul', TRUE,  'DELIVERED',  '2025-01-12 10:00:00'),
+    ('88000000-0000-0000-0000-000000000001', '66000000-0000-0000-0000-000000000001', '11000000-0000-0000-0000-000000000002', 'Atatürk Mah. Cumhuriyet Cad. No:12, 34000 İstanbul', TRUE,  'COMPLETED',  '2025-01-12 10:00:00'),
     ('88000000-0000-0000-0000-000000000002', '66000000-0000-0000-0000-000000000002', '11000000-0000-0000-0000-000000000001', 'Bağcılar Mah. Millet Sok. No:5 D:3, 06000 Ankara',   FALSE, 'IN_TRANSIT', '2025-02-06 08:30:00'),
-    ('88000000-0000-0000-0000-000000000003', '66000000-0000-0000-0000-000000000003', '11000000-0000-0000-0000-000000000003', 'Konak Mah. Fevzi Paşa Blv. No:88, 35000 İzmir',     FALSE, 'PREPARING',  '2025-03-21 11:00:00'),
-    ('88000000-0000-0000-0000-00000000000e', '66000000-0000-0000-0000-00000000000e', '11000000-0000-0000-0000-000000000020', 'Fixture Mah. Test Cad. No:1, Istanbul', TRUE,  'DELIVERED',  CURRENT_TIMESTAMP - INTERVAL '43 days'),
-    ('88000000-0000-0000-0000-00000000000f', '66000000-0000-0000-0000-00000000000f', '11000000-0000-0000-0000-000000000020', 'Fixture Mah. Test Cad. No:1, Istanbul', TRUE,  'DELIVERED',  CURRENT_TIMESTAMP - INTERVAL '13 days'),
-    ('88000000-0000-0000-0000-000000000010', '66000000-0000-0000-0000-000000000010', '11000000-0000-0000-0000-000000000020', 'Fixture Mah. Test Cad. No:1, Istanbul', FALSE, 'PROCESSING', CURRENT_TIMESTAMP - INTERVAL '2 days'),
+    ('88000000-0000-0000-0000-000000000003', '66000000-0000-0000-0000-000000000003', '11000000-0000-0000-0000-000000000003', 'Konak Mah. Fevzi Paşa Blv. No:88, 35000 İzmir',     FALSE, 'PENDING',    '2025-03-21 11:00:00'),
+    ('88000000-0000-0000-0000-00000000000e', '66000000-0000-0000-0000-00000000000e', '11000000-0000-0000-0000-000000000020', 'Fixture Mah. Test Cad. No:1, Istanbul', TRUE,  'COMPLETED',  CURRENT_TIMESTAMP - INTERVAL '43 days'),
+    ('88000000-0000-0000-0000-00000000000f', '66000000-0000-0000-0000-00000000000f', '11000000-0000-0000-0000-000000000020', 'Fixture Mah. Test Cad. No:1, Istanbul', TRUE,  'COMPLETED',  CURRENT_TIMESTAMP - INTERVAL '13 days'),
+    ('88000000-0000-0000-0000-000000000010', '66000000-0000-0000-0000-000000000010', '11000000-0000-0000-0000-000000000020', 'Fixture Mah. Test Cad. No:1, Istanbul', FALSE, 'PENDING',    CURRENT_TIMESTAMP - INTERVAL '2 days'),
     ('88000000-0000-0000-0000-000000000011', '66000000-0000-0000-0000-000000000011', '11000000-0000-0000-0000-000000000020', 'Fixture Mah. Test Cad. No:1, Istanbul', FALSE, 'IN_TRANSIT', CURRENT_TIMESTAMP - INTERVAL '1 day')
 ON CONFLICT (id) DO NOTHING;
 

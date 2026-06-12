@@ -119,6 +119,11 @@ public class ProductController {
         }
     }
 
+    @PatchMapping("/products/{productID}/price")
+    public void changePrice(@PathVariable UUID productID, @RequestBody double new_price){
+        productService.updatePrice(productID, new_price);
+    }
+
     @PatchMapping("/products/{productID}/discount/remove")
     public void deleteDiscount(@PathVariable UUID productID, @RequestBody double discount) {
         //Delete Discount

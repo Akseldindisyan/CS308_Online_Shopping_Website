@@ -7,7 +7,6 @@ export default function Overview() {
 
   // --- Stat calculations ---
   const totalRevenue = invoices
-    .filter((inv: Invoice) => inv.paid)
     .reduce((sum: number, inv: Invoice) => sum + inv.totalPrice, 0);
 
   const activeDiscounts = products.filter((p: Product) => p.discountRate > 0).length;
@@ -15,7 +14,7 @@ export default function Overview() {
   const avgProfitMargin =
     products.length > 0
       ? products.reduce((sum: number, p: Product) => sum + ((p.price - p.cost) / p.price) * 100, 0) /
-        products.length
+      products.length
       : 0;
 
   const wishlistCount = wishlist.length;
@@ -65,7 +64,7 @@ export default function Overview() {
           <div className="pm-stat">
             <div className="pm-stat-label">Total Revenue</div>
             <div className="pm-stat-val">₺{totalRevenue.toLocaleString("tr-TR", { maximumFractionDigits: 0 })}</div>
-            <div className="pm-stat-change pm-up">Paid invoices</div>
+            <div className="pm-stat-change pm-up">All invoices</div>
           </div>
           <div className="pm-stat">
             <div className="pm-stat-label">Active Discounts</div>
@@ -144,7 +143,6 @@ export default function Overview() {
                     <th>Invoice ID</th>
                     <th>Customer</th>
                     <th>Total</th>
-                    <th>Status</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -153,16 +151,11 @@ export default function Overview() {
                       <td className="pm-col-main">#{inv.invoiceId}</td>
                       <td>{inv.customerId}</td>
                       <td>₺{inv.totalPrice.toLocaleString("tr-TR", { maximumFractionDigits: 0 })}</td>
-                      <td>
-                        <span className={inv.paid ? "pm-pill pm-pill-green" : "pm-pill pm-pill-red"}>
-                          {inv.paid ? "Paid" : "Unpaid"}
-                        </span>
-                      </td>
                     </tr>
                   ))}
                   {recentInvoices.length === 0 && (
                     <tr>
-                      <td colSpan={4} style={{ textAlign: "center", color: "var(--text-muted)" }}>
+                      <td colSpan={3} style={{ textAlign: "center", color: "var(--text-muted)" }}>
                         No invoices available
                       </td>
                     </tr>

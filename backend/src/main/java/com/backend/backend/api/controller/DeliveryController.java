@@ -17,7 +17,7 @@ public class DeliveryController {
     }
 
     @GetMapping("/user/{userId}")
-    @PreAuthorize("hasRole('PRODUCT_MANAGER')")
+    //@PreAuthorize("hasRole('PRODUCT_MANAGER')")
     public List<DeliveryDTO> getDeliveriesByUser(@PathVariable UUID userId) {
         return deliveryService.getDeliveriesByUser(userId);
     }

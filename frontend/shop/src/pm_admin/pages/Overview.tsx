@@ -18,25 +18,15 @@ type AdminReview = {
 };
 
 const statusPill: Record<string, string> = {
-  completed:   "pm-pill pm-pill-green",
-  DELIVERED:   "pm-pill pm-pill-green",
-  "in-transit":"pm-pill pm-pill-blue",
-  IN_TRANSIT:  "pm-pill pm-pill-blue",
-  preparing:   "pm-pill pm-pill-amber",
-  PREPARING:   "pm-pill pm-pill-amber",
-  PENDING:     "pm-pill pm-pill-amber",
-  delayed:     "pm-pill pm-pill-red",
+  PENDING:    "pm-pill pm-pill-amber",
+  IN_TRANSIT: "pm-pill pm-pill-blue",
+  COMPLETED:  "pm-pill pm-pill-green",
 };
 
 const statusLabel: Record<string, string> = {
-  completed:   "Completed",
-  DELIVERED:   "Delivered",
-  "in-transit":"In Transit",
-  IN_TRANSIT:  "In Transit",
-  preparing:   "Preparing",
-  PREPARING:   "Preparing",
-  PENDING:     "Pending",
-  delayed:     "Delayed",
+  PENDING:    "Pending",
+  IN_TRANSIT: "In Transit",
+  COMPLETED:  "Delivered",
 };
 
 const todayLabel = () => {
@@ -88,11 +78,9 @@ export default function Overview() {
   const lowStock      = products.filter((p) => p.stock < 10).length;
   const pending       = reviews.length;
   const undelivered   = deliveries.filter((d) => !d.completed).length;
-  const delayed       = deliveries.filter((d) =>
-    (d.status as string).toLowerCase() === "delayed"
-  ).length;
+  const inTransit     = deliveries.filter((d) => d.status === "IN_TRANSIT").length;
 
-  const STATUS_OPTIONS: DeliveryStatus[] = ["preparing", "in-transit", "completed", "delayed"];
+  const STATUS_OPTIONS: DeliveryStatus[] = ["PENDING", "IN_TRANSIT", "COMPLETED"];
 
   return (
     <>
@@ -121,8 +109,8 @@ export default function Overview() {
           <div className="pm-stat">
             <div className="pm-stat-label">Pending Deliveries</div>
             <div className="pm-stat-val">{loading ? "…" : undelivered}</div>
-            <div className={`pm-stat-change ${delayed > 0 ? "pm-down" : "pm-neutral"}`}>
-              {loading ? "" : `${delayed} delayed`}
+            <div className={`pm-stat-change ${inTransit > 0 ? "pm-neutral" : "pm-neutral"}`}>
+              {loading ? "" : `${inTransit} in transit`}
             </div>
           </div>
           <div className="pm-stat">

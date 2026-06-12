@@ -1,6 +1,5 @@
 package com.backend.backend.service;
 import com.backend.backend.api.dto.DeliveryDTO;
-import com.backend.backend.api.dto.InvoiceItemDTO;
 import com.backend.backend.api.mapper.DeliveryMapper;
 import com.backend.backend.persistence.entity.DeliveryEntity;
 import com.backend.backend.persistence.repository.DeliveryRepository;
@@ -17,25 +16,7 @@ public class DeliveryService {
     }
     public List<DeliveryDTO> getDeliveriesByUser(UUID userId) {
         return deliveryRepository.findByCustomerId(userId).stream()
-            .map(delivery -> new DeliveryDTO(
-                delivery.getId(),
-                delivery.getCustomer().getId(),
-                delivery.getInvoice().getItems().stream()
-                    .map(item -> new InvoiceItemDTO(
-                        item.getId(),
-                        item.getProduct().getId(),
-                        item.getProduct().getProductName(),
-                        item.getQuantity(),
-                        item.getUnitPrice(),
-                        item.getTotalPrice()
-                    ))
-                    .collect(Collectors.toList()),
-                delivery.getInvoice().getTotalPrice(),
-                delivery.getAddress(),
-                null,
-                delivery.isCompleted(),
-                delivery.getStatus()
-            ))
+            .map(DeliveryMapper::toDTO)
             .collect(Collectors.toList());
     }
 
@@ -45,7 +26,7 @@ public class DeliveryService {
                 .orElseThrow(() -> new RuntimeException("Delivery not found: " + deliveryId));
 
         delivery.setStatus(status);
-        delivery.setCompleted("completed".equals(status));
+        delivery.setCompleted("COMPLETED".equals(status));
 
         DeliveryEntity saved = deliveryRepository.save(delivery);
         return DeliveryMapper.toDTO(saved);

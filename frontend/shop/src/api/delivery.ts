@@ -9,6 +9,7 @@ export interface DeliveryItemDTO {
 }
 export interface DeliveryDTO {
   deliveryId: UUID;
+  invoiceId: UUID;
   customerId: UUID;
   items: DeliveryItemDTO[];
   totalPrice: number;
