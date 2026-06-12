@@ -191,8 +191,8 @@ export default function OrdersPage() {
         itemIds.forEach((itemId) => updated.add(itemId))
         return updated
       })
-        setRefundStatusByInvoice((current) => new Map(current).set(order.invoiceId, 'UNDECIDED'))
-        showToast('Refund request submitted', 'success')
+      setRefundStatusByInvoice((current) => new Map(current).set(order.invoiceId, 'UNDECIDED'))
+      showToast('Refund request submitted', 'success')
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to request refund'
       setError(message)
@@ -290,7 +290,7 @@ export default function OrdersPage() {
                     marginBottom: '0.5rem',
                   }}
                 >
-                  <strong>Order #{order.invoiceId.slice(0, 8)}</strong>
+                  <strong>Order #{order.invoiceId}</strong>
                   <span style={{ color: currentStatusColor, fontWeight: 'bold' }}>
                     {statusText}
                   </span>
@@ -355,13 +355,13 @@ export default function OrdersPage() {
                                   )
                                 }
                               >
-                                  {refundStatusByInvoice.get(order.invoiceId) === 'ACCEPTED'
-                                      ? 'Refunded'
-                                      : refundStatusByInvoice.get(order.invoiceId) === 'UNDECIDED'
-                                          ? 'Refund requested'
-                                          : requestingRefundId === order.invoiceId
-                                              ? 'Requesting...'
-                                              : 'Request refund'}
+                                {refundStatusByInvoice.get(order.invoiceId) === 'ACCEPTED'
+                                  ? 'Refunded'
+                                  : refundStatusByInvoice.get(order.invoiceId) === 'UNDECIDED'
+                                    ? 'Refund requested'
+                                    : requestingRefundId === order.invoiceId
+                                      ? 'Requesting...'
+                                      : 'Request refund'}
                               </button>
                             </td>
                           )}

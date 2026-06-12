@@ -101,6 +101,7 @@ async function loadBackendData() {
       reviewsPromise,
       wishlistPromise,
     ]);
+
     const invoices: Invoice[] = orders.flatMap((order, orderIndex) =>
       order.items.map((item, itemIndex) => ({
         invoiceId: order.items.length > 1 ? `${order.invoiceId}-${itemIndex + 1}` : order.invoiceId,
@@ -113,6 +114,7 @@ async function loadBackendData() {
         paid: true,
       })),
     );
+
     const deliveries: Delivery[] = deliveriesRaw.flatMap((delivery) =>
       delivery.items.map((item, itemIndex) => ({
         deliveryId: delivery.items.length > 1 ? `${delivery.deliveryId}-${itemIndex + 1}` : delivery.deliveryId,
@@ -128,6 +130,7 @@ async function loadBackendData() {
         items: delivery.items,
       })),
     );
+
     const comments: Comment[] = reviews.map((review, index) => ({
       id: index + 1,
       productId: productIdByUuid.get(review.product_id) ?? index + 1,
@@ -137,11 +140,13 @@ async function loadBackendData() {
       status: "approved",
       date: review.createdAt,
     }));
+
     const wishlist: WishlistEntry[] = wishlistRaw.map((item) => ({
       userId: userId ?? "",
       email: "",
       productId: productIdByUuid.get(item.productId) ?? 0,
     }));
+
     return { categories, products, invoices, deliveries, comments, wishlist };
   } catch (error) {
     console.error("Failed to load backend data:", error);
