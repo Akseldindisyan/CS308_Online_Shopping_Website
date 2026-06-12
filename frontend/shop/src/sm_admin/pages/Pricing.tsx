@@ -1,13 +1,27 @@
 import { useState } from "react";
 import Topbar from "../components/Topbar";
-import { products as initProducts, products, wishlist, type Product } from "../../data";
+import { products as initProducts, wishlist, type Product } from "../../data";
+import { changeProductPrice } from "../../api/products";
+import type { UUID } from "../../data/types";
+
+function getProductName(product: Product): string {
+    if ("name" in product && typeof product.name === "string") {
+        return product.name;
+    }
+
+    return product.productName;
+}
 
 export default function Pricing() {
     const [productList, setProductList] = useState<Product[]>(
         initProducts.map(p => ({ ...p }))
     );
     const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+    const [priceProduct, setPriceProduct] = useState<Product | null>(null);
     const [discountInput, setDiscountInput] = useState("");
+    const [priceInput, setPriceInput] = useState("");
+    const [priceError, setPriceError] = useState("");
+    const [savingPriceId, setSavingPriceId] = useState<string | null>(null);
     const [notifications, setNotifications] = useState<string[]>([]);
     const [searchTerm, setSearchTerm] = useState("");
 
@@ -24,7 +38,7 @@ export default function Pricing() {
 
     // Filtered table rows
     const filtered = productList.filter(p =>
-        p.name.toLowerCase().includes(searchTerm.toLowerCase())
+        getProductName(p).toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     function openModal(product: Product) {
@@ -33,9 +47,21 @@ export default function Pricing() {
         console.log(product)
     }
 
+    function openPriceModal(product: Product) {
+        setPriceProduct(product);
+        setPriceInput(String(product.price));
+        setPriceError("");
+    }
+
     function closeModal() {
         setSelectedProduct(null);
         setDiscountInput("");
+    }
+
+    function closePriceModal() {
+        setPriceProduct(null);
+        setPriceInput("");
+        setPriceError("");
     }
 
     function applyDiscount() {
@@ -69,7 +95,7 @@ export default function Pricing() {
             )
         );
         setNotifications(prev => [
-            `✓ Applied ${rate}% discount on ${selectedProduct.name}. Notified ${watcherCount} wishlist user(s).`,
+            `✓ Applied ${rate}% discount on ${getProductName(selectedProduct)}. Notified ${watcherCount} wishlist user(s).`,
             ...prev,
         ]);
         closeModal();
@@ -80,7 +106,7 @@ export default function Pricing() {
     function removeDiscount(product: Product) {
         
         setNotifications(prev => [
-            `✓ Removed discount from ${product.name}`,
+            `✓ Removed discount from ${getProductName(product)}`,
             ...prev,
         ]);
 
@@ -100,6 +126,39 @@ export default function Pricing() {
 
         window.location.reload();
 
+    }
+
+    async function savePrice() {
+        if (!priceProduct) return;
+
+        const nextPrice = Number(priceInput);
+        if (!Number.isFinite(nextPrice) || nextPrice < 0) {
+            setPriceError("Enter a valid price.");
+            return;
+        }
+
+        setSavingPriceId(String(priceProduct.id));
+        setPriceError("");
+
+        try {
+            await changeProductPrice(String(priceProduct.id) as UUID, nextPrice);
+            setProductList(prev =>
+                prev.map(p =>
+                    p.id === priceProduct.id
+                        ? { ...p, price: nextPrice }
+                        : p
+                )
+            );
+            setNotifications(prev => [
+                `✓ Set price of ${getProductName(priceProduct)} to ₺${nextPrice.toLocaleString()}.`,
+                ...prev,
+            ]);
+            closePriceModal();
+        } catch (err) {
+            setPriceError(err instanceof Error ? err.message : "Failed to update price.");
+        } finally {
+            setSavingPriceId(null);
+        }
     }
 
     // Live preview in modal
@@ -172,7 +231,7 @@ export default function Pricing() {
                             <tbody>
                                 {filtered.map(product => (
                                     <tr key={product.id}>
-                                        <td className="pm-col-main">{product.name}</td>
+                                        <td className="pm-col-main">{getProductName(product)}</td>
                                         <td>{product.category}</td>
                                         <td>₺{product.discountRate > 0 ? (
                                                 (product.price / (1 - (product.discountRate/100)))  
@@ -223,6 +282,13 @@ export default function Pricing() {
                                             >
                                                 Set Discount
                                             </button>
+                                            <button
+                                                className="pm-btn pm-btn-sm pm-btn-outline"
+                                                onClick={() => openPriceModal(product)}
+                                                disabled={savingPriceId === String(product.id)}
+                                            >
+                                                Set Price
+                                            </button>
                                             {product.discountRate > 0 && (
                                                 <button
                                                     className="pm-btn pm-btn-sm pm-btn-danger"
@@ -267,7 +333,7 @@ export default function Pricing() {
                 <div className="sm-modal-overlay" onClick={closeModal}>
                     <div className="pm-modal" onClick={e => e.stopPropagation()}>
                         <div className="pm-modal-title">
-                            Set Discount — {selectedProduct.name}
+                            Set Discount — {getProductName(selectedProduct)}
                         </div>
 
                         <div className="pm-form-grid">
@@ -321,6 +387,66 @@ export default function Pricing() {
                                 }
                             >
                                 Apply Discount
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Price Modal */}
+            {priceProduct && (
+                <div className="sm-modal-overlay" onClick={closePriceModal}>
+                    <div className="pm-modal" onClick={e => e.stopPropagation()}>
+                        <div className="pm-modal-title">
+                            Set Price — {getProductName(priceProduct)}
+                        </div>
+
+                        <div className="pm-form-grid">
+                            <div className="pm-form-row">
+                                <span className="pm-form-label">Current Price</span>
+                                <span>₺{priceProduct.price.toLocaleString()}</span>
+                            </div>
+
+                            <div className="pm-form-row">
+                                <label className="pm-form-label" htmlFor="price-input">
+                                    New Price (₺)
+                                </label>
+                                <input
+                                    id="price-input"
+                                    className="pm-input"
+                                    type="number"
+                                    min={0}
+                                    step="0.01"
+                                    value={priceInput}
+                                    onChange={e => setPriceInput(e.target.value)}
+                                    placeholder="0.00"
+                                />
+                            </div>
+
+                            {priceError && (
+                                <div className="pm-form-row">
+                                    <span className="pm-form-label">Error</span>
+                                    <span style={{ color: "var(--danger, #ef4444)" }}>
+                                        {priceError}
+                                    </span>
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="pm-modal-actions">
+                            <button className="pm-btn pm-btn-outline" onClick={closePriceModal}>
+                                Cancel
+                            </button>
+                            <button
+                                className="pm-btn pm-btn-green"
+                                onClick={savePrice}
+                                disabled={
+                                    savingPriceId === String(priceProduct.id) ||
+                                    priceInput === "" ||
+                                    Number(priceInput) < 0
+                                }
+                            >
+                                {savingPriceId === String(priceProduct.id) ? "Saving..." : "Set Price"}
                             </button>
                         </div>
                     </div>
