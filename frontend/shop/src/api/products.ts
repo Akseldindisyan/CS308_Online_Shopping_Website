@@ -163,6 +163,13 @@ export async function updateProductStock(id: UUID, stock: number): Promise<Produ
   });
 }
 
+export async function changeProductPrice(id: UUID, price: number): Promise<void> {
+  return apiRequest<void>(`/api/products/${id}/price`, {
+    method: "PATCH",
+    body: JSON.stringify(price),
+  });
+}
+
 export async function setProductActive(id: UUID, active: boolean): Promise<ProductCardDTO> {
   return apiRequest<ProductCardDTO>(`/api/products/${id}/active`, {
     method: "PATCH",
@@ -188,4 +195,3 @@ export async function fetchAllProductsAdmin(params?: {
   );
   return normalizeSearchResponse(response);
 }
-
