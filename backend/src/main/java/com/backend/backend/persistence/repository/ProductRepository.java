@@ -11,6 +11,7 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import org.springframework.data.jpa.repository.Modifying;
 
 
 @Repository
@@ -28,5 +29,9 @@ public interface ProductRepository extends JpaRepository<ProductEntity, UUID>, J
     Page<ProductEntity> findAllByOrderByRatingDesc(Pageable p);
 
     ProductEntity findByProductName(String name);
+
+    @Modifying
+    @Query("UPDATE ProductEntity p SET p.stock = p.stock + :quantity WHERE p.id = :productId")
+    int incrementStock(@Param("productId") UUID productId, @Param("quantity") int quantity);
 
 }

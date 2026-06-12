@@ -11,6 +11,7 @@ import com.backend.backend.persistence.repository.InvoiceItemRepository;
 import com.backend.backend.persistence.repository.InvoiceRepository;
 import com.backend.backend.persistence.repository.RefundRequestRepository;
 import com.backend.backend.persistence.repository.UserRepository;
+import com.backend.backend.persistence.repository.ProductRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -33,6 +34,7 @@ public class RefundService {
     private final InvoiceRepository invoiceRepository;
     private final InvoiceItemRepository invoiceItemRepository;
     private final DeliveryRepository deliveryRepository;
+    private final ProductRepository productRepository;
 
     @Transactional
     public RefundRequestEntity createRefundRequest(UUID userId, UUID invoiceId, List<UUID> itemIdsToRefund) {
@@ -148,6 +150,13 @@ public class RefundService {
 
         double currentTotal = invoice.getTotalPrice();
         invoice.setTotalPrice(currentTotal - refundAmount);
+
+        for (InvoiceItemEntity item : itemsToRefund) {
+            int updatedProducts = productRepository.incrementStock(item.getProduct().getId(), item.getQuantity());
+            if (updatedProducts != 1) {
+                throw new IllegalStateException("Could not restore stock for refunded product");
+            }
+        }
 
         invoiceItemRepository.deleteAllInBatch(itemsToRefund);
         refund.getItems().clear();
