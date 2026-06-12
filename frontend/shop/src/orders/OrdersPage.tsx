@@ -12,7 +12,7 @@ export default function OrdersPage() {
   const [loading, setLoading] = useState(Boolean(userId))
   const [error, setError] = useState('')
   const [requestingRefundId, setRequestingRefundId] = useState<string | null>(null)
-  const [requestedRefundIds, setRequestedRefundIds] = useState<Set<string>>(new Set())
+  const [refundStatusByInvoice, setRefundStatusByInvoice] = useState<Map<string, string>>(new Map())
   const { showToast } = useToast()
 
   useEffect(() => {
@@ -21,13 +21,11 @@ export default function OrdersPage() {
     Promise.all([getOrders(userId), getMyRefunds()])
       .then(([loadedOrders, refunds]) => {
         setOrders(loadedOrders)
-        setRequestedRefundIds(
-          new Set(
-            refunds
-              .filter((refund) => refund.status !== 'REJECTED')
-              .map((refund) => refund.invoiceId),
-          ),
-        )
+        const statusMap = new Map<string, string>()
+        refunds
+          .filter((refund) => refund.status !== 'REJECTED')
+          .forEach((refund) => statusMap.set(refund.invoiceId, refund.status))
+        setRefundStatusByInvoice(statusMap)
       })
       .catch(() => setError('Failed to load orders'))
       .finally(() => setLoading(false))
@@ -42,7 +40,7 @@ export default function OrdersPage() {
         order.invoiceId,
         order.items.map((item) => item.invoiceItemId),
       )
-      setRequestedRefundIds((current) => new Set(current).add(order.invoiceId))
+      setRefundStatusByInvoice((current) => new Map(current).set(order.invoiceId, 'UNDECIDED'))
       showToast('Refund request submitted', 'success')
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to request refund'
@@ -140,16 +138,18 @@ export default function OrdersPage() {
                   className="btn-secondary"
                   disabled={
                     requestingRefundId === order.invoiceId ||
-                    requestedRefundIds.has(order.invoiceId) ||
+                    refundStatusByInvoice.has(order.invoiceId) ||
                     order.items.length === 0
                   }
                   onClick={() => void handleRefundRequest(order)}
                 >
-                  {requestedRefundIds.has(order.invoiceId)
-                    ? 'Refund requested'
-                    : requestingRefundId === order.invoiceId
-                      ? 'Requesting...'
-                      : 'Request refund'}
+                  {refundStatusByInvoice.get(order.invoiceId) === 'ACCEPTED'
+                    ? 'Refunded'
+                    : refundStatusByInvoice.get(order.invoiceId) === 'UNDECIDED'
+                      ? 'Refund requested'
+                      : requestingRefundId === order.invoiceId
+                        ? 'Requesting...'
+                        : 'Request refund'}
                 </button>
                 <strong>Total: ${order.totalPrice}</strong>
               </div>

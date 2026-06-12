@@ -5,6 +5,7 @@ import Overview from "./pages/Overview";
 import Pricing from "./pages/Pricing";
 import Invoices from "./pages/Invoices";
 import Revenue from "./pages/Revenue";
+import Refunds from "./pages/Refunds";
 import "../pm_admin/pm-admin.css";
 import "./sm-admin.css";
 
@@ -26,6 +27,7 @@ export default function SMDashboard() {
                     <Route path="pricing" element={<Pricing />} />
                     <Route path="invoices" element={<Invoices />} />
                     <Route path="revenue" element={<Revenue />} />
+                    <Route path="refunds" element={<Refunds />} />
                 </Routes>
             </main>
         </div>

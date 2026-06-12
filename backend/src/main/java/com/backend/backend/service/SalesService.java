@@ -5,7 +5,10 @@ import com.backend.backend.api.dto.RevenueReportDTO;
 import com.backend.backend.api.dto.SalesInvoiceDTO;
 import com.backend.backend.persistence.entity.InvoiceEntity;
 import com.backend.backend.persistence.entity.InvoiceItemEntity;
+import com.backend.backend.persistence.entity.RefundRequestEntity;
+import com.backend.backend.persistence.entity.RefundStatus;
 import com.backend.backend.persistence.repository.InvoiceRepository;
+import com.backend.backend.persistence.repository.RefundRequestRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -21,9 +24,12 @@ import java.util.TreeMap;
 public class SalesService {
 
     private final InvoiceRepository invoiceRepository;
+    private final RefundRequestRepository refundRepository;
 
-    public SalesService(InvoiceRepository invoiceRepository) {
+    public SalesService(InvoiceRepository invoiceRepository,
+                        RefundRequestRepository refundRepository) {
         this.invoiceRepository = invoiceRepository;
+        this.refundRepository = refundRepository;
     }
 
     public List<SalesInvoiceDTO> getInvoices(LocalDate start, LocalDate end) {
@@ -36,40 +42,46 @@ public class SalesService {
         Map<String, double[]> byDate = new TreeMap<>();
         Map<String, double[]> byProduct = new LinkedHashMap<>();
         double totalRevenue = 0.0;
-        double totalCost = 0.0;
+        double totalRefunds = 0.0;
 
         for (InvoiceEntity inv : invoices) {
             String day = inv.getDate() != null ? toLocalDate(inv.getDate()).toString() : "unknown";
             double invoiceRevenue = 0.0;
-            double invoiceCost = 0.0;
 
             List<InvoiceItemEntity> items = inv.getItems();
             if (items == null || items.isEmpty()) {
                 invoiceRevenue = inv.getTotalPrice();
-                invoiceCost = 0.0; // TODO(refund)
             } else {
                 for (InvoiceItemEntity item : items) {
                     double lineRevenue = item.getTotalPrice();
-                    double lineCost = 0.0; // TODO(refund)
                     invoiceRevenue += lineRevenue;
-                    invoiceCost += lineCost;
 
                     String name = item.getProduct() != null
                             ? item.getProduct().getProductName() : "Unknown";
                     double[] p = byProduct.computeIfAbsent(name, k -> new double[3]);
                     p[0] += lineRevenue;
-                    p[1] += lineCost;
-                    p[2] += lineRevenue - lineCost;
+                    p[2] += lineRevenue;
                 }
             }
 
             double[] d = byDate.computeIfAbsent(day, k -> new double[3]);
             d[0] += invoiceRevenue;
-            d[1] += invoiceCost;
-            d[2] += invoiceRevenue - invoiceCost;
+            d[2] += invoiceRevenue;
 
             totalRevenue += invoiceRevenue;
-            totalCost += invoiceCost;
+        }
+
+        List<RefundRequestEntity> refunds = fetchRefunds(start, end);
+        for (RefundRequestEntity r : refunds) {
+            double amount = r.getRefundAmount();
+            if (amount <= 0.0) continue;
+            String day = r.getDate() != null ? toLocalDate(r.getDate()).toString() : "unknown";
+
+            double[] d = byDate.computeIfAbsent(day, k -> new double[3]);
+            d[1] += amount;
+            d[2] -= amount;
+
+            totalRefunds += amount;
         }
 
         List<RevenueReportDTO.Daily> daily = new ArrayList<>();
@@ -82,7 +94,7 @@ public class SalesService {
         products.sort((a, b) -> Double.compare(b.profit(), a.profit()));
 
         return new RevenueReportDTO(daily, products,
-                round(totalRevenue), round(totalCost), round(totalRevenue - totalCost));
+                round(totalRevenue), round(totalRefunds), round(totalRevenue - totalRefunds));
     }
 
     private List<InvoiceEntity> fetch(LocalDate start, LocalDate end) {
@@ -98,16 +110,27 @@ public class SalesService {
                 .findByDateGreaterThanEqualAndDateLessThanOrderByDateAsc(startInclusive, endExclusive);
     }
 
+    private List<RefundRequestEntity> fetchRefunds(LocalDate start, LocalDate end) {
+        ZoneId zone = ZoneId.systemDefault();
+        LocalDate from = (start != null) ? start : LocalDate.of(1970, 1, 1);
+        LocalDate to = (end != null) ? end : LocalDate.now();
+        Date startInclusive = Date.from(from.atStartOfDay(zone).toInstant());
+        Date endExclusive = Date.from(to.plusDays(1).atStartOfDay(zone).toInstant());
+        return refundRepository
+                .findByStatusAndDateBetween(RefundStatus.ACCEPTED, startInclusive, endExclusive);
+    }
+
     private SalesInvoiceDTO toDTO(InvoiceEntity inv) {
         List<InvoiceItemEntity> src = inv.getItems();
         List<InvoiceItemDTO> items = (src == null ? List.<InvoiceItemEntity>of() : src).stream()
-                .map(i -> new InvoiceItemDTO(
-                        i.getProduct() != null ? i.getProduct().getId() : null,
-                        i.getProduct() != null ? i.getProduct().getProductName() : "Unknown",
-                        i.getQuantity(),
-                        i.getUnitPrice(),
-                        i.getTotalPrice()))
-                .toList();
+        .map(i -> new InvoiceItemDTO(
+                i.getId(),
+                i.getProduct() != null ? i.getProduct().getId() : null,
+                i.getProduct() != null ? i.getProduct().getProductName() : "Unknown",
+                i.getQuantity(),
+                i.getUnitPrice(),
+                i.getTotalPrice()))
+        .toList();
 
         return new SalesInvoiceDTO(
                 inv.getId(),
