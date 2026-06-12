@@ -7,6 +7,7 @@ import java.util.UUID;
 
 public record DeliveryDTO(
         UUID deliveryId,
+        UUID invoiceId,
         UUID customerId,
         List<InvoiceItemDTO> items,
         double totalPrice,
@@ -15,4 +16,3 @@ public record DeliveryDTO(
         boolean completed,
         String status
 ) {}
-

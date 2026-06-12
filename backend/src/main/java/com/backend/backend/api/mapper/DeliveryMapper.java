@@ -24,6 +24,7 @@ public class DeliveryMapper {
 
         return new DeliveryDTO(
                 entity.getId(),
+                invoice.getId(),
                 entity.getCustomer().getId(),
                 items,
                 invoice.getTotalPrice(),

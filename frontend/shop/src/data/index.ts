@@ -118,6 +118,7 @@ async function loadBackendData() {
     const deliveries: Delivery[] = deliveriesRaw.flatMap((delivery) =>
       delivery.items.map((item, itemIndex) => ({
         deliveryId: delivery.items.length > 1 ? `${delivery.deliveryId}-${itemIndex + 1}` : delivery.deliveryId,
+        invoiceId: delivery.invoiceId,
         customerId: delivery.customerId,
         productId: productIdByUuid.get(item.productId) ?? itemIndex + 1,
         quantity: item.quantity,

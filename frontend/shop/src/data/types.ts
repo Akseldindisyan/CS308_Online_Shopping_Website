@@ -169,6 +169,7 @@ export type DeliveryStatus = "completed" | "in-transit" | "preparing" | "delayed
 
 export interface Delivery {
   deliveryId: UUID;
+  invoiceId: UUID;
   customerId: UUID;
   items: DeliveryItem[];
   totalPrice: number;
