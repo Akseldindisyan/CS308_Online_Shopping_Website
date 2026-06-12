@@ -48,7 +48,7 @@ public class CartServiceTest {
     private ProductRepository productRepository;
 
     @Mock
-    private UserService userService;
+    private CartCreationService cartCreationService;
 
     @InjectMocks
     private CartService cartService;
@@ -75,7 +75,8 @@ public class CartServiceTest {
 
     @Test
     void addItemToGuestCart_addsItemAndComputesTotal() {
-        when(cartRepository.findByGuestTokenAndCheckedOutFalse("guest-token")).thenReturn(Optional.of(guestCart));
+        when(cartRepository.findFirstByGuestTokenAndCheckedOutFalseOrderByIdAsc("guest-token"))
+                .thenReturn(Optional.of(guestCart));
         when(productRepository.findById(product.getId())).thenReturn(Optional.of(product));
         when(cartItemRepository.findByCartAndProduct(guestCart, product)).thenReturn(Optional.empty());
         when(cartItemRepository.findByCart(guestCart)).thenReturn(List.of(buildItem(guestCart, product, 3)));
@@ -100,7 +101,8 @@ public class CartServiceTest {
         CartItemEntity item = buildItem(userCart, product, 2);
 
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
-        when(cartRepository.findByUserAndCheckedOutFalse(user)).thenReturn(Optional.of(userCart));
+        when(cartRepository.findFirstByUserAndCheckedOutFalseOrderByIdAsc(user))
+                .thenReturn(Optional.of(userCart));
         when(cartItemRepository.findByCart(userCart)).thenReturn(List.of(item));
 
         cartService.checkoutUserCart(userId);
@@ -123,7 +125,8 @@ public class CartServiceTest {
         CartItemEntity item = buildItem(userCart, product, 99);
 
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
-        when(cartRepository.findByUserAndCheckedOutFalse(user)).thenReturn(Optional.of(userCart));
+        when(cartRepository.findFirstByUserAndCheckedOutFalseOrderByIdAsc(user))
+                .thenReturn(Optional.of(userCart));
         when(cartItemRepository.findByCart(userCart)).thenReturn(List.of(item));
 
         ConflictException ex = assertThrows(ConflictException.class,
@@ -146,8 +149,10 @@ public class CartServiceTest {
         CartItemEntity existingUserItem = buildItem(userCart, product, 1);
 
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
-        when(cartRepository.findByGuestTokenAndCheckedOutFalse("guest-token")).thenReturn(Optional.of(guestCart));
-        when(cartRepository.findByUserAndCheckedOutFalse(user)).thenReturn(Optional.of(userCart));
+        when(cartRepository.findFirstByGuestTokenAndCheckedOutFalseOrderByIdAsc("guest-token"))
+                .thenReturn(Optional.of(guestCart));
+        when(cartRepository.findFirstByUserAndCheckedOutFalseOrderByIdAsc(user))
+                .thenReturn(Optional.of(userCart));
         when(cartItemRepository.findByCart(guestCart)).thenReturn(List.of(guestItem));
         when(cartItemRepository.findByCartAndProduct(userCart, product)).thenReturn(Optional.of(existingUserItem));
         when(cartItemRepository.findByCart(userCart)).thenReturn(List.of(existingUserItem));
@@ -176,4 +181,3 @@ public class CartServiceTest {
         field.set(target, value);
     }
 }
-

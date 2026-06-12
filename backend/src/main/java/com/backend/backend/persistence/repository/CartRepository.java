@@ -12,8 +12,7 @@ import com.backend.backend.persistence.entity.UserEntity;
 @Repository
 public interface CartRepository extends JpaRepository<CartEntity, UUID> {
 
-    Optional<CartEntity> findByUserAndCheckedOutFalse(UserEntity user);
+    Optional<CartEntity> findFirstByUserAndCheckedOutFalseOrderByIdAsc(UserEntity user);
 
-    Optional<CartEntity> findByGuestTokenAndCheckedOutFalse(String guestToken);
+    Optional<CartEntity> findFirstByGuestTokenAndCheckedOutFalseOrderByIdAsc(String guestToken);
 }
-

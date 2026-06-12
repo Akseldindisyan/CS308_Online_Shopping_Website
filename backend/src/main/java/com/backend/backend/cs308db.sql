@@ -65,6 +65,92 @@ CREATE TABLE IF NOT EXISTS cart_item_entity (
     updated_at DATE    DEFAULT CURRENT_DATE
     );
 
+-- Repair duplicate active carts before enforcing one active cart per owner.
+WITH ranked_user_carts AS (
+    SELECT id,
+           FIRST_VALUE(id) OVER (PARTITION BY user_id ORDER BY id) AS retained_id,
+           ROW_NUMBER() OVER (PARTITION BY user_id ORDER BY id) AS row_number
+    FROM cart_entity
+    WHERE checked_out = FALSE
+      AND user_id IS NOT NULL
+)
+UPDATE cart_item_entity item
+SET cart_id = ranked.retained_id
+FROM ranked_user_carts ranked
+WHERE item.cart_id = ranked.id
+  AND ranked.row_number > 1;
+
+WITH ranked_user_carts AS (
+    SELECT id,
+           ROW_NUMBER() OVER (PARTITION BY user_id ORDER BY id) AS row_number
+    FROM cart_entity
+    WHERE checked_out = FALSE
+      AND user_id IS NOT NULL
+)
+DELETE FROM cart_entity cart
+USING ranked_user_carts ranked
+WHERE cart.id = ranked.id
+  AND ranked.row_number > 1;
+
+WITH ranked_guest_carts AS (
+    SELECT id,
+           FIRST_VALUE(id) OVER (PARTITION BY guest_token ORDER BY id) AS retained_id,
+           ROW_NUMBER() OVER (PARTITION BY guest_token ORDER BY id) AS row_number
+    FROM cart_entity
+    WHERE checked_out = FALSE
+      AND guest_token IS NOT NULL
+)
+UPDATE cart_item_entity item
+SET cart_id = ranked.retained_id
+FROM ranked_guest_carts ranked
+WHERE item.cart_id = ranked.id
+  AND ranked.row_number > 1;
+
+WITH ranked_guest_carts AS (
+    SELECT id,
+           ROW_NUMBER() OVER (PARTITION BY guest_token ORDER BY id) AS row_number
+    FROM cart_entity
+    WHERE checked_out = FALSE
+      AND guest_token IS NOT NULL
+)
+DELETE FROM cart_entity cart
+USING ranked_guest_carts ranked
+WHERE cart.id = ranked.id
+  AND ranked.row_number > 1;
+
+-- Moving items from duplicate carts can produce duplicate product rows.
+WITH duplicate_items AS (
+    SELECT cart_id,
+           product_id,
+           (ARRAY_AGG(id ORDER BY id))[1] AS retained_id,
+           SUM(quantity)::INTEGER AS total_quantity
+    FROM cart_item_entity
+    GROUP BY cart_id, product_id
+    HAVING COUNT(*) > 1
+)
+UPDATE cart_item_entity item
+SET quantity = duplicates.total_quantity
+FROM duplicate_items duplicates
+WHERE item.id = duplicates.retained_id;
+
+WITH ranked_items AS (
+    SELECT id,
+           ROW_NUMBER() OVER (PARTITION BY cart_id, product_id ORDER BY id) AS row_number
+    FROM cart_item_entity
+)
+DELETE FROM cart_item_entity item
+USING ranked_items ranked
+WHERE item.id = ranked.id
+  AND ranked.row_number > 1;
+
+CREATE UNIQUE INDEX IF NOT EXISTS uq_cart_active_user
+    ON cart_entity (user_id)
+    WHERE checked_out = FALSE AND user_id IS NOT NULL;
+
+CREATE UNIQUE INDEX IF NOT EXISTS uq_cart_active_guest
+    ON cart_entity (guest_token)
+    WHERE checked_out = FALSE AND guest_token IS NOT NULL;
+
 -- 5. review
 CREATE TABLE IF NOT EXISTS review (
     review_id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
