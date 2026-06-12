@@ -6,6 +6,7 @@ import com.backend.backend.persistence.entity.InvoiceItemEntity;
 import com.backend.backend.persistence.entity.RefundRequestEntity;
 import com.backend.backend.persistence.entity.RefundStatus;
 import com.backend.backend.persistence.entity.UserEntity;
+import com.backend.backend.persistence.repository.DeliveryRepository;
 import com.backend.backend.persistence.repository.InvoiceItemRepository;
 import com.backend.backend.persistence.repository.InvoiceRepository;
 import com.backend.backend.persistence.repository.RefundRequestRepository;
@@ -31,6 +32,7 @@ public class RefundService {
     private final UserRepository userRepository;
     private final InvoiceRepository invoiceRepository;
     private final InvoiceItemRepository invoiceItemRepository;
+    private final DeliveryRepository deliveryRepository;
 
     @Transactional
     public RefundRequestEntity createRefundRequest(UUID userId, UUID invoiceId, List<UUID> itemIdsToRefund) {
@@ -48,6 +50,7 @@ public class RefundService {
             throw new RuntimeException("Unauthorized: Invoice does not belong to this user.");
         }
 
+        validateDelivered(invoice);
         validateRefundWindow(invoice);
 
         List<InvoiceItemEntity> items = invoiceItemRepository.findAllById(itemIdsToRefund);
@@ -69,8 +72,24 @@ public class RefundService {
         refundRequest.setInvoice(invoice);
         refundRequest.setItems(items);
         refundRequest.setDate(new Date());
+        refundRequest.setRefundAmount(
+                items.stream()
+                        .mapToDouble(InvoiceItemEntity::getTotalPrice)
+                        .sum());
 
         return refundRepository.save(refundRequest);
+    }
+
+    private void validateDelivered(InvoiceEntity invoice) {
+        String status = deliveryRepository.findByInvoice_Id(invoice.getId())
+                .map(delivery -> delivery.getStatus())
+                .orElse("");
+
+        if (!"DELIVERED".equalsIgnoreCase(status) && !"COMPLETED".equalsIgnoreCase(status)) {
+            throw new BadRequestException(
+                    "REFUND_REQUIRES_DELIVERY",
+                    "Orders can only be refunded after delivery; cancel this order instead");
+        }
     }
 
     private void validateRefundWindow(InvoiceEntity invoice) {
@@ -139,5 +158,9 @@ public class RefundService {
         RefundRequestEntity refund = refundRepository.findById(refundID)
                 .orElseThrow(() -> new RuntimeException("Refund not found"));
         return refund;
+    }
+
+    public List<RefundRequestEntity> getRefundsByStatus(RefundStatus status) {
+        return refundRepository.findByStatusOrderByDateDesc(status);
     }
 }

@@ -21,12 +21,14 @@ const statusPill: Record<string, string> = {
   PENDING:    "pm-pill pm-pill-amber",
   IN_TRANSIT: "pm-pill pm-pill-blue",
   COMPLETED:  "pm-pill pm-pill-green",
+  CANCELLED:  "pm-pill pm-pill-red",
 };
 
 const statusLabel: Record<string, string> = {
   PENDING:    "Pending",
   IN_TRANSIT: "In Transit",
   COMPLETED:  "Delivered",
+  CANCELLED:  "Cancelled",
 };
 
 const todayLabel = () => {
@@ -77,7 +79,9 @@ export default function Overview() {
 
   const lowStock      = products.filter((p) => p.stock < 10).length;
   const pending       = reviews.length;
-  const undelivered   = deliveries.filter((d) => !d.completed).length;
+  const undelivered   = deliveries.filter(
+    (d) => !d.completed && d.status !== "CANCELLED"
+  ).length;
   const inTransit     = deliveries.filter((d) => d.status === "IN_TRANSIT").length;
 
   const STATUS_OPTIONS: DeliveryStatus[] = ["PENDING", "IN_TRANSIT", "COMPLETED"];
@@ -247,9 +251,13 @@ export default function Overview() {
                         <select
                           className="pm-select pm-select-sm"
                           value={d.status}
+                          disabled={d.status === "CANCELLED"}
                           onChange={(e) => handleStatusChange(d.deliveryId, e.target.value as DeliveryStatus)}
                         >
-                          {STATUS_OPTIONS.map((s) => (
+                          {(d.status === "CANCELLED"
+                            ? ["CANCELLED" as DeliveryStatus]
+                            : STATUS_OPTIONS
+                          ).map((s) => (
                             <option key={s} value={s}>{statusLabel[s] ?? s}</option>
                           ))}
                         </select>

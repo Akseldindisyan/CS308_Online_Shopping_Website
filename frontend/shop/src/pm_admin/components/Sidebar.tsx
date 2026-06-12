@@ -1,6 +1,6 @@
 import type { JSX } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { getStoredName, getStoredSurname } from "../../api/auth";
+import { clearAuthToken, getStoredName, getStoredSurname } from "../../api/auth";
 
 type NavItem = {
     path: string;
@@ -17,6 +17,7 @@ const IconStack = () => <svg width="16" height="16" viewBox="0 0 16 16" fill="cu
 const IconTruck = () => <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M1 3h9v7H1zm9 2h2l2 2v3h-4zM3 11a1.5 1.5 0 100 3 1.5 1.5 0 000-3zm8 0a1.5 1.5 0 100 3 1.5 1.5 0 000-3z" /></svg>;
 const IconDoc = () => <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M4 1h6l4 4v10H4V1zm6 0v4h4M6 8h5M6 11h5M6 5h2" /></svg>;
 const IconChat = () => <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M2 2h12v9H9l-3 3V11H2z" /></svg>;
+const IconLogout = () => <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M6 2H3v12h3M10 5l3 3-3 3M13 8H6" /></svg>;
 
 const BASE = "/pm-admin";
 
@@ -51,6 +52,11 @@ export default function Sidebar() {
     const surname = getStoredSurname() ?? "";
     const initials = (name.charAt(0) + surname.charAt(0)).toUpperCase() || "PM";
     const fullName = name && surname ? `${name} ${surname}` : "Product Manager";
+
+    const handleLogout = () => {
+        clearAuthToken();
+        navigate("/login", { replace: true });
+    };
 
     return (
         <aside style={{
@@ -129,10 +135,30 @@ export default function Sidebar() {
                 <div style={{ width: 32, height: 32, borderRadius: "50%", background: "var(--blue-dim)", border: "1px solid var(--blue)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 500, color: "var(--blue)", flexShrink: 0 }}>
                     {initials}
                 </div>
-                <div>
+                <div style={{ minWidth: 0 }}>
                     <div style={{ fontSize: 13 }}>{fullName}</div>
                     <div style={{ fontSize: 11, color: "var(--text-muted)" }}>Product Manager</div>
                 </div>
+                <button
+                    type="button"
+                    onClick={handleLogout}
+                    aria-label="Log out"
+                    title="Log out"
+                    style={{
+                        marginLeft: "auto",
+                        padding: 8,
+                        borderRadius: 8,
+                        border: "1px solid var(--border)",
+                        background: "transparent",
+                        color: "var(--text-muted)",
+                        cursor: "pointer",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                    }}
+                >
+                    <IconLogout />
+                </button>
             </div>
         </aside>
     );

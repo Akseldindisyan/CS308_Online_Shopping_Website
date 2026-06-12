@@ -75,6 +75,7 @@ public class RefundController {
         dto.setInvoiceId(entity.getInvoice().getId());
         dto.setStatus(entity.getStatus().name());
         dto.setDate(entity.getDate());
+        dto.setRefundAmount(entity.getRefundAmount());
 
         String customerFullName = entity.getCustomer().getName();
         if (entity.getCustomer().getSurname() != null) {

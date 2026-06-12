@@ -7,12 +7,14 @@ const statusPill: Record<DeliveryStatus, string> = {
   PENDING: "pm-pill pm-pill-amber",
   IN_TRANSIT: "pm-pill pm-pill-blue",
   COMPLETED: "pm-pill pm-pill-green",
+  CANCELLED: "pm-pill pm-pill-red",
 };
 
 const statusLabel: Record<DeliveryStatus, string> = {
   PENDING: "Pending",
   IN_TRANSIT: "In Transit",
   COMPLETED: "Delivered",
+  CANCELLED: "Cancelled",
 };
 
 const STATUS_OPTIONS: DeliveryStatus[] = ["PENDING", "IN_TRANSIT", "COMPLETED"];
@@ -48,7 +50,11 @@ export default function Deliveries() {
   }, []);
 
   const filtered = deliveries.filter((d) =>
-    filter === "pending" ? !d.completed : filter === "completed" ? d.completed : true
+    filter === "pending"
+      ? !d.completed && d.status !== "CANCELLED"
+      : filter === "completed"
+        ? d.completed
+        : true
   );
 
   const changeStatus = async (id: string, newStatus: DeliveryStatus) => {
@@ -66,7 +72,9 @@ export default function Deliveries() {
     }
   };
 
-  const pendingCount = deliveries.filter((d) => !d.completed).length;
+  const pendingCount = deliveries.filter(
+    (d) => !d.completed && d.status !== "CANCELLED"
+  ).length;
   const inTransitCount = deliveries.filter((d) => d.status === "IN_TRANSIT").length;
 
   return (
@@ -146,12 +154,18 @@ export default function Deliveries() {
                         <select
                           className="pm-select pm-select-sm"
                           value={d.status}
-                          disabled={updatingId === d.deliveryId}
+                          disabled={
+                            updatingId === d.deliveryId ||
+                            d.status === "CANCELLED"
+                          }
                           onChange={(e) =>
                             changeStatus(d.deliveryId, e.target.value as DeliveryStatus)
                           }
                         >
-                          {STATUS_OPTIONS.map((s) => (
+                          {(d.status === "CANCELLED"
+                            ? ["CANCELLED" as DeliveryStatus]
+                            : STATUS_OPTIONS
+                          ).map((s) => (
                             <option key={s} value={s}>
                               {statusLabel[s]}
                             </option>
