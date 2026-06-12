@@ -4,6 +4,7 @@ import com.backend.backend.api.exception.BadRequestException;
 import com.backend.backend.persistence.entity.*;
 import com.backend.backend.persistence.repository.InvoiceItemRepository;
 import com.backend.backend.persistence.repository.InvoiceRepository;
+import com.backend.backend.persistence.repository.ProductRepository;
 import com.backend.backend.persistence.repository.RefundRequestRepository;
 import com.backend.backend.persistence.repository.UserRepository;
 import com.backend.backend.persistence.repository.DeliveryRepository;
@@ -39,6 +40,8 @@ public class RefundServiceTest {
     private InvoiceItemRepository invoiceItemRepository;
     @Mock
     private DeliveryRepository deliveryRepository;
+    @Mock
+    private ProductRepository productRepository;
 
     @InjectMocks
     private RefundService refundService;
@@ -68,6 +71,7 @@ public class RefundServiceTest {
         item = new InvoiceItemEntity();
         item.setId(itemId);
         ProductEntity product = new ProductEntity();
+        product.setId(UUID.randomUUID());
         product.setProductName("Refunded product");
         item.setProduct(product);
         item.setQuantity(1);
@@ -140,6 +144,7 @@ public class RefundServiceTest {
     @Test
     void acceptRefundSuccessUpdatesInvoiceTotal() {
         when(refundRepository.findById(refundId)).thenReturn(Optional.of(refundRequest));
+        when(productRepository.incrementStock(item.getProduct().getId(), item.getQuantity())).thenReturn(1);
 
         RefundEmailDetails emailDetails = refundService.acceptRefund(refundId);
 
@@ -148,6 +153,7 @@ public class RefundServiceTest {
         assertEquals(50.0, emailDetails.refundAmount());
         assertEquals("Refunded product", emailDetails.items().getFirst().productName());
 
+        verify(productRepository).incrementStock(item.getProduct().getId(), 1);
         verify(invoiceItemRepository).deleteAllInBatch(anyList());
         verify(invoiceRepository).save(invoice);
         verify(refundRepository).save(refundRequest);

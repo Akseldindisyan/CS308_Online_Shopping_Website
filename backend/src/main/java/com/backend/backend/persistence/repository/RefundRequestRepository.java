@@ -20,5 +20,7 @@ public interface RefundRequestRepository extends JpaRepository<RefundRequestEnti
 
     List<RefundRequestEntity> findByCustomerId(UUID customerId);
 
+    List<RefundRequestEntity> findByStatusOrderByDateDesc(RefundStatus status);
+
     boolean existsByStatusAndItemsId(RefundStatus status, UUID itemId);
 }
