@@ -113,7 +113,7 @@ export default function OrdersPage() {
   const [loading, setLoading] = useState(Boolean(userId))
   const [error, setError] = useState('')
   const [requestingRefundId, setRequestingRefundId] = useState<string | null>(null)
-  const [requestedRefundIds, setRequestedRefundIds] = useState<Set<string>>(new Set())
+  const [refundStatusByInvoice, setRefundStatusByInvoice] = useState<Map<string, string>>(new Map())
   const { showToast } = useToast()
 
   useEffect(() => {
@@ -122,6 +122,11 @@ export default function OrdersPage() {
     Promise.all([getOrders(userId), getDeliveries(userId), getMyRefunds()])
       .then(([loadedOrders, loadedDeliveries, refunds]) => {
         setOrders(loadedOrders)
+        const statusMap = new Map<string, string>()
+        refunds
+          .filter((refund) => refund.status !== 'REJECTED')
+          .forEach((refund) => statusMap.set(refund.invoiceId, refund.status))
+        setRefundStatusByInvoice(statusMap)
         setDeliveries(loadedDeliveries)
         setRequestedRefundIds(
           new Set(
@@ -149,7 +154,7 @@ export default function OrdersPage() {
         order.invoiceId,
         order.items.map((item) => item.invoiceItemId),
       )
-      setRequestedRefundIds((current) => new Set(current).add(order.invoiceId))
+      setRefundStatusByInvoice((current) => new Map(current).set(order.invoiceId, 'UNDECIDED'))
       showToast('Refund request submitted', 'success')
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to request refund'
@@ -236,51 +241,36 @@ export default function OrdersPage() {
                       <th style={{ textAlign: 'right', padding: '4px' }}>Unit Price</th>
                       <th style={{ textAlign: 'right', padding: '4px' }}>Total</th>
                     </tr>
-                  </thead>
-                  <tbody>
-                    {order.items.map((item) => (
-                      <tr key={item.invoiceItemId} style={{ borderBottom: '1px solid #333' }}>
-                        <td style={{ padding: '4px' }}>{item.productName}</td>
-                        <td style={{ textAlign: 'right', padding: '4px' }}>
-                          {item.quantity}
-                        </td>
-                        <td style={{ textAlign: 'right', padding: '4px' }}>
-                          ${item.unitPrice}
-                        </td>
-                        <td style={{ textAlign: 'right', padding: '4px' }}>
-                          ${item.totalPrice}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-                <div
-                  style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    marginTop: '0.75rem',
-                    gap: '1rem',
-                  }}
+                  ))}
+                </tbody>
+              </table>
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  marginTop: '0.75rem',
+                }}
+              >
+                <button
+                  type="button"
+                  className="btn-secondary"
+                  disabled={
+                    requestingRefundId === order.invoiceId ||
+                    refundStatusByInvoice.has(order.invoiceId) ||
+                    order.items.length === 0
+                  }
+                  onClick={() => void handleRefundRequest(order)}
                 >
-                  <button
-                    type="button"
-                    className="btn-secondary"
-                    disabled={
-                      requestingRefundId === order.invoiceId ||
-                      requestedRefundIds.has(order.invoiceId) ||
-                      order.items.length === 0
-                    }
-                    onClick={() => void handleRefundRequest(order)}
-                  >
-                    {requestedRefundIds.has(order.invoiceId)
+                  {refundStatusByInvoice.get(order.invoiceId) === 'ACCEPTED'
+                    ? 'Refunded'
+                    : refundStatusByInvoice.get(order.invoiceId) === 'UNDECIDED'
                       ? 'Refund requested'
                       : requestingRefundId === order.invoiceId
                         ? 'Requesting...'
                         : 'Request refund'}
-                  </button>
-                  <strong>Total: ${order.totalPrice}</strong>
-                </div>
+                </button>
+                <strong>Total: ${order.totalPrice}</strong>
               </div>
             )
           })}

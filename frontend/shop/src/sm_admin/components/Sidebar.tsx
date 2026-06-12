@@ -13,6 +13,7 @@ const IconGrid = () => <svg width="16" height="16" viewBox="0 0 16 16" fill="cur
 const IconTag = () => <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M1 3v5l7 7 5-5-7-7H1zm3 1a1 1 0 110 2 1 1 0 010-2z" /></svg>;
 const IconDoc = () => <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M4 1h6l4 4v10H4V1zm6 0v4h4M6 8h5M6 11h5M6 5h2" /></svg>;
 const IconChart = () => <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><path d="M1 14h14M3 10v4M7 6v8M11 8v6" /></svg>;
+const IconRefund = () => <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><path d="M2 8a6 6 0 1 1 1.8 4.3M2 8V4m0 4h4" /></svg>;
 
 const BASE = "/sm-admin";
 
@@ -27,6 +28,7 @@ const sections: { title: string; items: NavItem[] }[] = [
             { path: `${BASE}/pricing`, label: "Pricing", icon: <IconTag /> },
             { path: `${BASE}/invoices`, label: "Invoices", icon: <IconDoc /> },
             { path: `${BASE}/revenue`, label: "Revenue", icon: <IconChart /> },
+            { path: `${BASE}/refunds`, label: "Refunds", icon: <IconRefund /> },
         ],
     },
 ];
