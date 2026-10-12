@@ -5,7 +5,7 @@ A comprehensive, full-stack e-commerce platform built with a Spring Boot backend
 ## Tech Stack
 * **Backend:** Java, Spring Boot, PostgreSQL
 * **Frontend:** TypeScript, Node.js (npm)
-* **Architecture:** Web API, concurrent session handling, encrypted sensitive data (passwords, mock credit cards, invoices).
+* **Architecture:** Web API, concurrent session handling.
 * **Methodology:** 2-week Agile SCRUM sprints, unit testing, and active product/sprint backlog management.
 
 ## Core Features
